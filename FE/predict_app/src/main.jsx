@@ -1,14 +1,9 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-// The Auth component currently lives at `src/Auth/Auth.jsx`.
-// Import from that path to match the file location.
-import Auth from "./(auth)";
-
-// Entry that mounts the Auth UI (UI-only, no auth logic).
+import App from "./App";
 
 const root = document.getElementById("root");
 if (!root) {
-  // Helpful runtime message if index.html is missing or doesn't contain #root
   const msg = document.createElement("div");
   msg.style.padding = "24px";
   msg.style.fontFamily = "sans-serif";
@@ -18,5 +13,5 @@ if (!root) {
   `;
   document.body.appendChild(msg);
 } else {
-  createRoot(root).render(<Auth />);
+  createRoot(root).render(<App />);
 }
