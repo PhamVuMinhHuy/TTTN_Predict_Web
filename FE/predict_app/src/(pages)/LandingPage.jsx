@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import {
   landingContainer,
-  header,
-  headerContent,
-  logo,
-  logoText,
-  authButtons,
-  loginBtn,
-  loginBtnHover,
-  signupBtn,
-  signupBtnHover,
   hero,
   heroContent,
   heroTitle,
@@ -45,8 +38,6 @@ import {
   ctaSection,
   ctaTitle,
   ctaSubtitle,
-  footer,
-  footerText,
   container,
 } from '../../assets/styles/landing.styles';
 
@@ -70,44 +61,7 @@ const LandingPage = () => {
   return (
     <div style={landingContainer}>
       {/* Header */}
-      <header style={header}>
-        <div style={headerContent}>
-          <div style={logo}>
-            📊 <span style={logoText}>PredictGrade</span>
-          </div>
-          
-          {!user && (
-            <div style={authButtons}>
-              <Link 
-                to="/auth?mode=login"
-                style={{
-                  ...loginBtn,
-                  ...getHoverStyle('login-btn', loginBtnHover),
-                  textDecoration: 'none',
-                  display: 'inline-block'
-                }}
-                onMouseEnter={() => setHoveredElement('login-btn')}
-                onMouseLeave={() => setHoveredElement(null)}
-              >
-                Đăng nhập
-              </Link>
-              <Link 
-                to="/auth?mode=register"
-                style={{
-                  ...signupBtn,
-                  ...getHoverStyle('signup-btn', signupBtnHover),
-                  textDecoration: 'none',
-                  display: 'inline-block'
-                }}
-                onMouseEnter={() => setHoveredElement('signup-btn')}
-                onMouseLeave={() => setHoveredElement(null)}
-              >
-                Đăng ký
-              </Link>
-            </div>
-          )}
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section style={hero}>
@@ -284,13 +238,7 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer style={footer}>
-        <div style={container}>
-          <p style={footerText}>
-            © 2024 PredictGrade - Hệ thống dự đoán điểm học tập thông minh | Phát triển bởi TTTN
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

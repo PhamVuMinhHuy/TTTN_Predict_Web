@@ -1,7 +1,7 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import UserProfile from '../(pages)/UserProfile';
-import { useAuth } from '../hooks/useAuth';
+import React from "react";
+import { Outlet } from "react-router-dom";
+import UserProfile from "../(pages)/UserProfile";
+import { useAuth } from "../hooks/useAuth";
 
 const Layout = () => {
   const { user } = useAuth();

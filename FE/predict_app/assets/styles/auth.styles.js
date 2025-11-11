@@ -104,3 +104,25 @@ export const footerStyle = {
   color: "#475569",
   textAlign: "center",
 };
+
+export const passwordInputWrapper = {
+  position: "relative",
+  width: "100%",
+};
+
+export const passwordToggleIcon = {
+  position: "absolute",
+  right: "14px",
+  top: "50%",
+  transform: "translateY(-50%)",
+  cursor: "pointer",
+  fontSize: "20px",
+  userSelect: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "24px",
+  height: "24px",
+  color: "#64748b",
+  transition: "color 0.2s ease",
+};

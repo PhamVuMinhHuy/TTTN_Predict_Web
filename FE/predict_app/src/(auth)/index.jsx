@@ -18,6 +18,8 @@ import {
   primaryButton,
   smallLink,
   footerStyle,
+  passwordInputWrapper,
+  passwordToggleIcon,
 } from "../../assets/styles/auth.styles";
 import Signup from "./signup";
 import { useForm } from "../hooks/useForm";
@@ -27,6 +29,7 @@ import { validationRules } from "../utils/validation";
 function LoginForm({ onSwitch, onSuccess }) {
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login, loading, error, clearError } = useAuth();
 
@@ -147,22 +150,42 @@ function LoginForm({ onSwitch, onSuccess }) {
 
       <div>
         <label style={labelStyle}>Mật khẩu</label>
-        <input
-          ref={passwordRef}
-          type="password"
-          value={values.password}
-          onChange={(e) => setValue("password", e.target.value)}
-          onBlur={() => setFieldTouched("password")}
-          placeholder="Nhập mật khẩu của bạn"
-          style={{
-            ...inputStyle,
-            borderColor:
-              touched.password && errors.password
-                ? "#e74c3c"
-                : inputStyle.borderColor,
-          }}
-          disabled={loading || isSubmitting}
-        />
+        <div style={passwordInputWrapper}>
+          <input
+            ref={passwordRef}
+            type={showPassword ? "text" : "password"}
+            value={values.password}
+            onChange={(e) => setValue("password", e.target.value)}
+            onBlur={() => setFieldTouched("password")}
+            placeholder="Nhập mật khẩu của bạn"
+            style={{
+              ...inputStyle,
+              paddingRight: "45px",
+              borderColor:
+                touched.password && errors.password
+                  ? "#e74c3c"
+                  : inputStyle.borderColor,
+            }}
+            disabled={loading || isSubmitting}
+          />
+          <span
+            style={passwordToggleIcon}
+            onClick={() => setShowPassword(!showPassword)}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#0f172a")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#64748b")}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setShowPassword(!showPassword);
+              }
+            }}
+            aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+          >
+            {showPassword ? "🙈" : "👁️"}
+          </span>
+        </div>
         {touched.password && errors.password && (
           <div style={{ color: "#e74c3c", fontSize: "12px", marginTop: "4px" }}>
             {errors.password}
