@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useMemo,
-  useRef,
-  useEffect,
-  useState,
-} from "react";
+import React, { useCallback, useRef, useEffect, useState } from "react";
 import {
   formStyle,
   labelStyle,
@@ -18,8 +12,16 @@ import { useForm } from "../hooks/useForm";
 import { useAuth } from "../hooks/useAuth";
 import { validationRules } from "../utils/validation";
 
+const SIGNUP_VALIDATION_RULES = {
+  name: validationRules.name,
+  email: validationRules.email,
+  password: validationRules.password,
+  confirmPassword: validationRules.confirmPassword,
+};
+
 // UI-only Signup page with enhanced hooks. onBack should be a function that navigates back to login (e.g. setMode('login')).
 export default function Signup({ onBack, onSuccess }) {
+  const nameRef = useRef(null);
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
   const confirmPasswordRef = useRef(null);
@@ -28,15 +30,6 @@ export default function Signup({ onBack, onSuccess }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { register, loading, error, clearError } = useAuth();
-
-  const signupValidationRules = useMemo(
-    () => ({
-      email: validationRules.email,
-      password: validationRules.password,
-      confirmPassword: validationRules.confirmPassword,
-    }),
-    []
-  );
 
   const {
     values,
@@ -48,14 +41,14 @@ export default function Signup({ onBack, onSuccess }) {
     setFieldTouched,
     validateAll,
   } = useForm(
-    { email: "", password: "", confirmPassword: "" },
-    signupValidationRules
+    { name: "", email: "", password: "", confirmPassword: "" },
+    SIGNUP_VALIDATION_RULES
   );
 
-  // Focus on email input when component mounts
+  // Focus on name input when component mounts
   useEffect(() => {
-    if (emailRef.current) {
-      emailRef.current.focus();
+    if (nameRef.current) {
+      nameRef.current.focus();
     }
   }, []);
 
@@ -70,7 +63,13 @@ export default function Signup({ onBack, onSuccess }) {
     async (e) => {
       e.preventDefault();
 
-      if (!validateAll()) {
+      // Force validation of all fields before submit
+      const isValid = validateAll();
+      if (!isValid) {
+        // Mark all fields as touched to show validation errors
+        Object.keys(SIGNUP_VALIDATION_RULES).forEach(field => {
+          setFieldTouched(field);
+        });
         return;
       }
 
@@ -89,14 +88,12 @@ export default function Signup({ onBack, onSuccess }) {
 
       setIsSubmitting(false);
     },
-    [values, validateAll, setIsSubmitting, register, onBack, onSuccess]
+    [values, validateAll, setIsSubmitting, register, onBack, onSuccess, setFieldTouched]
   );
 
-  const isFormValid = useMemo(() => {
-    return Object.keys(signupValidationRules).every(
-      (key) => !errors[key] && values[key]
-    );
-  }, [errors, values, signupValidationRules]);
+  const isFormValid = Object.keys(SIGNUP_VALIDATION_RULES).every(
+    (key) => !errors[key] && values[key]
+  );
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
@@ -116,18 +113,41 @@ export default function Signup({ onBack, onSuccess }) {
       )}
 
       <div>
+        <label style={labelStyle}>Tên hiển thị</label>
+        <input
+          ref={nameRef}
+          type="text"
+          value={values.name}
+          onChange={(e) => setValue("name", e.target.value)}
+          placeholder="Ví dụ: Nguyễn Văn An"
+          style={{
+            ...inputStyle,
+            borderColor:
+              touched.name && errors.name ? "#e74c3c" : inputStyle.borderColor,
+          }}
+          disabled={loading || isSubmitting}
+        />
+        {touched.name && errors.name && (
+          <div style={{ color: "#e74c3c", fontSize: "12px", marginTop: "4px" }}>
+            {errors.name}
+          </div>
+        )}
+      </div>
+
+      <div>
         <label style={labelStyle}>Địa chỉ email</label>
         <input
           ref={emailRef}
           type="email"
           value={values.email}
           onChange={(e) => setValue("email", e.target.value)}
-          onBlur={() => setFieldTouched("email")}
-          placeholder="abc@gmail.com"
+          placeholder="Ví dụ: hocvien@truong.edu.vn"
           style={{
             ...inputStyle,
             borderColor:
-              touched.email && errors.email ? "#e74c3c" : inputStyle.borderColor,
+              touched.email && errors.email
+                ? "#e74c3c"
+                : inputStyle.borderColor,
           }}
           disabled={loading || isSubmitting}
         />
@@ -146,8 +166,7 @@ export default function Signup({ onBack, onSuccess }) {
             type={showPassword ? "text" : "password"}
             value={values.password}
             onChange={(e) => setValue("password", e.target.value)}
-            onBlur={() => setFieldTouched("password")}
-            placeholder="Ít nhất 8 ký tự"
+            placeholder="Tạo mật khẩu gồm chữ hoa, chữ thường và số"
             style={{
               ...inputStyle,
               paddingRight: "45px",
@@ -191,8 +210,7 @@ export default function Signup({ onBack, onSuccess }) {
             type={showConfirmPassword ? "text" : "password"}
             value={values.confirmPassword}
             onChange={(e) => setValue("confirmPassword", e.target.value)}
-            onBlur={() => setFieldTouched("confirmPassword")}
-            placeholder="Nhập lại mật khẩu"
+            placeholder="Nhập lại mật khẩu vừa tạo"
             style={{
               ...inputStyle,
               paddingRight: "45px",

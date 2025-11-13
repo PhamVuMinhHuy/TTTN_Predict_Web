@@ -1,7 +1,6 @@
 import React, {
   useState,
   useCallback,
-  useMemo,
   useRef,
   useEffect,
 } from "react";
@@ -20,11 +19,26 @@ import {
   footerStyle,
   passwordInputWrapper,
   passwordToggleIcon,
+  infoPanelStyle,
+  infoBadge,
+  infoTitle,
+  infoSubtitle,
+  infoList,
+  infoListItem,
+  infoListIcon,
+  infoFooter,
+  formPanelStyle,
+  supportText,
 } from "../../assets/styles/auth.styles";
 import Signup from "./signup";
 import { useForm } from "../hooks/useForm";
 import { useAuth } from "../hooks/useAuth";
 import { validationRules } from "../utils/validation";
+
+const LOGIN_VALIDATION_RULES = {
+  email: validationRules.email,
+  password: validationRules.password,
+};
 
 function LoginForm({ onSwitch, onSuccess }) {
   const emailRef = useRef(null);
@@ -32,14 +46,6 @@ function LoginForm({ onSwitch, onSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
 
   const { login, loading, error, clearError } = useAuth();
-
-  const loginValidationRules = useMemo(
-    () => ({
-      email: validationRules.email,
-      password: validationRules.password,
-    }),
-    []
-  );
 
   const {
     values,
@@ -50,7 +56,7 @@ function LoginForm({ onSwitch, onSuccess }) {
     setValue,
     setFieldTouched,
     validateAll,
-  } = useForm({ email: "", password: "" }, loginValidationRules);
+  } = useForm({ email: "", password: "" }, LOGIN_VALIDATION_RULES);
 
   // Focus on email input when component mounts
   useEffect(() => {
@@ -70,7 +76,13 @@ function LoginForm({ onSwitch, onSuccess }) {
     async (e) => {
       e.preventDefault();
 
-      if (!validateAll()) {
+      // Force validation of all fields before submit
+      const isValid = validateAll();
+      if (!isValid) {
+        // Mark all fields as touched to show validation errors
+        Object.keys(LOGIN_VALIDATION_RULES).forEach(field => {
+          setFieldTouched(field);
+        });
         return;
       }
 
@@ -87,7 +99,7 @@ function LoginForm({ onSwitch, onSuccess }) {
 
       setIsSubmitting(false);
     },
-    [values, validateAll, setIsSubmitting, login, onSuccess]
+    [values, validateAll, setIsSubmitting, login, onSuccess, setFieldTouched]
   );
 
   const handleForgotPassword = useCallback(() => {
@@ -100,11 +112,9 @@ function LoginForm({ onSwitch, onSuccess }) {
     }
   }, [values.email]);
 
-  const isFormValid = useMemo(() => {
-    return Object.keys(loginValidationRules).every(
-      (key) => !errors[key] && values[key]
-    );
-  }, [errors, values, loginValidationRules]);
+  const isFormValid = Object.keys(LOGIN_VALIDATION_RULES).every(
+    (key) => !errors[key] && values[key]
+  );
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
@@ -130,8 +140,7 @@ function LoginForm({ onSwitch, onSuccess }) {
           type="email"
           value={values.email}
           onChange={(e) => setValue("email", e.target.value)}
-          onBlur={() => setFieldTouched("email")}
-          placeholder="Nhập email của bạn"
+          placeholder="Ví dụ: hocvien@truong.edu.vn"
           style={{
             ...inputStyle,
             borderColor:
@@ -156,8 +165,7 @@ function LoginForm({ onSwitch, onSuccess }) {
             type={showPassword ? "text" : "password"}
             value={values.password}
             onChange={(e) => setValue("password", e.target.value)}
-            onBlur={() => setFieldTouched("password")}
-            placeholder="Nhập mật khẩu của bạn"
+            placeholder="Ít nhất 8 ký tự gồm chữ và số"
             style={{
               ...inputStyle,
               paddingRight: "45px",
@@ -258,20 +266,31 @@ export default function Auth() {
     navigate("/");
   };
 
-  // Memoize the header content based on mode
-  const headerContent = useMemo(() => {
-    if (mode === "login") {
-      return {
+  // Get header content based on mode
+  const headerContent = mode === "login" 
+    ? {
         title: "Chào mừng trở lại!",
         subtitle: "Đăng nhập vào hệ thống dự đoán điểm học tập",
-      };
-    } else {
-      return {
-        title: "Tạo tài khoản mới",
+      }
+    : {
+        title: "Tạo tài khoản mới", 
         subtitle: "Điền thông tin để tạo tài khoản",
       };
-    }
-  }, [mode]);
+
+  const infoHighlights = [
+    {
+      icon: "📊",
+      text: "Theo dõi biểu đồ dự đoán điểm cho từng môn học và từng học kỳ.",
+    },
+    {
+      icon: "🧠",
+      text: "Nhận gợi ý ôn tập cá nhân hoá dựa trên năng lực hiện tại.",
+    },
+    {
+      icon: "🎯",
+      text: "Đặt mục tiêu điểm số và kiểm tra mức độ hoàn thành theo thời gian.",
+    },
+  ];
 
   // Handle mode switch with useCallback to prevent unnecessary re-renders
   const handleModeSwitch = useCallback((newMode) => {
@@ -283,22 +302,50 @@ export default function Auth() {
     setMode("login");
   }, []);
 
+  const supportCopy =
+    mode === "login"
+      ? "Tiếp tục theo dõi tiến bộ học tập và xem các dự đoán mới nhất của bạn."
+      : "Tạo tài khoản để lưu kết quả, nhận lộ trình ôn tập và đồng bộ tiến độ.";
+
   return (
     <div style={containerStyle}>
       <div style={cardStyle}>
-        <div style={headerStyle}>
-          <div>
-            <div style={brandStyle}>{headerContent.title}</div>
-            <div style={subtitleStyle}>{headerContent.subtitle}</div>
+        <div style={infoPanelStyle}>
+          <span style={infoBadge}>PredictGrade Learning Hub</span>
+          <h2 style={infoTitle}>Định hướng học tập thông minh cho từng học sinh</h2>
+          <p style={infoSubtitle}>
+            Biến dữ liệu điểm số thành lộ trình học tập rõ ràng, giúp bạn tự tin trước mỗi
+            kỳ kiểm tra.
+          </p>
+          <ul style={infoList}>
+            {infoHighlights.map((item) => (
+              <li key={item.text} style={infoListItem}>
+                <span style={infoListIcon}>{item.icon}</span>
+                <span>{item.text}</span>
+              </li>
+            ))}
+          </ul>
+          <div style={infoFooter}>
+            <span>✨</span>
+            <span>Cùng bạn nuôi dưỡng tinh thần ham học mỗi ngày</span>
           </div>
-          {/* tabs removed - single-column card design like the mock */}
         </div>
 
-        {mode === "login" ? (
-          <LoginForm onSwitch={handleModeSwitch} onSuccess={handleSuccess} />
-        ) : (
-          <Signup onBack={handleBackToLogin} onSuccess={handleSuccess} />
-        )}
+        <div style={formPanelStyle}>
+          <div style={headerStyle}>
+            <div>
+              <div style={brandStyle}>{headerContent.title}</div>
+              <div style={subtitleStyle}>{headerContent.subtitle}</div>
+            </div>
+            <p style={supportText}>{supportCopy}</p>
+          </div>
+
+          {mode === "login" ? (
+            <LoginForm onSwitch={handleModeSwitch} onSuccess={handleSuccess} />
+          ) : (
+            <Signup onBack={handleBackToLogin} onSuccess={handleSuccess} />
+          )}
+        </div>
       </div>
     </div>
   );
