@@ -11,120 +11,26 @@ export const containerStyle = {
 
 export const cardStyle = {
   width: "100%",
-  maxWidth: 960,
-  background: "#ffffff",
+  maxWidth: 1200,
+  /* let content define height but keep a comfortable minimum */
+  minHeight: 400,
+  background: "rgba(255,255,255,0.98)",
   padding: 0,
-  borderRadius: 20,
-  boxShadow: "0 25px 60px rgba(15, 23, 42, 0.12)",
-  border: "1px solid rgba(59, 130, 246, 0.14)",
+  borderRadius: 12,
+  boxShadow: "0 12px 30px rgba(2,6,23,0.12)",
+  border: "1px solid rgba(15,23,42,0.04)",
   display: "flex",
-  flexWrap: "wrap",
   overflow: "hidden",
-};
-
-export const infoPanelStyle = {
-  background: "linear-gradient(160deg, #1d4ed8 0%, #312e81 55%, #4338ca 100%)",
-  color: "#e0e7ff",
-  padding: "44px 40px",
-  display: "flex",
-  flexDirection: "column",
-  gap: 32,
-  flex: "1 1 320px",
-  minWidth: 280,
-};
-
-export const infoBadge = {
-  alignSelf: "flex-start",
-  background: "rgba(255, 255, 255, 0.18)",
-  color: "#e0e7ff",
-  padding: "6px 14px",
-  borderRadius: 999,
-  fontSize: 13,
-  fontWeight: 600,
-  letterSpacing: 0.6,
-  textTransform: "uppercase",
-};
-
-export const infoTitle = {
-  fontSize: 30,
-  fontWeight: 700,
-  lineHeight: 1.4,
-  color: "#fff",
-  margin: 0,
-};
-
-export const infoSubtitle = {
-  fontSize: 16,
-  lineHeight: 1.7,
-  opacity: 0.92,
-  margin: 0,
-};
-
-export const infoList = {
-  display: "grid",
-  gap: 16,
-  padding: 0,
-  margin: 0,
-  listStyle: "none",
-};
-
-export const infoListItem = {
-  display: "flex",
-  alignItems: "flex-start",
-  gap: 12,
-  fontSize: 15,
-  lineHeight: 1.6,
-  color: "#eef2ff",
-};
-
-export const infoListIcon = {
-  fontSize: 18,
-  lineHeight: 1,
-  marginTop: 2,
-};
-
-export const infoFooter = {
-  marginTop: "auto",
-  fontSize: 14,
-  color: "#c7d2fe",
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-};
-
-export const formPanelStyle = {
-  padding: "44px 48px",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  background: "#ffffff",
-  flex: "1 1 420px",
-  minWidth: 320,
 };
 
 export const headerStyle = {
   display: "flex",
-  flexDirection: "column",
-  gap: 10,
-  marginBottom: 24,
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 18,
 };
-export const brandStyle = {
-  fontWeight: 800,
-  fontSize: 30,
-  color: "#1d4ed8",
-};
-export const subtitleStyle = {
-  color: "#1f2937",
-  fontSize: 18,
-  marginTop: 0,
-  lineHeight: 1.5,
-};
-
-export const supportText = {
-  fontSize: 14,
-  color: "#64748b",
-  margin: 0,
-};
+export const brandStyle = { fontWeight: 800, fontSize: 28, color: "#0f172a" };
+export const subtitleStyle = { color: "#64748b", fontSize: 20, marginTop: 8 };
 
 export const tabsStyle = { display: "flex", gap: 8, marginBottom: 20 };
 export const tabButtonInactive = {
@@ -144,63 +50,58 @@ export const tabButtonActive = {
   cursor: "pointer",
 };
 
-export const formStyle = { display: "grid", gap: 16 };
+export const formStyle = { display: "grid", gap: 12 };
 export const labelStyle = {
   display: "block",
-  fontSize: 15,
+  fontSize: 20,
   fontWeight: 600,
-  color: "#0f172a",
-  marginBottom: 8,
+  color: "#334155",
+  marginBottom: 6,
 };
 export const inputStyle = {
   width: "100%",
-  padding: "12px 16px",
-  borderRadius: 12,
-  border: "1px solid rgba(148, 163, 184, 0.6)",
+  padding: "12px 14px",
+  borderRadius: 10,
+  border: "1px solid rgba(15,23,42,0.08)",
   boxSizing: "border-box",
   outline: "none",
-  fontSize: 16,
-  background: "rgba(255,255,255,0.96)",
-  transition: "border 0.2s ease, box-shadow 0.2s ease",
+  fontSize: 20,
+  background: "#ffffff",
 };
 
 export const actionsStyle = { marginTop: 18, display: "flex", gap: 12 };
 export const primaryButton = {
-  padding: "14px 18px",
-  background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 60%, #312e81 100%)",
+  padding: "12px 16px",
+  background: "#000",
   color: "#fff",
   border: "none",
   borderRadius: 999,
   cursor: "pointer",
   fontWeight: 700,
   width: "100%",
-  fontSize: 16,
-  boxShadow: "0 12px 20px rgba(37, 99, 235, 0.25)",
-  transition: "transform 0.15s ease, box-shadow 0.15s ease",
 };
 export const secondaryButton = {
   padding: "10px 14px",
   background: "transparent",
-  color: "#1d4ed8",
-  border: "1px solid rgba(59, 130, 246, 0.5)",
-  borderRadius: 12,
+  color: "#0f172a",
+  border: "1px solid rgba(15,23,42,0.06)",
+  borderRadius: 8,
   cursor: "pointer",
 };
 
 export const smallLink = {
-  fontSize: 16,
-  color: "#2563eb",
+  fontSize: 20,
+  color: "#0f172a",
   cursor: "pointer",
   textDecoration: "underline",
   background: "none",
   border: "none",
   padding: 0,
-  fontWeight: 600,
 };
 
 export const footerStyle = {
-  marginTop: 16,
-  fontSize: 16,
+  marginTop: 12,
+  fontSize: 20,
   color: "#475569",
   textAlign: "center",
 };
@@ -225,4 +126,93 @@ export const passwordToggleIcon = {
   height: "24px",
   color: "#64748b",
   transition: "color 0.2s ease",
+};
+
+// Info Panel Styles
+export const infoPanelStyle = {
+  flex: 1,
+  padding: "32px",
+  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+  borderRadius: "12px",
+  color: "#ffffff",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-between",
+};
+
+export const infoBadge = {
+  display: "inline-block",
+  padding: "6px 12px",
+  background: "rgba(255, 255, 255, 0.2)",
+  borderRadius: "20px",
+  fontSize: "12px",
+  fontWeight: 600,
+  marginBottom: "16px",
+  textTransform: "uppercase",
+  letterSpacing: "0.5px",
+};
+
+export const infoTitle = {
+  fontSize: "28px",
+  fontWeight: 700,
+  marginBottom: "12px",
+  lineHeight: 1.3,
+  color: "#ffffff",
+};
+
+export const infoSubtitle = {
+  fontSize: "16px",
+  lineHeight: 1.6,
+  opacity: 0.95,
+  marginBottom: "24px",
+  color: "#ffffff",
+};
+
+export const infoList = {
+  listStyle: "none",
+  padding: 0,
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+};
+
+export const infoListItem = {
+  display: "flex",
+  alignItems: "flex-start",
+  gap: "12px",
+  fontSize: "15px",
+  lineHeight: 1.5,
+  color: "#ffffff",
+};
+
+export const infoListIcon = {
+  fontSize: "20px",
+  flexShrink: 0,
+  marginTop: "2px",
+};
+
+export const infoFooter = {
+  marginTop: "24px",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  fontSize: "14px",
+  opacity: 0.9,
+  color: "#ffffff",
+};
+
+// Form Panel Styles
+export const formPanelStyle = {
+  flex: 1,
+  padding: "32px",
+  display: "flex",
+  flexDirection: "column",
+};
+
+export const supportText = {
+  fontSize: "14px",
+  color: "#64748b",
+  marginTop: "8px",
+  lineHeight: 1.5,
 };

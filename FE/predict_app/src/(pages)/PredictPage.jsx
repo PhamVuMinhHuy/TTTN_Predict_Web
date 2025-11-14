@@ -1,64 +1,314 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import React, { useState, useCallback } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { useForm } from "../hooks/useForm";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { validationRules } from "../utils/validation";
+import Header from "../../components/Header";
+import {
+  predictContainer,
+  predictContent,
+  predictTitle,
+  predictForm,
+  formGroup,
+  formLabel,
+  formInput,
+  formInputError,
+  formInputFocus,
+  errorMessage,
+  submitButton,
+  submitButtonHover,
+  submitButtonDisabled,
+  resultContainer,
+  resultTitle,
+  resultGrade,
+  resultDetails,
+} from "../../assets/styles/predict.styles";
+
+const PREDICT_VALIDATION_RULES = {
+  studyHourPerWeek: validationRules.studyHourPerWeek,
+  previousGrade: validationRules.previousGrade,
+  attendanceRate: validationRules.attendanceRate,
+  extracurricularActivities: validationRules.extracurricularActivities,
+};
+
+// Đây chỉ là thuật toán giả lập đơn giản để demo chứ không phải thuật toán Liner Regression thật
+const predictFinalGrade = (
+  studyHourPerWeek,
+  previousGrade,
+  attendanceRate,
+  extracurricularActivities
+) => {
+  // Simple weighted formula for demonstration
+  // In real application, this would use ML model
+  const studyWeight = 0.3;
+  const previousWeight = 0.4;
+  const attendanceWeight = 0.2;
+  const activityWeight = 0.1;
+
+  // Normalize values for 100-point scale
+  const normalizedStudy = Math.min(studyHourPerWeek / 40, 1) * 100; // Max 40 hours = 100 points
+  const normalizedActivity = Math.min(extracurricularActivities / 10, 1) * 20; // Max 10 activities = 20 bonus points
+
+  const predictedGrade =
+    previousGrade * previousWeight +
+    normalizedStudy * studyWeight +
+    (attendanceRate / 100) * 100 * attendanceWeight +
+    normalizedActivity * activityWeight;
+
+  // Add some randomness for realism
+  const randomFactor = (Math.random() - 0.5) * 5; // ±2.5 points
+  const finalGrade = Math.max(0, Math.min(100, predictedGrade + randomFactor));
+
+  return Math.round(finalGrade * 10) / 10; // Round to 1 decimal
+};
 
 const PredictPage = () => {
   const { user } = useAuth();
+  const [_predictionHistory, setPredictionHistory] = useLocalStorage(
+    `prediction_history_${user?.id || "guest"}`,
+    []
+  );
+  const [result, setResult] = useState(null);
+  const [focusedField, setFocusedField] = useState(null);
+  const [hoveredSubmit, setHoveredSubmit] = useState(false);
+
+  const {
+    values,
+    errors,
+    touched,
+    isSubmitting,
+    setIsSubmitting,
+    setValue,
+    setFieldTouched,
+    validateAll,
+  } = useForm(
+    {
+      studyHourPerWeek: "",
+      previousGrade: "",
+      attendanceRate: "",
+      extracurricularActivities: "",
+    },
+    PREDICT_VALIDATION_RULES
+  );
+
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+
+      const isValid = validateAll();
+      if (!isValid) {
+        Object.keys(PREDICT_VALIDATION_RULES).forEach((field) => {
+          setFieldTouched(field);
+        });
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const finalGrade = predictFinalGrade(
+        Number(values.studyHourPerWeek),
+        Number(values.previousGrade),
+        Number(values.attendanceRate),
+        Number(values.extracurricularActivities)
+      );
+
+      setResult({
+        finalGrade,
+        inputs: { ...values },
+        timestamp: new Date().toISOString(),
+      });
+
+      // Save to history
+      const newHistoryItem = {
+        timestamp: new Date().toISOString(),
+        details: `Thời gian học: ${values.studyHourPerWeek}h/tuần, Điểm kì trước: ${values.previousGrade}, Tỉ lệ có mặt: ${values.attendanceRate}%, Hoạt động ngoại khóa: ${values.extracurricularActivities}`,
+        finalGrade,
+        inputs: { ...values },
+      };
+
+      setPredictionHistory((prev) => [newHistoryItem, ...prev]);
+
+      setIsSubmitting(false);
+    },
+    [
+      values,
+      validateAll,
+      setIsSubmitting,
+      setFieldTouched,
+      setPredictionHistory,
+    ]
+  );
+
+  const isFormValid = Object.keys(PREDICT_VALIDATION_RULES).every(
+    (key) => !errors[key] && values[key] !== ""
+  );
 
   return (
-    <div style={{ 
-      padding: '4rem 2rem', 
-      textAlign: 'center',
-      maxWidth: '800px',
-      margin: '0 auto'
-    }}>
-      <h1 style={{ 
-        fontSize: '2.5rem', 
-        marginBottom: '1rem',
-        color: '#1f2937'
-      }}>
-        🎓 Trang Dự Đoán Điểm Số
-      </h1>
-      <p style={{ 
-        fontSize: '1.2rem', 
-        color: '#6b7280',
-        marginBottom: '2rem'
-      }}>
-        Tính năng này đang được phát triển và sẽ sớm ra mắt!
-      </p>
-      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-        <Link 
-          to="/"
-          style={{
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#3b82f6',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '0.5rem',
-            textDecoration: 'none',
-            fontWeight: '500',
-            fontSize: '1rem',
-            display: 'inline-block'
-          }}
-        >
-          🏠 Quay lại trang chủ
-        </Link>
-        {user && (
-          <button 
-            onClick={() => alert('Chức năng đang phát triển')}
+    <div style={predictContainer}>
+      <Header />
+      <div style={predictContent}>
+        <h1 style={predictTitle}>🎓 Trang Dự Đoán Điểm Số</h1>
+
+        <form onSubmit={handleSubmit} style={predictForm}>
+          <div style={formGroup}>
+            <label style={formLabel}>
+              Thời gian học trung bình mỗi tuần (giờ) *
+            </label>
+            <input
+              type="number"
+              value={values.studyHourPerWeek}
+              onChange={(e) => setValue("studyHourPerWeek", e.target.value)}
+              onBlur={() => setFieldTouched("studyHourPerWeek")}
+              onFocus={() => setFocusedField("studyHourPerWeek")}
+              placeholder="Ví dụ: 20"
+              min="0"
+              max="168"
+              step="0.5"
+              style={{
+                ...formInput,
+                ...(touched.studyHourPerWeek && errors.studyHourPerWeek
+                  ? formInputError
+                  : focusedField === "studyHourPerWeek"
+                  ? formInputFocus
+                  : {}),
+              }}
+              disabled={isSubmitting}
+            />
+            {touched.studyHourPerWeek && errors.studyHourPerWeek && (
+              <div style={errorMessage}>{errors.studyHourPerWeek}</div>
+            )}
+          </div>
+
+          <div style={formGroup}>
+            <label style={formLabel}>
+              Điểm kiểm tra kì trước (thang điểm 100) *
+            </label>
+            <input
+              type="number"
+              value={values.previousGrade}
+              onChange={(e) => setValue("previousGrade", e.target.value)}
+              onBlur={() => setFieldTouched("previousGrade")}
+              onFocus={() => setFocusedField("previousGrade")}
+              placeholder="Ví dụ: 75.5"
+              min="0"
+              max="100"
+              step="0.1"
+              style={{
+                ...formInput,
+                ...(touched.previousGrade && errors.previousGrade
+                  ? formInputError
+                  : focusedField === "previousGrade"
+                  ? formInputFocus
+                  : {}),
+              }}
+              disabled={isSubmitting}
+            />
+            {touched.previousGrade && errors.previousGrade && (
+              <div style={errorMessage}>{errors.previousGrade}</div>
+            )}
+          </div>
+
+          <div style={formGroup}>
+            <label style={formLabel}>Tỉ lệ có mặt tại các buổi học (%) *</label>
+            <input
+              type="number"
+              value={values.attendanceRate}
+              onChange={(e) => setValue("attendanceRate", e.target.value)}
+              onBlur={() => setFieldTouched("attendanceRate")}
+              onFocus={() => setFocusedField("attendanceRate")}
+              placeholder="Ví dụ: 85"
+              min="0"
+              max="100"
+              step="0.1"
+              style={{
+                ...formInput,
+                ...(touched.attendanceRate && errors.attendanceRate
+                  ? formInputError
+                  : focusedField === "attendanceRate"
+                  ? formInputFocus
+                  : {}),
+              }}
+              disabled={isSubmitting}
+            />
+            {touched.attendanceRate && errors.attendanceRate && (
+              <div style={errorMessage}>{errors.attendanceRate}</div>
+            )}
+          </div>
+
+          <div style={formGroup}>
+            <label style={formLabel}>
+              Số hoạt động ngoại khóa đã tham gia *
+            </label>
+            <input
+              type="number"
+              value={values.extracurricularActivities}
+              onChange={(e) =>
+                setValue("extracurricularActivities", e.target.value)
+              }
+              onBlur={() => setFieldTouched("extracurricularActivities")}
+              onFocus={() => setFocusedField("extracurricularActivities")}
+              placeholder="Ví dụ: 3"
+              min="0"
+              step="1"
+              style={{
+                ...formInput,
+                ...(touched.extracurricularActivities &&
+                errors.extracurricularActivities
+                  ? formInputError
+                  : focusedField === "extracurricularActivities"
+                  ? formInputFocus
+                  : {}),
+              }}
+              disabled={isSubmitting}
+            />
+            {touched.extracurricularActivities &&
+              errors.extracurricularActivities && (
+                <div style={errorMessage}>
+                  {errors.extracurricularActivities}
+                </div>
+              )}
+          </div>
+
+          <button
+            type="submit"
             style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#10b981',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontWeight: '500',
-              fontSize: '1rem'
+              ...submitButton,
+              ...(hoveredSubmit ? submitButtonHover : {}),
+              ...(!isFormValid || isSubmitting ? submitButtonDisabled : {}),
             }}
+            disabled={!isFormValid || isSubmitting}
+            onMouseEnter={() => setHoveredSubmit(true)}
+            onMouseLeave={() => setHoveredSubmit(false)}
           >
-            📊 Bắt đầu dự đoán
+            {isSubmitting ? "Đang dự đoán..." : "📊 Dự đoán điểm cuối kì"}
           </button>
+        </form>
+
+        {result && (
+          <div style={resultContainer}>
+            <h2 style={resultTitle}>Kết quả dự đoán</h2>
+            <div style={resultGrade}>{result.finalGrade}/100</div>
+            <div style={resultDetails}>
+              <div>
+                <strong>Thời gian học:</strong> {result.inputs.studyHourPerWeek}{" "}
+                giờ/tuần
+              </div>
+              <div>
+                <strong>Điểm kì trước:</strong> {result.inputs.previousGrade}
+                /100
+              </div>
+              <div>
+                <strong>Tỉ lệ có mặt:</strong> {result.inputs.attendanceRate}%
+              </div>
+              <div>
+                <strong>Hoạt động ngoại khóa:</strong>{" "}
+                {result.inputs.extracurricularActivities}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

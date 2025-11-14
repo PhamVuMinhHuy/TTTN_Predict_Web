@@ -45,6 +45,7 @@ export const headerContent = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
+  gap: '2rem',
 };
 
 export const logo = {
@@ -96,6 +97,59 @@ export const signupBtn = {
 
 export const signupBtnHover = {
   backgroundColor: '#2563eb',
+  transform: 'translateY(-1px)',
+};
+
+// Navigation Bar Styles
+export const navBar = {
+  display: 'flex',
+  gap: '0.25rem',
+  alignItems: 'center',
+  padding: '0.375rem',
+  backgroundColor: '#f8fafc',
+  borderRadius: '0.75rem',
+  flex: 1,
+  justifyContent: 'space-between',
+  maxWidth: '600px',
+  margin: '0 auto',
+  boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.06)',
+  border: '1px solid #e2e8f0',
+  minWidth: '400px',
+};
+
+export const navLink = {
+  padding: '0.75rem 1.5rem',
+  color: '#64748b',
+  textDecoration: 'none',
+  fontWeight: '500',
+  fontSize: '0.95rem',
+  borderRadius: '0.5rem',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  cursor: 'pointer',
+  position: 'relative',
+  whiteSpace: 'nowrap',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  letterSpacing: '0.01em',
+  overflow: 'hidden',
+  flex: 1,
+  textAlign: 'center',
+};
+
+export const navLinkHover = {
+  color: '#3b82f6',
+  backgroundColor: '#eff6ff',
+  transform: 'translateY(-1px)',
+  boxShadow: '0 2px 8px rgba(59, 130, 246, 0.15)',
+};
+
+export const navLinkActive = {
+  color: '#ffffff',
+  backgroundColor: '#3b82f6',
+  fontWeight: '600',
+  boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
   transform: 'translateY(-1px)',
 };
 

@@ -31,6 +31,44 @@ export const validationRules = {
       if (value.length < 2) return 'Tên phải có ít nhất 2 ký tự';
       return '';
     }
+  ],
+  studyHourPerWeek: [
+    (value) => {
+      if (!value && value !== 0) return 'Thời gian học là bắt buộc';
+      const num = Number(value);
+      if (isNaN(num)) return 'Vui lòng nhập số hợp lệ';
+      if (num < 0) return 'Thời gian học không thể âm';
+      if (num > 168) return 'Thời gian học không thể vượt quá 168 giờ/tuần';
+      return '';
+    }
+  ],
+  previousGrade: [
+    (value) => {
+      if (!value && value !== 0) return 'Điểm kiểm tra kì trước là bắt buộc';
+      const num = Number(value);
+      if (isNaN(num)) return 'Vui lòng nhập số hợp lệ';
+      if (num < 0 || num > 100) return 'Điểm phải từ 0 đến 100';
+      return '';
+    }
+  ],
+  attendanceRate: [
+    (value) => {
+      if (!value && value !== 0) return 'Tỉ lệ có mặt là bắt buộc';
+      const num = Number(value);
+      if (isNaN(num)) return 'Vui lòng nhập số hợp lệ';
+      if (num < 0 || num > 100) return 'Tỉ lệ có mặt phải từ 0% đến 100%';
+      return '';
+    }
+  ],
+  extracurricularActivities: [
+    (value) => {
+      if (!value && value !== 0) return 'Số hoạt động ngoại khóa là bắt buộc';
+      const num = Number(value);
+      if (isNaN(num)) return 'Vui lòng nhập số hợp lệ';
+      if (num < 0) return 'Số hoạt động không thể âm';
+      if (!Number.isInteger(num)) return 'Vui lòng nhập số nguyên';
+      return '';
+    }
   ]
 };
 
