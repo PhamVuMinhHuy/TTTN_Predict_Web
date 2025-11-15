@@ -22,19 +22,27 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver').spl
 
 # Application definition - chỉ cần tối thiểu
 INSTALLED_APPS = [
-    'django.contrib.contenttypes',  # Cần thiết cho Django
-    'django.contrib.staticfiles',
-    
+    'django.contrib.admin',       # quản trị Django
+    'django.contrib.auth',        # bắt buộc cho user, permission
+    'django.contrib.contenttypes',  
+    'django.contrib.sessions',    # cần thiết nếu dùng session
+    'django.contrib.messages',    # cần thiết cho message framework
+    'django.contrib.staticfiles', 
+
     # MongoDB
     'mongoengine',
-    
+
     # Your apps
     'main',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -43,12 +51,14 @@ ROOT_URLCONF = 'Predict_Learning_Web.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # nếu có thư mục templates
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',      
+                'django.contrib.messages.context_processors.messages',  
             ],
         },
     },
