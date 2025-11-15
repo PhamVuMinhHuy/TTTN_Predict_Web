@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import generics, status
 from django.contrib.auth.hashers import check_password
-
+from django.http import HttpResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import RegisterSerializer
@@ -54,3 +54,8 @@ class LoginView(generics.GenericAPIView):
             "access": str(refresh.access_token),
             "refresh": str(refresh)
         })
+
+
+def home(request):
+    return HttpResponse("Welcome to Predict Learning Web!")
+

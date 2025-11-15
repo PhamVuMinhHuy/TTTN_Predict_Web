@@ -1,7 +1,7 @@
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
-from main.models import Users
+from main.models import User
 
 
 class AuthService:
@@ -27,8 +27,8 @@ class AuthService:
     @staticmethod
     def login_user(username, password):
         try:
-            user = Users.objects.get(Username=username)
-        except Users.DoesNotExist:
+            user = User.objects.get(Username=username)
+        except User.DoesNotExist:
             raise ValidationError({"detail": "Invalid username or password"})
 
         if not check_password(password, user.PasswordHash):
