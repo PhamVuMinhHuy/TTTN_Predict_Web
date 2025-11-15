@@ -1,4 +1,4 @@
-# Django Core
+# Django Core - tối thiểu
 Django==5.2.8
 
 # Django REST Framework cho API
