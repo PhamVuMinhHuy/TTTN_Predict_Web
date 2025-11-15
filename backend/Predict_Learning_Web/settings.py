@@ -70,9 +70,14 @@ WSGI_APPLICATION = 'Predict_Learning_Web.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'predict_grade_db',
+        'NAME': os.getenv('MONGO_DATABASE_NAME'),
+        'CLIENT': {
+            'host': f"mongodb+srv://{os.getenv('MONGO_DB_USERNAME')}:{os.getenv('MONGO_DB_PASSWORD')}@{os.getenv('MONGO_CLUSTER_URL')}/{os.getenv('MONGO_DATABASE_NAME')}?retryWrites=true&w=majority"
+        }    
     }
 }
+
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
