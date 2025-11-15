@@ -1,9 +1,7 @@
-"""
-URL configuration for Predict_Learning_Web project.
-"""
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+from main.views.auth_views import RegisterView, LoginView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("auth/register/", RegisterView.as_view(), name="register"),
+    path("auth/login/", LoginView.as_view(), name="login"),
 ]
