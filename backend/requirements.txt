@@ -10,9 +10,6 @@ django-cors-headers==4.6.0
 # Authentication & JWT
 djangorestframework-simplejwt==5.5.1
 
-# Database (nếu dùng PostgreSQL thay vì SQLite)
-# psycopg2-binary==2.9.10
-
 # Environment variables
 python-dotenv==1.0.1
 
@@ -33,3 +30,8 @@ python-dateutil==2.9.0
 
 # WSGI server for production
 gunicorn==21.2.0
+
+# MongoDB Atlas
+mongoengine==0.28.2
+pymongo==4.6.0
+dnspython==2.4.2
