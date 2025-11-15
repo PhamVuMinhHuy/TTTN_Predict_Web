@@ -96,3 +96,10 @@ try:
     print("✅ Successfully connected to MongoDB Atlas!")
 except Exception as e:
     print(f"❌ Failed to connect to MongoDB Atlas: {e}")
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
