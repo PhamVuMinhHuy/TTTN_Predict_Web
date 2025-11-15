@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import Header from "../../components/Header";
+import Header from "../components/Header";
 import {
   historyContainer,
   historyContent,

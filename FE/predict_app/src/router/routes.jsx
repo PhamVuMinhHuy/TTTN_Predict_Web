@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy } from "react";
 import Layout from "../components/Layout";
+import SuspenseWrapper from "../components/SuspenseWrapper";
 import { ProtectedRoute, PublicRoute } from "./RouteComponents";
 
 // Lazy load components
@@ -8,42 +9,7 @@ const LandingPage = lazy(() => import("../(pages)/LandingPage"));
 const Auth = lazy(() => import("../(auth)"));
 const PredictPage = lazy(() => import("../(pages)/PredictPage"));
 const HistoryPage = lazy(() => import("../(pages)/HistoryPage"));
-
-// Loading component
-const LoadingSpinner = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      height: "50vh",
-      fontSize: "1.2rem",
-      color: "#6b7280",
-    }}
-  >
-    <div
-      style={{
-        textAlign: "center",
-        padding: "2rem",
-      }}
-    >
-      <div
-        style={{
-          fontSize: "2rem",
-          marginBottom: "1rem",
-        }}
-      >
-        ⏳
-      </div>
-      <div>Đang tải trang...</div>
-    </div>
-  </div>
-);
-
-// Wrapper component for Suspense
-const SuspenseWrapper = ({ children }) => (
-  <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-);
+const SettingsPage = lazy(() => import("../(pages)/SettingsPage"));
 
 export const router = createBrowserRouter([
   {
@@ -53,7 +19,7 @@ export const router = createBrowserRouter([
       {
         path: "/",
         element: (
-          <SuspenseWrapper>
+          <SuspenseWrapper loadingMessage="Đang tải trang chủ...">
             <LandingPage />
           </SuspenseWrapper>
         ),
@@ -62,7 +28,7 @@ export const router = createBrowserRouter([
         path: "/auth",
         element: (
           <PublicRoute>
-            <SuspenseWrapper>
+            <SuspenseWrapper loadingMessage="Đang tải trang đăng nhập...">
               <Auth />
             </SuspenseWrapper>
           </PublicRoute>
@@ -72,7 +38,7 @@ export const router = createBrowserRouter([
         path: "/predict",
         element: (
           <ProtectedRoute>
-            <SuspenseWrapper>
+            <SuspenseWrapper loadingMessage="Đang tải trang dự đoán...">
               <PredictPage />
             </SuspenseWrapper>
           </ProtectedRoute>
@@ -82,8 +48,18 @@ export const router = createBrowserRouter([
         path: "/history",
         element: (
           <ProtectedRoute>
-            <SuspenseWrapper>
+            <SuspenseWrapper loadingMessage="Đang tải lịch sử dự đoán...">
               <HistoryPage />
+            </SuspenseWrapper>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/settings",
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper loadingMessage="Đang tải trang cài đặt...">
+              <SettingsPage />
             </SuspenseWrapper>
           </ProtectedRoute>
         ),

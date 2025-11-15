@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import {
   landingContainer,
   hero,

@@ -109,12 +109,13 @@ export const navBar = {
   backgroundColor: '#f8fafc',
   borderRadius: '0.75rem',
   flex: 1,
-  justifyContent: 'space-between',
+  justifyContent: 'center',
   maxWidth: '600px',
   margin: '0 auto',
   boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.06)',
   border: '1px solid #e2e8f0',
-  minWidth: '400px',
+  minWidth: '300px',
+  flexShrink: 1,
 };
 
 export const navLink = {

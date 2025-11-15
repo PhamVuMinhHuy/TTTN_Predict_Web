@@ -3,7 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useForm } from "../hooks/useForm";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { validationRules } from "../utils/validation";
-import Header from "../../components/Header";
+import Header from "../components/Header";
 import {
   predictContainer,
   predictContent,

@@ -1,59 +1,115 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import {
-  header,
-  headerContent,
-  logo,
-  logoText,
-  authButtons,
-  loginBtn,
-  loginBtnHover,
-  signupBtn,
-  signupBtnHover,
-} from '../../assets/styles/landing.styles';
+import './Header.css';
 
 const Header = () => {
-  const { user } = useAuth();
-  const [hoveredElement, setHoveredElement] = useState(null);
+  const { user, logout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef(null);
 
-  const getHoverStyle = (elementType, hoverStyle) => {
-    return hoveredElement === elementType ? hoverStyle : {};
+  const isActive = (path) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu]);
+
+  const handleLogout = () => {
+    logout();
+    setShowUserMenu(false);
+  };
+
+  const handleSettings = () => {
+    navigate('/settings');
+    setShowUserMenu(false);
   };
 
   return (
-    <header style={header}>
-      <div style={headerContent}>
-        <div style={logo}>
-          📊 <span style={logoText}>PredictGrade</span>
+    <header className="header">
+      <div className="header-content">
+        <div className="logo">
+          📊 <span className="logo-text">PredictGrade</span>
         </div>
+
+        {user && (
+          <>
+            <nav className="nav-bar">
+              <Link
+                to="/"
+                className={`nav-link ${isActive('/') ? 'active' : ''}`}
+              >
+                Home
+              </Link>
+              <Link
+                to="/predict"
+                className={`nav-link ${isActive('/predict') ? 'active' : ''}`}
+              >
+                Predict
+              </Link>
+              <Link
+                to="/history"
+                className={`nav-link ${isActive('/history') ? 'active' : ''}`}
+              >
+                History
+              </Link>
+            </nav>
+            <div className="user-menu-container" ref={userMenuRef}>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="user-icon-button"
+              >
+                👤
+              </button>
+              {showUserMenu && (
+                <div className="user-dropdown">
+                  <div className="user-info">
+                    <div className="user-name">{user.name}</div>
+                    <div className="user-email">{user.email}</div>
+                  </div>
+                  <button
+                    onClick={handleSettings}
+                    className="menu-button menu-button-settings"
+                  >
+                    ⚙️ Cài đặt
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="menu-button menu-button-logout"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
         
         {!user && (
-          <div style={authButtons}>
-            <Link 
-              to="/auth?mode=login"
-              style={{
-                ...loginBtn,
-                ...getHoverStyle('login-btn', loginBtnHover),
-                textDecoration: 'none',
-                display: 'inline-block'
-              }}
-              onMouseEnter={() => setHoveredElement('login-btn')}
-              onMouseLeave={() => setHoveredElement(null)}
-            >
+          <div className="auth-buttons">
+            <Link to="/auth?mode=login" className="login-btn">
               Đăng nhập
             </Link>
-            <Link 
-              to="/auth?mode=register"
-              style={{
-                ...signupBtn,
-                ...getHoverStyle('signup-btn', signupBtnHover),
-                textDecoration: 'none',
-                display: 'inline-block'
-              }}
-              onMouseEnter={() => setHoveredElement('signup-btn')}
-              onMouseLeave={() => setHoveredElement(null)}
-            >
+            <Link to="/auth?mode=register" className="signup-btn">
               Đăng ký
             </Link>
           </div>
