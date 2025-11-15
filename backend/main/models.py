@@ -1,39 +1,28 @@
-from djongo import models
-from django.utils import timezone
+from mongoengine import Document, fields
+from datetime import datetime
+import hashlib
 
-
-class Users(models.Model):
-    UserID = models.ObjectIdField(primary_key=True)
-    Username = models.CharField(max_length=50, unique=True)
-    PasswordHash = models.CharField(max_length=255)
-    Email = models.CharField(max_length=100, blank=True, null=True)
-    CreatedAt = models.DateTimeField(default=timezone.now)
-
+class User(Document):
+    """Simple User model for MongoDB connection test"""
+    username = fields.StringField(required=True, unique=True, max_length=150)
+    email = fields.EmailField(required=True, unique=True)
+    password_hash = fields.StringField(required=True, max_length=255)
+    first_name = fields.StringField(max_length=30)
+    last_name = fields.StringField(max_length=30)
+    date_joined = fields.DateTimeField(default=datetime.utcnow)
+    
+    meta = {
+        'collection': 'users',
+        'indexes': ['username', 'email']
+    }
+    
+    def set_password(self, raw_password):
+        """Hash and set password"""
+        self.password_hash = hashlib.sha256(raw_password.encode()).hexdigest()
+    
+    def check_password(self, raw_password):
+        """Check if provided password matches"""
+        return self.password_hash == hashlib.sha256(raw_password.encode()).hexdigest()
+    
     def __str__(self):
-        return self.Username
-
-
-class PredictionHistory(models.Model):
-    PredictionID = models.ObjectIdField(primary_key=True)
-    UserID = models.ForeignKey(Users, on_delete=models.CASCADE)
-
-    StudyHoursPerWeek = models.FloatField()
-    PreviousGrade = models.FloatField()
-    AttendanceRate = models.FloatField()
-
-    ParentalSupport = models.CharField(
-        max_length=10,
-        choices=[
-            ("Low", "Low"),
-            ("Medium", "Medium"),
-            ("High", "High")
-        ]
-    )
-
-    ExtracurricularActivities = models.IntegerField()  # từ 1 đến 3
-    FinalGrade = models.FloatField()
-
-    PredictedAt = models.DateTimeField(default=timezone.now)
-
-    def __str__(self):
-        return f"{self.UserID.Username} → {self.FinalGrade}"
+        return self.username
