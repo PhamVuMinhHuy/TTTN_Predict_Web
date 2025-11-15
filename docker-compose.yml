@@ -1,0 +1,58 @@
+# Xóa dòng 'version: 3.8' đi cho đỡ bị cảnh báo
+services:
+  # Dịch vụ Backend (Django)
+  backend:
+    build:
+      context: ./backend # <-- ĐÃ SỬA
+    container_name: predictor_backend
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - static_volume:/app/staticfiles # <-- Đổi /app/static thành /app/staticfiles cho khớp với settings.py
+      - media_volume:/app/media
+    expose:
+      - 8000
+    # Command có thể để trong Dockerfile, nhưng để đây cũng không sao
+    command: gunicorn Predict_Learning_Web.wsgi:application --bind 0.0.0.0:8000
+    depends_on:
+      - db
+
+  # --- DỊCH VỤ FRONTEND ĐÃ ĐƯỢC THÊM LẠI ---
+  frontend:
+    build:
+      context: ./FE/predict_app
+    container_name: predictor_frontend
+    restart: unless-stopped
+
+  # Dịch vụ Database (MongoDB)
+  db:
+    image: mongo:5.0 # Ghim version 5.0 là rất tốt!
+    container_name: predictor_mongodb
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - mongo_data:/data/db
+
+  # Dịch vụ Nginx (Reverse Proxy)
+  nginx:
+    image: nginx:1.19.0 # Ghim version cũng rất tốt!
+    container_name: predictor_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      # - "443:443" # Bỏ comment khi bạn làm HTTPS
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf # <-- ĐÃ SỬA
+      - static_volume:/app/staticfiles # <-- Đổi /app/static thành /app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - backend
+      - frontend # <-- Thêm phụ thuộc vào frontend
+
+# Định nghĩa volumes
+volumes:
+  mongo_data:
+  static_volume:
+  media_volume:

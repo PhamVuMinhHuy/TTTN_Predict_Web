@@ -1,5 +1,5 @@
 # Sử dụng base image Python chính thức
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 # Thiết lập biến môi trường
 ENV PYTHONDONTWRITEBYTECODE 1
