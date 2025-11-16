@@ -32,7 +32,7 @@ class RegisterView(APIView):
                     "application/json": {
                         "error": "Validation failed",
                         "details": {
-                            "Username": ["Username already exists."]
+                            "username": ["Username already exists."]
                         }
                     }
                 }
@@ -73,10 +73,10 @@ class LoginView(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'Username': openapi.Schema(type=openapi.TYPE_STRING, description='Username'),
-                'Password': openapi.Schema(type=openapi.TYPE_STRING, description='Password'),
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='username'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='password'),
             },
-            required=['Username', 'Password']
+            required=['username', 'password']
         ),
         responses={
             200: openapi.Response(
@@ -107,8 +107,8 @@ class LoginView(APIView):
     )
     def post(self, request):
         try:
-            username = request.data.get("Username")
-            password = request.data.get("Password")
+            username = request.data.get("username")
+            password = request.data.get("password")
 
             if not username or not password:
                 return Response(

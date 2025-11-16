@@ -54,8 +54,8 @@ class LoginView(generics.GenericAPIView):
 
     def post(self, request):
         try:
-            username = request.data.get("Username")
-            password = request.data.get("Password")
+            username = request.data.get("username")
+            password = request.data.get("password")
 
             if username is None or password is None:
                 return Response({

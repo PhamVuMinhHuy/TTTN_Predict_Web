@@ -10,7 +10,7 @@ class AuthService:
 
     @staticmethod
     def register_user(validated_data):
-<<<<<<< HEAD
+
         username = validated_data["username"]
         email = validated_data["email"]
         password = validated_data["password"]
@@ -24,7 +24,6 @@ class AuthService:
             password_hash=make_password(password)
         )
         return user
-=======
         try:
             username = validated_data["Username"]
             email = validated_data.get("Email", "")
@@ -58,7 +57,6 @@ class AuthService:
         except Exception as e:
             print(f"DEBUG: Error creating user: {str(e)}")
             raise ValidationError({"error": f"Failed to create user: {str(e)}"})
->>>>>>> dd4e9d0c946861290bb367042d8157a0c4422d84
 
     @staticmethod
     def login_user(username, password):
