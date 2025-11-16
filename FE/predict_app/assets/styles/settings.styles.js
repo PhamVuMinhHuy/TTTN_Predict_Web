@@ -139,19 +139,6 @@ export const settingsValue = {
   letterSpacing: '-0.01em',
 };
 
-export const settingsRoleBadge = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: '0.5rem 1.25rem',
-  borderRadius: '2rem',
-  color: '#fff',
-  fontSize: '0.875rem',
-  fontWeight: '700',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-};
-
 export const settingsButton = {
   padding: '1rem 3rem',
   backgroundColor: '#ef4444',

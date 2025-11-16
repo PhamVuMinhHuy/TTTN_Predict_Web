@@ -258,6 +258,7 @@ export default function Auth() {
   const [mode, setMode] = useState(initialMode);
 
   const handleSuccess = () => {
+    console.log("DEBUG: handleSuccess called, navigating to home");
     navigate("/");
   };
 
@@ -295,8 +296,11 @@ export default function Auth() {
 
   // Handle back to login
   const handleBackToLogin = useCallback(() => {
+    console.log("DEBUG: handleBackToLogin called");
     setMode("login");
   }, []);
+
+  console.log("DEBUG: Auth component - current mode:", mode);
 
   const supportCopy =
     mode === "login"

@@ -34,10 +34,9 @@ export default function SettingsPage() {
     return null;
   }
 
-  // Sửa lỗi: Kiểm tra user.name tồn tại trước khi split
   const getInitials = (name) => {
     if (!name || typeof name !== "string") {
-      return "??"; // Default initials nếu name không hợp lệ
+      return "??";
     }
     return name
       .split(" ")
@@ -47,19 +46,6 @@ export default function SettingsPage() {
       .slice(0, 2);
   };
 
-  // Get password from mock data (for demo purposes)
-  const getPassword = () => {
-    // In real app, this would come from API or secure storage
-    const mockPasswords = {
-      1: "Admin123",
-      2: "Student123",
-      3: "Teacher123",
-      4: "Test123456",
-    };
-    return mockPasswords[user.id] || "••••••••";
-  };
-
-  // Đảm bảo user có các properties cần thiết
   const safeUser = {
     name: user.name || user.email?.split("@")[0] || "Người dùng",
     email: user.email || "No email",
@@ -85,7 +71,7 @@ export default function SettingsPage() {
       id: "password",
       icon: "🔒",
       label: "Mật khẩu",
-      getValue: () => (showPassword ? getPassword() : "••••••••"),
+      getValue: () => "••••••••",
       iconBg: "#fef3c7",
     },
   ];
@@ -147,12 +133,16 @@ export default function SettingsPage() {
                   </span>
                   {section.id === "password" && (
                     <button
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowPassword(!showPassword);
+                      }}
                       style={{
                         background: "none",
                         border: "none",
                         cursor: "pointer",
-                        padding: "0.25rem 0.5rem",
+                        padding: "0.5rem",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -160,18 +150,24 @@ export default function SettingsPage() {
                         color: "#64748b",
                         transition: "all 0.2s ease",
                         borderRadius: "0.375rem",
+                        minWidth: "32px",
+                        minHeight: "32px",
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.color = "#3b82f6";
-                        e.target.style.backgroundColor = "#eff6ff";
+                        e.currentTarget.style.color = "#3b82f6";
+                        e.currentTarget.style.backgroundColor = "#eff6ff";
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.color = "#64748b";
-                        e.target.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color = "#64748b";
+                        e.currentTarget.style.backgroundColor = "transparent";
                       }}
                       title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                      aria-label={
+                        showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+                      }
+                      type="button"
                     >
-                      {showPassword ? "👁️" : "👁️‍🗨️"}
+                      {showPassword ? "🙈" : "👁️"}
                     </button>
                   )}
                 </div>

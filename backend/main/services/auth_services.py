@@ -14,28 +14,78 @@ class AuthService:
             username = validated_data["Username"]
             email = validated_data.get("Email", "")
             password = validated_data["Password"]
+            name = validated_data.get("Name", "")
 
-            print(f"DEBUG: Attempting to register user: {username}, {email}")
+            print(f"DEBUG: Register data received: {validated_data}")
+            print(f"DEBUG: Attempting to register user: {username}, email: {email}, name: {name}")
 
-            # Kiểm tra username đã tồn tại (MongoEngine syntax)
-            if User.objects(username=username).first():
+            # Kiểm tra username đã tồn tại
+            existing_user = User.objects(username=username).first()
+            if existing_user:
+                print(f"DEBUG: Username {username} already exists")
                 raise ValidationError({"Username": "Username already exists."})
 
             # Kiểm tra email đã tồn tại (nếu có)
-            if email and User.objects(email=email).first():
-                raise ValidationError({"Email": "Email already exists."})
+            if email and email.strip():
+                existing_email = User.objects(email=email.strip()).first()
+                if existing_email:
+                    print(f"DEBUG: Email {email} already exists")
+                    raise ValidationError({"Email": "Email already exists."})
 
-            # Tạo user mới
-            user = User(
-                username=username,
-                email=email,
-                first_name="",
-                last_name=""
-            )
-            user.set_password(password)
-            user.save()
+            # Tạo user mới - xử lý email rỗng
+            user_data = {
+                "username": username,
+                "first_name": name,
+                "last_name": ""
+            }
+            # Chỉ set email nếu không rỗng
+            if email and email.strip():
+                user_data["email"] = email.strip()
             
-            print(f"DEBUG: User created successfully: {user.id}")
+            user = User(**user_data)
+            # Set password trước khi save (password_hash là required field)
+            user.set_password(password)
+            
+            # Kiểm tra password_hash đã được set
+            if not user.password_hash:
+                print(f"DEBUG: ERROR - password_hash is not set!")
+                raise ValidationError({"error": "Failed to set password"})
+            
+            print(f"DEBUG: User object before save - username={user.username}, email={user.email}, password_hash set={bool(user.password_hash)}")
+            
+            # Lưu user vào database với force_insert để đảm bảo tạo mới
+            try:
+                # Sử dụng force_insert=True để đảm bảo đây là insert mới, không phải update
+                user.save(force_insert=True)
+                print(f"DEBUG: User.save(force_insert=True) called successfully")
+            except Exception as save_error:
+                print(f"DEBUG: ERROR during user.save(): {str(save_error)}")
+                import traceback
+                traceback.print_exc()
+                # Nếu force_insert fails (có thể do duplicate), thử save() thông thường
+                try:
+                    user.save()
+                    print(f"DEBUG: User.save() (without force_insert) succeeded")
+                except Exception as save_error2:
+                    print(f"DEBUG: ERROR during user.save() (retry): {str(save_error2)}")
+                    raise ValidationError({"error": f"Failed to save user to database: {str(save_error2)}"})
+            
+            # Verify user was saved by checking if ID exists
+            if not user.id:
+                print(f"DEBUG: ERROR - User ID is None after save!")
+                raise ValidationError({"error": "User was not saved - no ID assigned"})
+            
+            print(f"DEBUG: User saved to database with ID: {user.id}")
+            print(f"DEBUG: User data: username={user.username}, email={user.email}, first_name={user.first_name}")
+            
+            # Verify user was saved by querying database
+            verify_user = User.objects(id=user.id).first()
+            if verify_user:
+                print(f"DEBUG: User verification successful: {verify_user.username} (ID: {verify_user.id})")
+            else:
+                print(f"DEBUG: ERROR - User verification failed - user not found in database after save!")
+                raise ValidationError({"error": "User was not saved to database"})
+            
             return user
 
         except ValidationError:
@@ -78,6 +128,9 @@ class AuthService:
                     "id": str(user.id),
                     "username": user.username,
                     "email": user.email,
+                    "name": user.first_name or user.username,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
                 }
             }
 

@@ -75,28 +75,26 @@ export default function Signup({ onBack, onSuccess }) {
 
       setIsSubmitting(true);
 
+      console.log("DEBUG: Submitting registration with values:", values);
       const result = await register(values);
+      console.log("DEBUG: Registration result in component:", result);
 
       if (result.success) {
-        console.log("Registration successful");
+        console.log("Registration successful, should redirect");
+        // Luôn gọi onSuccess để chuyển về trang home
         if (onSuccess) {
+          console.log("Calling onSuccess callback");
           onSuccess();
         } else {
-          onBack();
+          console.log("No onSuccess callback provided");
         }
+      } else {
+        console.log("Registration failed:", result.error);
       }
 
       setIsSubmitting(false);
     },
-    [
-      values,
-      validateAll,
-      setIsSubmitting,
-      register,
-      onBack,
-      onSuccess,
-      setFieldTouched,
-    ]
+    [values, validateAll, setIsSubmitting, register, onSuccess, setFieldTouched]
   );
 
   const isFormValid = Object.keys(SIGNUP_VALIDATION_RULES).every(

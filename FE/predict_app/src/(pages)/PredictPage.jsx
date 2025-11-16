@@ -31,35 +31,27 @@ const PREDICT_VALIDATION_RULES = {
   extracurricularActivities: validationRules.extracurricularActivities,
 };
 
-// Đây chỉ là thuật toán giả lập đơn giản để demo chứ không phải thuật toán Liner Regression thật
-const predictFinalGrade = (
-  studyHourPerWeek,
-  previousGrade,
-  attendanceRate,
-  extracurricularActivities
-) => {
-  // Simple weighted formula for demonstration
-  // In real application, this would use ML model
-  const studyWeight = 0.3;
-  const previousWeight = 0.4;
-  const attendanceWeight = 0.2;
-  const activityWeight = 0.1;
+// Hàm dự đoán tạm thời - sẽ thay thế bằng API thật sau
+const predictFinalGrade = async () => {
+  // TODO: Thay thế bằng API call thật khi backend ready
+  // const response = await fetch("/api/predict/", {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //     Authorization: `Bearer ${token}`,
+  //   },
+  //   body: JSON.stringify({
+  //     studyHourPerWeek,
+  //     previousGrade,
+  //     attendanceRate,
+  //     extracurricularActivities,
+  //   }),
+  // });
+  // const data = await response.json();
+  // return data.predictedGrade;
 
-  // Normalize values for 100-point scale
-  const normalizedStudy = Math.min(studyHourPerWeek / 40, 1) * 100; // Max 40 hours = 100 points
-  const normalizedActivity = Math.min(extracurricularActivities / 10, 1) * 20; // Max 10 activities = 20 bonus points
-
-  const predictedGrade =
-    previousGrade * previousWeight +
-    normalizedStudy * studyWeight +
-    (attendanceRate / 100) * 100 * attendanceWeight +
-    normalizedActivity * activityWeight;
-
-  // Add some randomness for realism
-  const randomFactor = (Math.random() - 0.5) * 5; // ±2.5 points
-  const finalGrade = Math.max(0, Math.min(100, predictedGrade + randomFactor));
-
-  return Math.round(finalGrade * 10) / 10; // Round to 1 decimal
+  // Tạm thời return giá trị mặc định
+  return 75;
 };
 
 const PredictPage = () => {
@@ -108,12 +100,7 @@ const PredictPage = () => {
       // Simulate API call delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const finalGrade = predictFinalGrade(
-        Number(values.studyHourPerWeek),
-        Number(values.previousGrade),
-        Number(values.attendanceRate),
-        Number(values.extracurricularActivities)
-      );
+      const finalGrade = await predictFinalGrade();
 
       setResult({
         finalGrade,

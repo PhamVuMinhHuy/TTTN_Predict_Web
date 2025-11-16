@@ -136,6 +136,12 @@ try:
         alias='default'
     )
     print("✅ Successfully connected to MongoDB Atlas!")
+    
+    # Test connection
+    from main.models import User
+    test_count = User.objects.count()
+    print(f"✅ Current user count in database: {test_count}")
+    
 except Exception as e:
     print(f"❌ Failed to connect to MongoDB Atlas: {e}")
 
@@ -145,6 +151,34 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",  # Vite default port
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",  # Current port
+    "http://127.0.0.1:5174",
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True  # Chỉ dùng cho development
+
+# Thêm CORS headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # Swagger/OpenAPI settings
 SWAGGER_SETTINGS = {

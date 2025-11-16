@@ -17,17 +17,34 @@ export const useAuth = () => {
         const result = await authService.login(credentials);
 
         if (result.success) {
-          // Lưu token
           setToken(result.data.access);
 
-          // Đảm bảo user object có đầy đủ thông tin
-          const userData = result.data.user || {
-            id: Date.now(), // Temporary ID until backend returns user ID
-            email: credentials.email,
-            name: credentials.email.split("@")[0], // Tạo tên từ email
-            role: "student",
-          };
+          // Chỉ sử dụng data từ backend, xóa fallback mock data
+          const userData = result.data.user
+            ? {
+                id: result.data.user.id,
+                username: result.data.user.username,
+                email: result.data.user.email,
+                name:
+                  result.data.user.name ||
+                  result.data.user.first_name ||
+                  result.data.user.username,
+                first_name: result.data.user.first_name,
+                last_name: result.data.user.last_name,
+              }
+            : null; // Xóa fallback mock data này
+          // : {
+          //     id: Date.now(),
+          //     email: credentials.email,
+          //     name: credentials.email.split("@")[0],
+          //     username: credentials.email.split("@")[0],
+          //   };
 
+          if (!userData) {
+            throw new Error("Không thể lấy thông tin người dùng");
+          }
+
+          console.log("DEBUG: Setting user data:", userData);
           setUser(userData);
           return { success: true };
         } else {
@@ -46,24 +63,28 @@ export const useAuth = () => {
 
   const register = useCallback(
     async (userData) => {
+      console.log("DEBUG: Starting registration for:", userData.email);
       setLoading(true);
       setError(null);
 
       try {
         const result = await authService.register(userData);
+        console.log("DEBUG: Registration result:", result);
 
         if (result.success) {
+          console.log("DEBUG: Registration successful, attempting auto-login");
           // Sau khi đăng ký thành công, tự động đăng nhập
           const loginResult = await login({
             email: userData.email,
             password: userData.password,
           });
-
+          console.log("DEBUG: Auto-login result:", loginResult);
           return loginResult;
         } else {
           throw new Error(result.error);
         }
       } catch (err) {
+        console.error("DEBUG: Registration error:", err);
         const errorMessage = err.message || "Đăng ký thất bại";
         setError(errorMessage);
         return { success: false, error: errorMessage };
