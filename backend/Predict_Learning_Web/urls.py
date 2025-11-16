@@ -6,6 +6,6 @@ from django.urls import path
 urlpatterns = [
     path('admin/', admin.site.urls),  # admin site
     path('', home, name='home'),      # trang chủ
-    path('auth/register/', RegisterView.as_view(), name='register'),
-    path('auth/login/', LoginView.as_view(), name='login'),
+    path('admin/register/', RegisterView.as_view(), name='register'),
+    path('admin/login/', LoginView.as_view(), name='login'),
 ]

@@ -9,17 +9,17 @@ class AuthService:
     # --------- REGISTER ----------
     @staticmethod
     def register_user(validated_data):
-        username = validated_data["Username"]
-        email = validated_data.get("Email")
-        password = validated_data["Password"]
+        username = validated_data["username"]
+        email = validated_data["email"]
+        password = validated_data["password"]
 
-        if Users.objects.filter(Username=username).exists():
-            raise ValidationError({"Username": "Username already exists."})
+        if User.objects(username=username).first():
+            raise ValueError("Username already exists")
 
-        user = Users.objects.create(
-            Username=username,
-            Email=email,
-            PasswordHash=make_password(password)
+        user = User.objects.create(
+            username=username,
+            email=email,
+            password_hash=make_password(password)
         )
         return user
 
