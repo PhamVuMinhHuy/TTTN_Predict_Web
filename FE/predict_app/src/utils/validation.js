@@ -1,87 +1,84 @@
 export const validationRules = {
   email: [
     (value) => {
-      if (!value) return 'Email là bắt buộc';
+      if (!value) return "Email là bắt buộc";
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        return 'Định dạng email không hợp lệ';
+        return "Định dạng email không hợp lệ";
       }
-      return '';
-    }
+      return "";
+    },
   ],
   password: [
     (value) => {
-      if (!value) return 'Mật khẩu là bắt buộc';
-      if (value.length < 8) return 'Mật khẩu phải có ít nhất 8 ký tự';
-      if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
-        return 'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường và 1 số';
-      }
-      return '';
-    }
+      if (!value) return "Mật khẩu là bắt buộc";
+      // Bỏ tất cả validation phức tạp, chỉ cần có mật khẩu là đủ
+      return "";
+    },
   ],
   confirmPassword: [
     (value, allValues) => {
-      if (!value) return 'Xác nhận mật khẩu là bắt buộc';
-      if (value !== allValues?.password) return 'Mật khẩu xác nhận không khớp';
-      return '';
-    }
+      if (!value) return "Xác nhận mật khẩu là bắt buộc";
+      if (value !== allValues?.password) return "Mật khẩu xác nhận không khớp";
+      return "";
+    },
   ],
   name: [
     (value) => {
-      if (!value) return 'Tên là bắt buộc';
-      if (value.length < 2) return 'Tên phải có ít nhất 2 ký tự';
-      return '';
-    }
+      if (!value) return "Tên là bắt buộc";
+      if (value.length < 2) return "Tên phải có ít nhất 2 ký tự";
+      return "";
+    },
   ],
   studyHourPerWeek: [
     (value) => {
-      if (!value && value !== 0) return 'Thời gian học là bắt buộc';
+      if (!value && value !== 0) return "Thời gian học là bắt buộc";
       const num = Number(value);
-      if (isNaN(num)) return 'Vui lòng nhập số hợp lệ';
-      if (num < 0) return 'Thời gian học không thể âm';
-      if (num > 168) return 'Thời gian học không thể vượt quá 168 giờ/tuần';
-      return '';
-    }
+      if (isNaN(num)) return "Vui lòng nhập số hợp lệ";
+      if (num < 0) return "Thời gian học không thể âm";
+      if (num > 168) return "Thời gian học không thể vượt quá 168 giờ/tuần";
+      return "";
+    },
   ],
   previousGrade: [
     (value) => {
-      if (!value && value !== 0) return 'Điểm kiểm tra kì trước là bắt buộc';
+      if (!value && value !== 0) return "Điểm kiểm tra kì trước là bắt buộc";
       const num = Number(value);
-      if (isNaN(num)) return 'Vui lòng nhập số hợp lệ';
-      if (num < 0 || num > 100) return 'Điểm phải từ 0 đến 100';
-      return '';
-    }
+      if (isNaN(num)) return "Vui lòng nhập số hợp lệ";
+      if (num < 0 || num > 100) return "Điểm phải từ 0 đến 100";
+      return "";
+    },
   ],
   attendanceRate: [
     (value) => {
-      if (!value && value !== 0) return 'Tỉ lệ có mặt là bắt buộc';
+      if (!value && value !== 0) return "Tỉ lệ có mặt là bắt buộc";
       const num = Number(value);
-      if (isNaN(num)) return 'Vui lòng nhập số hợp lệ';
-      if (num < 0 || num > 100) return 'Tỉ lệ có mặt phải từ 0% đến 100%';
-      return '';
-    }
+      if (isNaN(num)) return "Vui lòng nhập số hợp lệ";
+      if (num < 0 || num > 100) return "Tỉ lệ có mặt phải từ 0% đến 100%";
+      return "";
+    },
   ],
   extracurricularActivities: [
     (value) => {
-      if (!value && value !== 0) return 'Số hoạt động ngoại khóa là bắt buộc';
+      if (!value && value !== 0) return "Số hoạt động ngoại khóa là bắt buộc";
       const num = Number(value);
-      if (isNaN(num)) return 'Vui lòng nhập số hợp lệ';
-      if (num < 0) return 'Số hoạt động không thể âm';
-      if (!Number.isInteger(num)) return 'Vui lòng nhập số nguyên';
-      return '';
-    }
-  ]
+      if (isNaN(num)) return "Vui lòng nhập số hợp lệ";
+      if (num < 0) return "Số hoạt động không thể âm";
+      if (!Number.isInteger(num)) return "Vui lòng nhập số nguyên";
+      return "";
+    },
+  ],
 };
 
 // Helper function to validate a single field
 export const validateField = (fieldName, value, allValues = {}) => {
   const rules = validationRules[fieldName];
-  if (!rules) return '';
+  if (!rules) return "";
 
   for (const rule of rules) {
     const error = rule(value, allValues);
     if (error) return error;
   }
-  return '';
+  return "";
 };
 
 // Helper function to validate all fields
@@ -89,7 +86,7 @@ export const validateAllFields = (values, fieldsToValidate) => {
   const errors = {};
   let isValid = true;
 
-  fieldsToValidate.forEach(fieldName => {
+  fieldsToValidate.forEach((fieldName) => {
     const error = validateField(fieldName, values[fieldName], values);
     errors[fieldName] = error;
     if (error) isValid = false;
