@@ -1,9 +1,4 @@
-import React, {
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
-} from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   containerStyle,
@@ -80,7 +75,7 @@ function LoginForm({ onSwitch, onSuccess }) {
       const isValid = validateAll();
       if (!isValid) {
         // Mark all fields as touched to show validation errors
-        Object.keys(LOGIN_VALIDATION_RULES).forEach(field => {
+        Object.keys(LOGIN_VALIDATION_RULES).forEach((field) => {
           setFieldTouched(field);
         });
         return;
@@ -165,7 +160,7 @@ function LoginForm({ onSwitch, onSuccess }) {
             type={showPassword ? "text" : "password"}
             value={values.password}
             onChange={(e) => setValue("password", e.target.value)}
-            placeholder="Ít nhất 8 ký tự gồm chữ và số"
+            placeholder="Nhập mật khẩu bất kì"
             style={{
               ...inputStyle,
               paddingRight: "45px",
@@ -267,15 +262,16 @@ export default function Auth() {
   };
 
   // Get header content based on mode
-  const headerContent = mode === "login" 
-    ? {
-        title: "Chào mừng trở lại!",
-        subtitle: "Đăng nhập vào hệ thống dự đoán điểm học tập",
-      }
-    : {
-        title: "Tạo tài khoản mới", 
-        subtitle: "Điền thông tin để tạo tài khoản",
-      };
+  const headerContent =
+    mode === "login"
+      ? {
+          title: "Chào mừng trở lại!",
+          subtitle: "Đăng nhập vào hệ thống dự đoán điểm học tập",
+        }
+      : {
+          title: "Tạo tài khoản mới",
+          subtitle: "Điền thông tin để tạo tài khoản",
+        };
 
   const infoHighlights = [
     {
@@ -312,10 +308,12 @@ export default function Auth() {
       <div style={cardStyle}>
         <div style={infoPanelStyle}>
           <span style={infoBadge}>PredictGrade Learning Hub</span>
-          <h2 style={infoTitle}>Định hướng học tập thông minh cho từng học sinh</h2>
+          <h2 style={infoTitle}>
+            Định hướng học tập thông minh cho từng học sinh
+          </h2>
           <p style={infoSubtitle}>
-            Biến dữ liệu điểm số thành lộ trình học tập rõ ràng, giúp bạn tự tin trước mỗi
-            kỳ kiểm tra.
+            Biến dữ liệu điểm số thành lộ trình học tập rõ ràng, giúp bạn tự tin
+            trước mỗi kỳ kiểm tra.
           </p>
           <ul style={infoList}>
             {infoHighlights.map((item) => (

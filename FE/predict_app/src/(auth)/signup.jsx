@@ -67,7 +67,7 @@ export default function Signup({ onBack, onSuccess }) {
       const isValid = validateAll();
       if (!isValid) {
         // Mark all fields as touched to show validation errors
-        Object.keys(SIGNUP_VALIDATION_RULES).forEach(field => {
+        Object.keys(SIGNUP_VALIDATION_RULES).forEach((field) => {
           setFieldTouched(field);
         });
         return;
@@ -88,7 +88,15 @@ export default function Signup({ onBack, onSuccess }) {
 
       setIsSubmitting(false);
     },
-    [values, validateAll, setIsSubmitting, register, onBack, onSuccess, setFieldTouched]
+    [
+      values,
+      validateAll,
+      setIsSubmitting,
+      register,
+      onBack,
+      onSuccess,
+      setFieldTouched,
+    ]
   );
 
   const isFormValid = Object.keys(SIGNUP_VALIDATION_RULES).every(
@@ -166,7 +174,7 @@ export default function Signup({ onBack, onSuccess }) {
             type={showPassword ? "text" : "password"}
             value={values.password}
             onChange={(e) => setValue("password", e.target.value)}
-            placeholder="Tạo mật khẩu gồm chữ hoa, chữ thường và số"
+            placeholder="Nhập mật khẩu bất kì"
             style={{
               ...inputStyle,
               paddingRight: "45px",

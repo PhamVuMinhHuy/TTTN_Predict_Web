@@ -5,7 +5,7 @@ Django==5.2.8
 djangorestframework==3.15.2
 
 # CORS Headers để frontend React có thể gọi API
-django-cors-headers==4.6.0
+django-cors-headers==4.3.1
 
 # Authentication & JWT
 djangorestframework-simplejwt==5.5.1
@@ -36,3 +36,9 @@ mongoengine==0.28.2
 pymongo==4.6.0
 dnspython==2.4.2
 djongo
+
+# PyJWT
+PyJWT==2.8.0
+
+# Swagger UI
+drf-yasg==1.21.7
