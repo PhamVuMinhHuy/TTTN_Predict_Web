@@ -21,3 +21,7 @@ cd FE
 cd predict_app
 npm install react-router-dom
 npm run dev
+
+Run BE
+cd backend
+python manage.py runserver

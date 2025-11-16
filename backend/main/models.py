@@ -5,15 +5,15 @@ import hashlib
 class User(Document):
     """Simple User model for MongoDB connection test"""
     username = fields.StringField(required=True, unique=True, max_length=150)
-    email = fields.EmailField(required=True, unique=True)
+    email = fields.EmailField(required=False, unique=False)  # Sửa required=False
     password_hash = fields.StringField(required=True, max_length=255)
     first_name = fields.StringField(max_length=30)
     last_name = fields.StringField(max_length=30)
     date_joined = fields.DateTimeField(default=datetime.utcnow)
     
     meta = {
-        'collection': 'users',
-        'indexes': ['username', 'email']
+        'collection': 'users'
+        # Bỏ indexes để tránh conflict
     }
     
     def set_password(self, raw_password):

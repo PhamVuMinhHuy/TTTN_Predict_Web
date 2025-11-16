@@ -18,7 +18,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-cp0l42ihb=3t_qk#4fc#!!o&h1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver').split(',')
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver', '*']
+
+# If environment variable is set, add those hosts as well
+if os.getenv('ALLOWED_HOSTS'):
+    env_hosts = os.getenv('ALLOWED_HOSTS').split(',')
+    ALLOWED_HOSTS.extend([host.strip() for host in env_hosts if host.strip() not in ALLOWED_HOSTS])
 
 # Application definition - chỉ cần tối thiểu
 INSTALLED_APPS = [
@@ -28,15 +33,42 @@ INSTALLED_APPS = [
     'django.contrib.sessions',    # cần thiết nếu dùng session
     'django.contrib.messages',    # cần thiết cho message framework
     'django.contrib.staticfiles', 
-
-    # MongoDB
-    'mongoengine',
-
-    # Your apps
+    'corsheaders',               # CORS support
+    'rest_framework',            # Django REST Framework
+    'drf_yasg',  # Thêm dòng này
+    'mongoengine',               # MongoDB
     'main',
 ]
 
+# Thêm cấu hình cho drf-yasg
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
+
+# Tìm INSTALLED_APPS và thêm 'corsheaders' nếu chưa có
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'corsheaders',  # Thêm dòng này
+    'rest_framework',
+    'drf_yasg',
+    'mongoengine',
+    'main',
+]
+
+# Tìm MIDDLEWARE và thêm CORS middleware ở đầu
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Thêm dòng này ở đầu
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -114,5 +146,25 @@ REST_FRAMEWORK = {
     )
 }
 
+# Swagger/OpenAPI settings
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True  # Chỉ cho development
+CORS_ALLOW_CREDENTIALS = True
