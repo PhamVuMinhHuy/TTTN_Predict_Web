@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useForm } from "../hooks/useForm";
 import { useLocalStorage } from "../hooks/useLocalStorage";
@@ -25,9 +25,11 @@ import {
 } from "../../assets/styles/predict.styles";
 
 const PREDICT_VALIDATION_RULES = {
-  studyHourPerWeek: validationRules.studyHourPerWeek,
-  previousGrade: validationRules.previousGrade,
+  studyHoursPerWeek: validationRules.studyHourPerWeek,
   attendanceRate: validationRules.attendanceRate,
+  pastExamScores: validationRules.pastExamScores,
+  parentalEducationLevel: validationRules.parentalEducationLevel,
+  internetAccessAtHome: validationRules.internetAccessAtHome,
   extracurricularActivities: validationRules.extracurricularActivities,
 };
 
@@ -75,13 +77,48 @@ const PredictPage = () => {
     validateAll,
   } = useForm(
     {
-      studyHourPerWeek: "",
-      previousGrade: "",
+      studyHoursPerWeek: "",
       attendanceRate: "",
+      pastExamScores: "",
+      parentalEducationLevel: "",
+      internetAccessAtHome: "",
       extracurricularActivities: "",
     },
     PREDICT_VALIDATION_RULES
   );
+
+  // Load reused data from localStorage if available
+  useEffect(() => {
+    const reuseKey = `reuse_prediction_${user?.id || "guest"}`;
+    const reusedData = localStorage.getItem(reuseKey);
+    if (reusedData) {
+      try {
+        const parsed = JSON.parse(reusedData);
+        localStorage.removeItem(reuseKey); // Clear after use
+        // Populate form with reused data
+        if (parsed.studyHoursPerWeek || parsed.studyHourPerWeek) {
+          setValue("studyHoursPerWeek", parsed.studyHoursPerWeek || parsed.studyHourPerWeek);
+        }
+        if (parsed.attendanceRate) {
+          setValue("attendanceRate", parsed.attendanceRate);
+        }
+        if (parsed.pastExamScores || parsed.previousGrade) {
+          setValue("pastExamScores", parsed.pastExamScores || parsed.previousGrade);
+        }
+        if (parsed.parentalEducationLevel) {
+          setValue("parentalEducationLevel", parsed.parentalEducationLevel);
+        }
+        if (parsed.internetAccessAtHome) {
+          setValue("internetAccessAtHome", parsed.internetAccessAtHome);
+        }
+        if (parsed.extracurricularActivities) {
+          setValue("extracurricularActivities", parsed.extracurricularActivities);
+        }
+      } catch (e) {
+        console.error("Error parsing reused data:", e);
+      }
+    }
+  }, [user?.id, setValue]);
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -103,7 +140,7 @@ const PredictPage = () => {
       const finalGrade = await predictFinalGrade();
 
       setResult({
-        finalGrade,
+        finalExamScore: finalGrade,
         inputs: { ...values },
         timestamp: new Date().toISOString(),
       });
@@ -111,8 +148,8 @@ const PredictPage = () => {
       // Save to history
       const newHistoryItem = {
         timestamp: new Date().toISOString(),
-        details: `Thời gian học: ${values.studyHourPerWeek}h/tuần, Điểm kì trước: ${values.previousGrade}, Tỉ lệ có mặt: ${values.attendanceRate}%, Hoạt động ngoại khóa: ${values.extracurricularActivities}`,
-        finalGrade,
+        details: `Thời gian học: ${values.studyHoursPerWeek}h/tuần, Tỉ lệ có mặt: ${values.attendanceRate}%, Điểm thi trước: ${values.pastExamScores}, Trình độ phụ huynh: ${values.parentalEducationLevel}, Internet tại nhà: ${values.internetAccessAtHome}, Hoạt động ngoại khóa: ${values.extracurricularActivities}`,
+        finalExamScore: finalGrade,
         inputs: { ...values },
       };
 
@@ -142,64 +179,35 @@ const PredictPage = () => {
         <form onSubmit={handleSubmit} style={predictForm}>
           <div style={formGroup}>
             <label style={formLabel}>
-              Thời gian học trung bình mỗi tuần (giờ) *
+              Thời gian học mỗi tuần (giờ) *
             </label>
             <input
               type="number"
-              value={values.studyHourPerWeek}
-              onChange={(e) => setValue("studyHourPerWeek", e.target.value)}
-              onBlur={() => setFieldTouched("studyHourPerWeek")}
-              onFocus={() => setFocusedField("studyHourPerWeek")}
+              value={values.studyHoursPerWeek}
+              onChange={(e) => setValue("studyHoursPerWeek", e.target.value)}
+              onBlur={() => setFieldTouched("studyHoursPerWeek")}
+              onFocus={() => setFocusedField("studyHoursPerWeek")}
               placeholder="Ví dụ: 20"
               min="0"
               max="168"
               step="0.5"
               style={{
                 ...formInput,
-                ...(touched.studyHourPerWeek && errors.studyHourPerWeek
+                ...(touched.studyHoursPerWeek && errors.studyHoursPerWeek
                   ? formInputError
-                  : focusedField === "studyHourPerWeek"
+                  : focusedField === "studyHoursPerWeek"
                   ? formInputFocus
                   : {}),
               }}
               disabled={isSubmitting}
             />
-            {touched.studyHourPerWeek && errors.studyHourPerWeek && (
-              <div style={errorMessage}>{errors.studyHourPerWeek}</div>
+            {touched.studyHoursPerWeek && errors.studyHoursPerWeek && (
+              <div style={errorMessage}>{errors.studyHoursPerWeek}</div>
             )}
           </div>
 
           <div style={formGroup}>
-            <label style={formLabel}>
-              Điểm kiểm tra kì trước (thang điểm 100) *
-            </label>
-            <input
-              type="number"
-              value={values.previousGrade}
-              onChange={(e) => setValue("previousGrade", e.target.value)}
-              onBlur={() => setFieldTouched("previousGrade")}
-              onFocus={() => setFocusedField("previousGrade")}
-              placeholder="Ví dụ: 75.5"
-              min="0"
-              max="100"
-              step="0.1"
-              style={{
-                ...formInput,
-                ...(touched.previousGrade && errors.previousGrade
-                  ? formInputError
-                  : focusedField === "previousGrade"
-                  ? formInputFocus
-                  : {}),
-              }}
-              disabled={isSubmitting}
-            />
-            {touched.previousGrade && errors.previousGrade && (
-              <div style={errorMessage}>{errors.previousGrade}</div>
-            )}
-          </div>
-
-          <div style={formGroup}>
-            <label style={formLabel}>Tỉ lệ có mặt tại các buổi học (%) *</label>
+            <label style={formLabel}>Tỉ lệ có mặt (%) *</label>
             <input
               type="number"
               value={values.attendanceRate}
@@ -227,36 +235,131 @@ const PredictPage = () => {
 
           <div style={formGroup}>
             <label style={formLabel}>
-              Số hoạt động ngoại khóa đã tham gia *
+              Điểm thi trước đó (thang điểm 100) *
             </label>
             <input
               type="number"
-              value={values.extracurricularActivities}
-              onChange={(e) =>
-                setValue("extracurricularActivities", e.target.value)
-              }
-              onBlur={() => setFieldTouched("extracurricularActivities")}
-              onFocus={() => setFocusedField("extracurricularActivities")}
-              placeholder="Ví dụ: 3"
+              value={values.pastExamScores}
+              onChange={(e) => setValue("pastExamScores", e.target.value)}
+              onBlur={() => setFieldTouched("pastExamScores")}
+              onFocus={() => setFocusedField("pastExamScores")}
+              placeholder="Ví dụ: 75.5"
               min="0"
-              step="1"
+              max="100"
+              step="0.1"
               style={{
                 ...formInput,
-                ...(touched.extracurricularActivities &&
-                errors.extracurricularActivities
+                ...(touched.pastExamScores && errors.pastExamScores
                   ? formInputError
-                  : focusedField === "extracurricularActivities"
+                  : focusedField === "pastExamScores"
                   ? formInputFocus
                   : {}),
               }}
               disabled={isSubmitting}
             />
-            {touched.extracurricularActivities &&
-              errors.extracurricularActivities && (
-                <div style={errorMessage}>
-                  {errors.extracurricularActivities}
-                </div>
-              )}
+            {touched.pastExamScores && errors.pastExamScores && (
+              <div style={errorMessage}>{errors.pastExamScores}</div>
+            )}
+          </div>
+
+          <div style={formGroup}>
+            <label style={formLabel}>
+              Trình độ học vấn của phụ huynh *
+            </label>
+            <select
+              value={values.parentalEducationLevel}
+              onChange={(e) => setValue("parentalEducationLevel", e.target.value)}
+              onBlur={() => setFieldTouched("parentalEducationLevel")}
+              onFocus={() => setFocusedField("parentalEducationLevel")}
+              style={{
+                ...formInput,
+                ...(touched.parentalEducationLevel && errors.parentalEducationLevel
+                  ? formInputError
+                  : focusedField === "parentalEducationLevel"
+                  ? formInputFocus
+                  : {}),
+              }}
+              disabled={isSubmitting}
+            >
+              <option value="">-- Chọn trình độ --</option>
+              <option value="HighSchool">HighSchool</option>
+              <option value="Bachelors">Bachelors</option>
+              <option value="Masters">Masters</option>
+              <option value="PhD">PhD</option>
+            </select>
+            {touched.parentalEducationLevel && errors.parentalEducationLevel && (
+              <div style={errorMessage}>{errors.parentalEducationLevel}</div>
+            )}
+          </div>
+
+          <div style={formGroup}>
+            <label style={formLabel}>Truy cập internet tại nhà *</label>
+            <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem" }}>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+                <input
+                  type="radio"
+                  name="internetAccessAtHome"
+                  value="Yes"
+                  checked={values.internetAccessAtHome === "Yes"}
+                  onChange={(e) => setValue("internetAccessAtHome", e.target.value)}
+                  onBlur={() => setFieldTouched("internetAccessAtHome")}
+                  disabled={isSubmitting}
+                  style={{ marginRight: "0.5rem", cursor: "pointer" }}
+                />
+                Yes
+              </label>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+                <input
+                  type="radio"
+                  name="internetAccessAtHome"
+                  value="No"
+                  checked={values.internetAccessAtHome === "No"}
+                  onChange={(e) => setValue("internetAccessAtHome", e.target.value)}
+                  onBlur={() => setFieldTouched("internetAccessAtHome")}
+                  disabled={isSubmitting}
+                  style={{ marginRight: "0.5rem", cursor: "pointer" }}
+                />
+                No
+              </label>
+            </div>
+            {touched.internetAccessAtHome && errors.internetAccessAtHome && (
+              <div style={errorMessage}>{errors.internetAccessAtHome}</div>
+            )}
+          </div>
+
+          <div style={formGroup}>
+            <label style={formLabel}>Hoạt động ngoại khóa *</label>
+            <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem" }}>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+                <input
+                  type="radio"
+                  name="extracurricularActivities"
+                  value="Yes"
+                  checked={values.extracurricularActivities === "Yes"}
+                  onChange={(e) => setValue("extracurricularActivities", e.target.value)}
+                  onBlur={() => setFieldTouched("extracurricularActivities")}
+                  disabled={isSubmitting}
+                  style={{ marginRight: "0.5rem", cursor: "pointer" }}
+                />
+                Yes
+              </label>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+                <input
+                  type="radio"
+                  name="extracurricularActivities"
+                  value="No"
+                  checked={values.extracurricularActivities === "No"}
+                  onChange={(e) => setValue("extracurricularActivities", e.target.value)}
+                  onBlur={() => setFieldTouched("extracurricularActivities")}
+                  disabled={isSubmitting}
+                  style={{ marginRight: "0.5rem", cursor: "pointer" }}
+                />
+                No
+              </label>
+            </div>
+            {touched.extracurricularActivities && errors.extracurricularActivities && (
+              <div style={errorMessage}>{errors.extracurricularActivities}</div>
+            )}
           </div>
 
           <button
@@ -270,29 +373,34 @@ const PredictPage = () => {
             onMouseEnter={() => setHoveredSubmit(true)}
             onMouseLeave={() => setHoveredSubmit(false)}
           >
-            {isSubmitting ? "Đang dự đoán..." : "📊 Dự đoán điểm cuối kì"}
+            {isSubmitting ? "Đang dự đoán..." : "📊 Dự đoán điểm thi cuối kì"}
           </button>
         </form>
 
         {result && (
           <div style={resultContainer}>
             <h2 style={resultTitle}>Kết quả dự đoán</h2>
-            <div style={resultGrade}>{result.finalGrade}/100</div>
+            <div style={resultGrade}>{result.finalExamScore}/100</div>
             <div style={resultDetails}>
               <div>
-                <strong>Thời gian học:</strong> {result.inputs.studyHourPerWeek}{" "}
+                <strong>Thời gian học:</strong> {result.inputs.studyHoursPerWeek}{" "}
                 giờ/tuần
-              </div>
-              <div>
-                <strong>Điểm kì trước:</strong> {result.inputs.previousGrade}
-                /100
               </div>
               <div>
                 <strong>Tỉ lệ có mặt:</strong> {result.inputs.attendanceRate}%
               </div>
               <div>
-                <strong>Hoạt động ngoại khóa:</strong>{" "}
-                {result.inputs.extracurricularActivities}
+                <strong>Điểm thi trước đó:</strong> {result.inputs.pastExamScores}
+                /100
+              </div>
+              <div>
+                <strong>Trình độ phụ huynh:</strong> {result.inputs.parentalEducationLevel}
+              </div>
+              <div>
+                <strong>Internet tại nhà:</strong> {result.inputs.internetAccessAtHome}
+              </div>
+              <div>
+                <strong>Hoạt động ngoại khóa:</strong> {result.inputs.extracurricularActivities}
               </div>
             </div>
           </div>

@@ -72,6 +72,12 @@ const Header = () => {
               >
                 History
               </Link>
+              <Link
+                to="/scoreboard"
+                className={`nav-link ${isActive('/scoreboard') ? 'active' : ''}`}
+              >
+                Scoreboard
+              </Link>
             </nav>
             <div className="user-menu-container" ref={userMenuRef}>
               <button

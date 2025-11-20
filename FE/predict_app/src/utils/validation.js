@@ -59,11 +59,32 @@ export const validationRules = {
   ],
   extracurricularActivities: [
     (value) => {
-      if (!value && value !== 0) return "Số hoạt động ngoại khóa là bắt buộc";
+      if (!value) return "Hoạt động ngoại khóa là bắt buộc";
+      if (value !== "Yes" && value !== "No") return "Vui lòng chọn Yes hoặc No";
+      return "";
+    },
+  ],
+  pastExamScores: [
+    (value) => {
+      if (!value && value !== 0) return "Điểm thi trước đó là bắt buộc";
       const num = Number(value);
       if (isNaN(num)) return "Vui lòng nhập số hợp lệ";
-      if (num < 0) return "Số hoạt động không thể âm";
-      if (!Number.isInteger(num)) return "Vui lòng nhập số nguyên";
+      if (num < 0 || num > 100) return "Điểm phải từ 0 đến 100";
+      return "";
+    },
+  ],
+  parentalEducationLevel: [
+    (value) => {
+      if (!value) return "Trình độ học vấn của phụ huynh là bắt buộc";
+      const validLevels = ["HighSchool", "PhD", "Bachelors", "Masters"];
+      if (!validLevels.includes(value)) return "Vui lòng chọn một trong các lựa chọn hợp lệ";
+      return "";
+    },
+  ],
+  internetAccessAtHome: [
+    (value) => {
+      if (!value) return "Truy cập internet tại nhà là bắt buộc";
+      if (value !== "Yes" && value !== "No") return "Vui lòng chọn Yes hoặc No";
       return "";
     },
   ],

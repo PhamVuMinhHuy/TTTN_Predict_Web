@@ -9,6 +9,7 @@ const LandingPage = lazy(() => import("../(pages)/LandingPage"));
 const Auth = lazy(() => import("../(auth)"));
 const PredictPage = lazy(() => import("../(pages)/PredictPage"));
 const HistoryPage = lazy(() => import("../(pages)/HistoryPage"));
+const ScoreboardPage = lazy(() => import("../(pages)/ScoreboardPage"));
 const SettingsPage = lazy(() => import("../(pages)/SettingsPage"));
 
 export const router = createBrowserRouter([
@@ -50,6 +51,16 @@ export const router = createBrowserRouter([
           <ProtectedRoute>
             <SuspenseWrapper loadingMessage="Đang tải lịch sử dự đoán...">
               <HistoryPage />
+            </SuspenseWrapper>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/scoreboard",
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper loadingMessage="Đang tải bảng điểm...">
+              <ScoreboardPage />
             </SuspenseWrapper>
           </ProtectedRoute>
         ),

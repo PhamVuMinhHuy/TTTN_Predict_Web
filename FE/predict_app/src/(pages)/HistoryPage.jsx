@@ -103,11 +103,11 @@ const HistoryPage = () => {
                     {formatDate(prediction.timestamp)}
                   </span>
                 </div>
-                {prediction.finalGrade !== undefined && (
+                {(prediction.finalExamScore !== undefined || prediction.finalGrade !== undefined) && (
                   <div style={{ marginTop: "0.75rem", marginBottom: "0.5rem" }}>
                     <span style={historyItemGradeLabel}>Điểm dự đoán:</span>
                     <span style={historyItemGrade}>
-                      {prediction.finalGrade}/100
+                      {prediction.finalExamScore || prediction.finalGrade}/100
                     </span>
                   </div>
                 )}
