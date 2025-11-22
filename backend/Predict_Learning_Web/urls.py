@@ -1,5 +1,6 @@
 from main.views.home_view import home
 from main.views.auth_views import RegisterView, LoginView
+from main.views.profile_views import UserProfileView
 from django.contrib import admin
 from django.urls import path, re_path
 from .swagger import schema_view
@@ -9,6 +10,7 @@ urlpatterns = [
     path('', home, name='home'),      # trang chủ
     path('auth/register/', RegisterView.as_view(), name='register'),
     path('auth/login/', LoginView.as_view(), name='login'),
+    path('auth/profile/', UserProfileView.as_view(), name='user-profile'),  # API lấy thông tin user
     
     # Swagger URLs
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),

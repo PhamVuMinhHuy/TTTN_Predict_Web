@@ -3,17 +3,22 @@ import { useAuth } from "../hooks/useAuth";
 
 // Protected Route Component - Chỉ cho phép user đã đăng nhập
 export const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, token, loading } = useAuth();
 
-  console.log("DEBUG: ProtectedRoute - user:", user, "loading:", loading);
+  console.log("DEBUG: ProtectedRoute - user:", user, "token:", token ? "exists" : "null", "loading:", loading);
 
   // Nếu đang loading thì chờ
   if (loading) {
     return <div>Đang tải...</div>;
   }
 
-  if (!user) {
-    console.log("DEBUG: ProtectedRoute - redirecting to auth");
+  // Kiểm tra token từ localStorage (fallback)
+  const tokenFromStorage = localStorage.getItem("token");
+  const hasToken = token || tokenFromStorage;
+
+  // Cho phép vào nếu có token (ngay cả khi chưa có user - user sẽ được load từ API)
+  if (!hasToken) {
+    console.log("DEBUG: ProtectedRoute - No token found, redirecting to auth");
     return <Navigate to="/auth?mode=login" replace />;
   }
 

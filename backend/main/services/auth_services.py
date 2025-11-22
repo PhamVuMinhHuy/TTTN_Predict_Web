@@ -95,19 +95,30 @@ class AuthService:
             raise ValidationError({"error": f"Failed to create user: {str(e)}"})
 
     @staticmethod
-    def login_user(username, password):
+    def login_user(username_or_email, password):
         try:
-            print(f"DEBUG: Attempting to login user: {username}")
+            print(f"DEBUG: Attempting to login with identifier: {username_or_email}")
             
-            # Tìm user với MongoEngine syntax
-            user = User.objects(username=username).first()
+            # Tìm user bằng username trước
+            user = User.objects(username=username_or_email).first()
             if not user:
-                print(f"DEBUG: User not found: {username}")
-                raise ValidationError({"detail": "Invalid username or password"})
+                # Nếu không tìm thấy, thử tìm bằng email
+                print(f"DEBUG: User not found by username, trying email: {username_or_email}")
+                user = User.objects(email=username_or_email).first()
+                if not user:
+                    print(f"DEBUG: User not found with username or email: {username_or_email}")
+                    raise ValidationError({"detail": "Invalid username or password"})
+                else:
+                    print(f"DEBUG: User found by email: {user.username}")
+            else:
+                print(f"DEBUG: User found by username: {user.username}")
 
+            print(f"DEBUG: Checking password for user: {user.username}")
             if not user.check_password(password):
-                print(f"DEBUG: Password check failed for user: {username}")
+                print(f"DEBUG: Password check failed for user: {user.username}")
                 raise ValidationError({"detail": "Invalid username or password"})
+            
+            print(f"DEBUG: Password check passed for user: {user.username}")
 
             # Tạo JWT tokens
             payload = {
@@ -119,7 +130,7 @@ class AuthService:
             access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
             refresh_token = jwt.encode({**payload, 'exp': time.time() + 86400}, settings.SECRET_KEY, algorithm='HS256')
 
-            print(f"DEBUG: Tokens generated successfully for user: {username}")
+            print(f"DEBUG: Tokens generated successfully for user: {user.username}")
 
             return {
                 "access": access_token,

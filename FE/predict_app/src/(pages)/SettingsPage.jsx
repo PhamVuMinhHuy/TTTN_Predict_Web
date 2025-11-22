@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import { authService } from "../services/authService";
 import {
   settingsContainer,
   settingsTitle,
@@ -22,15 +23,107 @@ import {
 } from "../../assets/styles/settings.styles";
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth();
+  const { token, logout } = useAuth();
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [hoveredSection, setHoveredSection] = useState(null);
   const [buttonHovered, setButtonHovered] = useState(false);
   const [homeButtonHovered, setHomeButtonHovered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Lấy thông tin user từ API khi component mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      // Kiểm tra token từ localStorage trực tiếp (fallback)
+      const tokenFromStorage = localStorage.getItem("token");
+      const tokenToUse = token || tokenFromStorage;
+      
+      console.log("DEBUG: SettingsPage - Token from useAuth:", token);
+      console.log("DEBUG: SettingsPage - Token from localStorage:", tokenFromStorage);
+      
+      if (!tokenToUse) {
+        console.log("DEBUG: SettingsPage - No token found, redirecting to login");
+        navigate("/auth?mode=login");
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        console.log("DEBUG: SettingsPage - Fetching user profile...");
+        const result = await authService.getUserProfile();
+        console.log("DEBUG: SettingsPage - Profile result:", result);
+        
+        if (result.success) {
+          setUser(result.data);
+          console.log("DEBUG: SettingsPage - User data set:", result.data);
+        } else {
+          setError(result.error);
+          console.log("DEBUG: SettingsPage - Profile fetch failed:", result.error);
+          
+          // Chỉ redirect nếu thực sự là lỗi authentication
+          if (result.error && (
+            result.error.includes("Authentication expired") || 
+            result.error.includes("No authentication token") ||
+            result.error.includes("Invalid token") ||
+            result.error.includes("Token expired")
+          )) {
+            console.log("DEBUG: SettingsPage - Authentication error, redirecting to login");
+            // Xóa token và user nếu có
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate("/auth?mode=login");
+          }
+          // Nếu là lỗi khác (network, server), không redirect, chỉ hiển thị error
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error("DEBUG: SettingsPage - Exception fetching user profile:", err);
+        // Không redirect khi có exception (có thể là network error)
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Chỉ chạy một lần khi mount
+
+  // Hiển thị loading state
+  if (loading) {
+    return (
+      <div style={{ padding: "2rem", textAlign: "center" }}>
+        <div>Đang tải thông tin người dùng...</div>
+      </div>
+    );
+  }
+
+  // Hiển thị error state
+  if (error && !user) {
+    return (
+      <div style={{ padding: "2rem", textAlign: "center" }}>
+        <div style={{ color: "#e74c3c", marginBottom: "1rem" }}>Lỗi: {error}</div>
+        <button
+          onClick={() => navigate("/auth?mode=login")}
+          style={{
+            padding: "0.75rem 1.5rem",
+            backgroundColor: "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "0.5rem",
+            cursor: "pointer",
+          }}
+        >
+          Đăng nhập lại
+        </button>
+      </div>
+    );
+  }
+
   if (!user) {
-    navigate("/auth?mode=login");
     return null;
   }
 
