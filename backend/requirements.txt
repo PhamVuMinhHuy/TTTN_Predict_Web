@@ -42,3 +42,9 @@ PyJWT==2.8.0
 
 # Swagger UI
 drf-yasg==1.21.7
+
+# Machine Learning
+# Lưu ý: Các package này đã được cài sẵn trong Python 3.13
+# numpy 2.1.1, scikit-learn 1.7.1, pandas 2.2.3, joblib 1.5.1
+# Nếu chưa có, cài riêng: pip install numpy scikit-learn pandas joblib
+# Không cần thêm vào requirements.txt vì đã có sẵn

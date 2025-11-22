@@ -33,28 +33,7 @@ const PREDICT_VALIDATION_RULES = {
   extracurricularActivities: validationRules.extracurricularActivities,
 };
 
-// Hàm dự đoán tạm thời - sẽ thay thế bằng API thật sau
-const predictFinalGrade = async () => {
-  // TODO: Thay thế bằng API call thật khi backend ready
-  // const response = await fetch("/api/predict/", {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //     Authorization: `Bearer ${token}`,
-  //   },
-  //   body: JSON.stringify({
-  //     studyHourPerWeek,
-  //     previousGrade,
-  //     attendanceRate,
-  //     extracurricularActivities,
-  //   }),
-  // });
-  // const data = await response.json();
-  // return data.predictedGrade;
-
-  // Tạm thời return giá trị mặc định
-  return 75;
-};
+import { predictionService } from "../services/predictionService";
 
 const PredictPage = () => {
   const { user } = useAuth();
@@ -134,28 +113,51 @@ const PredictPage = () => {
 
       setIsSubmitting(true);
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      try {
+        // Gọi API dự đoán
+        const result = await predictionService.predict({
+          studyHoursPerWeek: parseFloat(values.studyHoursPerWeek),
+          attendanceRate: parseFloat(values.attendanceRate),
+          pastExamScores: parseFloat(values.pastExamScores),
+          parentalEducationLevel: values.parentalEducationLevel,
+          internetAccessAtHome: values.internetAccessAtHome,
+          extracurricularActivities: values.extracurricularActivities,
+        });
 
-      const finalGrade = await predictFinalGrade();
+        if (result.success) {
+          const finalGrade = result.data.predictedScore;
 
-      setResult({
-        finalExamScore: finalGrade,
-        inputs: { ...values },
-        timestamp: new Date().toISOString(),
-      });
+          setResult({
+            finalExamScore: finalGrade,
+            inputs: { ...values },
+            timestamp: new Date().toISOString(),
+          });
 
-      // Save to history
-      const newHistoryItem = {
-        timestamp: new Date().toISOString(),
-        details: `Thời gian học: ${values.studyHoursPerWeek}h/tuần, Tỉ lệ có mặt: ${values.attendanceRate}%, Điểm thi trước: ${values.pastExamScores}, Trình độ phụ huynh: ${values.parentalEducationLevel}, Internet tại nhà: ${values.internetAccessAtHome}, Hoạt động ngoại khóa: ${values.extracurricularActivities}`,
-        finalExamScore: finalGrade,
-        inputs: { ...values },
-      };
+          // Save to history
+          const newHistoryItem = {
+            timestamp: new Date().toISOString(),
+            details: `Thời gian học: ${values.studyHoursPerWeek}h/tuần, Tỉ lệ có mặt: ${values.attendanceRate}%, Điểm thi trước: ${values.pastExamScores}, Trình độ phụ huynh: ${values.parentalEducationLevel}, Internet tại nhà: ${values.internetAccessAtHome}, Hoạt động ngoại khóa: ${values.extracurricularActivities}`,
+            finalExamScore: finalGrade,
+            inputs: { ...values },
+          };
 
-      setPredictionHistory((prev) => [newHistoryItem, ...prev]);
-
-      setIsSubmitting(false);
+          setPredictionHistory((prev) => [newHistoryItem, ...prev]);
+        } else {
+          // Hiển thị lỗi
+          setResult({
+            error: result.error,
+            inputs: { ...values },
+          });
+        }
+      } catch (error) {
+        console.error("Error predicting:", error);
+        setResult({
+          error: error.message || "Có lỗi xảy ra khi dự đoán",
+          inputs: { ...values },
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
     },
     [
       values,
@@ -379,30 +381,41 @@ const PredictPage = () => {
 
         {result && (
           <div style={resultContainer}>
-            <h2 style={resultTitle}>Kết quả dự đoán</h2>
-            <div style={resultGrade}>{result.finalExamScore}/100</div>
-            <div style={resultDetails}>
-              <div>
-                <strong>Thời gian học:</strong> {result.inputs.studyHoursPerWeek}{" "}
-                giờ/tuần
-              </div>
-              <div>
-                <strong>Tỉ lệ có mặt:</strong> {result.inputs.attendanceRate}%
-              </div>
-              <div>
-                <strong>Điểm thi trước đó:</strong> {result.inputs.pastExamScores}
-                /100
-              </div>
-              <div>
-                <strong>Trình độ phụ huynh:</strong> {result.inputs.parentalEducationLevel}
-              </div>
-              <div>
-                <strong>Internet tại nhà:</strong> {result.inputs.internetAccessAtHome}
-              </div>
-              <div>
-                <strong>Hoạt động ngoại khóa:</strong> {result.inputs.extracurricularActivities}
-              </div>
-            </div>
+            {result.error ? (
+              <>
+                <h2 style={resultTitle}>Lỗi</h2>
+                <div style={{ color: "#e74c3c", padding: "1rem" }}>
+                  {result.error}
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 style={resultTitle}>Kết quả dự đoán</h2>
+                <div style={resultGrade}>{result.finalExamScore}/100</div>
+                <div style={resultDetails}>
+                  <div>
+                    <strong>Thời gian học:</strong> {result.inputs.studyHoursPerWeek}{" "}
+                    giờ/tuần
+                  </div>
+                  <div>
+                    <strong>Tỉ lệ có mặt:</strong> {result.inputs.attendanceRate}%
+                  </div>
+                  <div>
+                    <strong>Điểm thi trước đó:</strong> {result.inputs.pastExamScores}
+                    /100
+                  </div>
+                  <div>
+                    <strong>Trình độ phụ huynh:</strong> {result.inputs.parentalEducationLevel}
+                  </div>
+                  <div>
+                    <strong>Internet tại nhà:</strong> {result.inputs.internetAccessAtHome}
+                  </div>
+                  <div>
+                    <strong>Hoạt động ngoại khóa:</strong> {result.inputs.extracurricularActivities}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
