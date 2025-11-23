@@ -36,7 +36,7 @@ const PREDICT_VALIDATION_RULES = {
 import { predictionService } from "../services/predictionService";
 
 const PredictPage = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [_predictionHistory, setPredictionHistory] = useLocalStorage(
     `prediction_history_${user?.id || "guest"}`,
     []
@@ -112,6 +112,13 @@ const PredictPage = () => {
       }
 
       setIsSubmitting(true);
+
+      // Kiểm tra user đã đăng nhập chưa
+      if (!token) {
+        console.warn("DEBUG: PredictPage - No token found, prediction will not be saved to database");
+      } else {
+        console.log("DEBUG: PredictPage - Token found, prediction will be saved to database");
+      }
 
       try {
         // Gọi API dự đoán

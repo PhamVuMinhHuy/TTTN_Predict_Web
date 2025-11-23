@@ -1,7 +1,7 @@
 from main.views.home_view import home
 from main.views.auth_views import RegisterView, LoginView
 from main.views.profile_views import UserProfileView
-from main.views.prediction_views import PredictView
+from main.views.prediction_views import PredictView, PredictionHistoryView
 from django.contrib import admin
 from django.urls import path, re_path
 from .swagger import schema_view
@@ -13,6 +13,7 @@ urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/profile/', UserProfileView.as_view(), name='user-profile'),  # API lấy thông tin user
     path('api/predict/', PredictView.as_view(), name='predict'),  # API dự đoán điểm
+    path('api/predictions/history/', PredictionHistoryView.as_view(), name='prediction-history'),  # API lấy lịch sử dự đoán
     
     # Swagger URLs
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),

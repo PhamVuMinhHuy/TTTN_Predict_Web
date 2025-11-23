@@ -26,3 +26,31 @@ class User(Document):
     
     def __str__(self):
         return self.username
+
+
+class Prediction(Document):
+    """Model để lưu lịch sử dự đoán điểm của user"""
+    user = fields.ReferenceField(User, required=True)
+    # Input data
+    study_hours_per_week = fields.FloatField(required=True)
+    attendance_rate = fields.FloatField(required=True)
+    past_exam_scores = fields.FloatField(required=True)
+    parental_education_level = fields.StringField(required=True)
+    internet_access_at_home = fields.StringField(required=True)
+    extracurricular_activities = fields.StringField(required=True)
+    # Output
+    predicted_score = fields.FloatField(required=True)
+    # Metadata
+    created_at = fields.DateTimeField(default=datetime.utcnow)
+    
+    meta = {
+        'collection': 'predictions',
+        'indexes': [
+            'user',
+            'created_at',
+            ('user', '-created_at')  # Compound index để query nhanh hơn
+        ]
+    }
+    
+    def __str__(self):
+        return f"Prediction for {self.user.username} - Score: {self.predicted_score}"
