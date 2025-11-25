@@ -120,15 +120,20 @@ class AuthService:
             
             print(f"DEBUG: Password check passed for user: {user.username}")
 
-            # Tạo JWT tokens
+            # Tạo JWT tokens, THÊM role
             payload = {
                 'user_id': str(user.id),
                 'username': user.username,
-                'exp': time.time() + 3600  # 1 hour
+                'role': user.role,          # <-- thêm dòng này
+                'exp': time.time() + 3600   # 1 hour
             }
             
             access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-            refresh_token = jwt.encode({**payload, 'exp': time.time() + 86400}, settings.SECRET_KEY, algorithm='HS256')
+            refresh_token = jwt.encode(
+                {**payload, 'exp': time.time() + 86400},
+                settings.SECRET_KEY,
+                algorithm='HS256'
+            )
 
             print(f"DEBUG: Tokens generated successfully for user: {user.username}")
 
@@ -142,6 +147,7 @@ class AuthService:
                     "name": user.first_name or user.username,
                     "first_name": user.first_name,
                     "last_name": user.last_name,
+                    "role": user.role,      # <-- thêm dòng này
                 }
             }
 

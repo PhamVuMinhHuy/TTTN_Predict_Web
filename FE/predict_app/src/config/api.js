@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
   PROFILE: `${API_BASE_URL}/auth/profile/`,
   PREDICT: `${API_BASE_URL}/api/predict/`,
   PREDICTION_HISTORY: `${API_BASE_URL}/api/predictions/history/`,
+  ADMIN_USERS: `${API_BASE_URL}/api/admin/users/`, // <-- thêm
 };
 
 export { API_BASE_URL };

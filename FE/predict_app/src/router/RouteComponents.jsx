@@ -5,7 +5,14 @@ import { useAuth } from "../hooks/useAuth";
 export const ProtectedRoute = ({ children }) => {
   const { user, token, loading } = useAuth();
 
-  console.log("DEBUG: ProtectedRoute - user:", user, "token:", token ? "exists" : "null", "loading:", loading);
+  console.log(
+    "DEBUG: ProtectedRoute - user:",
+    user,
+    "token:",
+    token ? "exists" : "null",
+    "loading:",
+    loading
+  );
 
   // Nếu đang loading thì chờ
   if (loading) {
@@ -43,5 +50,27 @@ export const PublicRoute = ({ children }) => {
   }
 
   console.log("DEBUG: PublicRoute - allowing access");
+  return children;
+};
+
+// Admin Route Component - Chỉ cho phép user đã đăng nhập và có vai trò admin
+export const AdminRoute = ({ children }) => {
+  const { user, token, loading } = useAuth();
+
+  if (loading) {
+    return <div>Đang tải...</div>;
+  }
+
+  const tokenFromStorage = localStorage.getItem("token");
+  const hasToken = token || tokenFromStorage;
+
+  if (!hasToken) {
+    return <Navigate to="/auth?mode=login" replace />;
+  }
+
+  if (!user || user.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+
   return children;
 };

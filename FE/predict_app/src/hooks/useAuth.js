@@ -15,11 +15,11 @@ export const useAuth = () => {
 
       try {
         const result = await authService.login(credentials);
+        console.log("DEBUG: useAuth.login - result:", result);
 
         if (result.success) {
           setToken(result.data.access);
 
-          // Chỉ sử dụng data từ backend, xóa fallback mock data
           const userData = result.data.user
             ? {
                 id: result.data.user.id,
@@ -31,21 +31,13 @@ export const useAuth = () => {
                   result.data.user.username,
                 first_name: result.data.user.first_name,
                 last_name: result.data.user.last_name,
+                role: result.data.user.role || "user", // <-- THÊM DÒNG NÀY
               }
-            : null; // Xóa fallback mock data này
-          // : {
-          //     id: Date.now(),
-          //     email: credentials.email,
-          //     name: credentials.email.split("@")[0],
-          //     username: credentials.email.split("@")[0],
-          //   };
+            : null;
 
-          if (!userData) {
-            throw new Error("Không thể lấy thông tin người dùng");
-          }
-
-          console.log("DEBUG: Setting user data:", userData);
           setUser(userData);
+          localStorage.setItem("token", JSON.stringify(result.data.access));
+          localStorage.setItem("user", JSON.stringify(userData));
           return { success: true };
         } else {
           throw new Error(result.error);

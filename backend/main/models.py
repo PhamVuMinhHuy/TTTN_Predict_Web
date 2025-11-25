@@ -10,7 +10,12 @@ class User(Document):
     first_name = fields.StringField(max_length=30)
     last_name = fields.StringField(max_length=30)
     date_joined = fields.DateTimeField(default=datetime.utcnow)
-    
+    role = fields.StringField(
+        required=True,
+        choices=['user', 'admin'],
+        default='user',
+        max_length=20
+        )
     meta = {
         'collection': 'users'
         # Bỏ indexes để tránh conflict

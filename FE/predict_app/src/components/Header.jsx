@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import './Header.css';
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import "../../assets/styles/Header.css";
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -11,8 +11,8 @@ const Header = () => {
   const userMenuRef = useRef(null);
 
   const isActive = (path) => {
-    if (path === '/') {
-      return location.pathname === '/';
+    if (path === "/") {
+      return location.pathname === "/";
     }
     return location.pathname.startsWith(path);
   };
@@ -26,11 +26,11 @@ const Header = () => {
     };
 
     if (showUserMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showUserMenu]);
 
@@ -40,7 +40,7 @@ const Header = () => {
   };
 
   const handleSettings = () => {
-    navigate('/settings');
+    navigate("/settings");
     setShowUserMenu(false);
   };
 
@@ -56,25 +56,27 @@ const Header = () => {
             <nav className="nav-bar">
               <Link
                 to="/"
-                className={`nav-link ${isActive('/') ? 'active' : ''}`}
+                className={`nav-link ${isActive("/") ? "active" : ""}`}
               >
                 Home
               </Link>
               <Link
                 to="/predict"
-                className={`nav-link ${isActive('/predict') ? 'active' : ''}`}
+                className={`nav-link ${isActive("/predict") ? "active" : ""}`}
               >
                 Predict
               </Link>
               <Link
                 to="/history"
-                className={`nav-link ${isActive('/history') ? 'active' : ''}`}
+                className={`nav-link ${isActive("/history") ? "active" : ""}`}
               >
                 History
               </Link>
               <Link
                 to="/scoreboard"
-                className={`nav-link ${isActive('/scoreboard') ? 'active' : ''}`}
+                className={`nav-link ${
+                  isActive("/scoreboard") ? "active" : ""
+                }`}
               >
                 Scoreboard
               </Link>
@@ -109,7 +111,7 @@ const Header = () => {
             </div>
           </>
         )}
-        
+
         {!user && (
           <div className="auth-buttons">
             <Link to="/auth?mode=login" className="login-btn">
@@ -126,4 +128,3 @@ const Header = () => {
 };
 
 export default Header;
-
