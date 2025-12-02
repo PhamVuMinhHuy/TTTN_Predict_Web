@@ -20,24 +20,21 @@ export const useAuth = () => {
         if (result.success) {
           setToken(result.data.access);
 
-          const userData = result.data.user
-            ? {
-                id: result.data.user.id,
-                username: result.data.user.username,
-                email: result.data.user.email,
-                name:
-                  result.data.user.name ||
-                  result.data.user.first_name ||
-                  result.data.user.username,
-                first_name: result.data.user.first_name,
-                last_name: result.data.user.last_name,
-                role: result.data.user.role || "user", // <-- THÊM DÒNG NÀY
-              }
-            : null;
+          const backendUser = result.data.user || {};
+          const userData = {
+            id: backendUser.id || Date.now(),
+            email: backendUser.email || credentials.email,
+            name:
+              backendUser.name ||
+              backendUser.username ||
+              (backendUser.email && backendUser.email.split("@")[0]) ||
+              credentials.email.split("@")[0],
+            username: backendUser.username || null,
+            role: backendUser.role || "student",
+            class_name: backendUser.class_name || null,
+          };
 
           setUser(userData);
-          localStorage.setItem("token", JSON.stringify(result.data.access));
-          localStorage.setItem("user", JSON.stringify(userData));
           return { success: true };
         } else {
           throw new Error(result.error);

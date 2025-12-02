@@ -36,7 +36,8 @@ class AuthService:
             user_data = {
                 "username": username,
                 "first_name": name,
-                "last_name": ""
+                "last_name": "",
+                "role": "student",
             }
             # Chỉ set email nếu không rỗng
             if email and email.strip():
@@ -95,18 +96,18 @@ class AuthService:
             raise ValidationError({"error": f"Failed to create user: {str(e)}"})
 
     @staticmethod
-    def login_user(username_or_email, password):
+    def login_user(username, password):
         try:
-            print(f"DEBUG: Attempting to login with identifier: {username_or_email}")
+            print(f"DEBUG: Attempting to login with identifier: {username}")
             
             # Tìm user bằng username trước
-            user = User.objects(username=username_or_email).first()
+            user = User.objects(username=username).first()
             if not user:
                 # Nếu không tìm thấy, thử tìm bằng email
-                print(f"DEBUG: User not found by username, trying email: {username_or_email}")
-                user = User.objects(email=username_or_email).first()
+                print(f"DEBUG: User not found by username, trying email: {username}")
+                user = User.objects(email=username).first()
                 if not user:
-                    print(f"DEBUG: User not found with username or email: {username_or_email}")
+                    print(f"DEBUG: User not found with username or email: {username}")
                     raise ValidationError({"detail": "Invalid username or password"})
                 else:
                     print(f"DEBUG: User found by email: {user.username}")
@@ -144,11 +145,9 @@ class AuthService:
                     "id": str(user.id),
                     "username": user.username,
                     "email": user.email,
-                    "name": user.first_name or user.username,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "role": user.role,      # <-- thêm dòng này
-                }
+                    "role": getattr(user, "role", "student"),
+                    "class_name": getattr(user, "class_name", None),
+                },
             }
 
         except ValidationError:

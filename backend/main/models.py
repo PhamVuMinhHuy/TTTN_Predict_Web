@@ -12,10 +12,12 @@ class User(Document):
     date_joined = fields.DateTimeField(default=datetime.utcnow)
     role = fields.StringField(
         required=True,
-        choices=['user', 'admin'],
-        default='user',
-        max_length=20
-        )
+        choices=['student', 'teacher', 'admin'],
+        default='student',
+        max_length=20,
+    )
+    class_name = fields.StringField(max_length=50)  # <-- chỉ 1 dòng này để thêm Lớp
+
     meta = {
         'collection': 'users'
         # Bỏ indexes để tránh conflict

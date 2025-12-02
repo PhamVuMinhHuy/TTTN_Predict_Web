@@ -74,3 +74,25 @@ export const AdminRoute = ({ children }) => {
 
   return children;
 };
+
+// Teacher Route Component - Chỉ cho phép user role teacher
+export const TeacherRoute = ({ children }) => {
+  const { user, token, loading } = useAuth();
+
+  if (loading) {
+    return <div>Đang tải...</div>;
+  }
+
+  const tokenFromStorage = localStorage.getItem("token");
+  const hasToken = token || tokenFromStorage;
+
+  if (!hasToken) {
+    return <Navigate to="/auth?mode=login" replace />;
+  }
+
+  if (!user || user.role !== "teacher") {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};

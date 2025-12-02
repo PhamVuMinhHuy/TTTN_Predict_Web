@@ -41,6 +41,7 @@ class UserProfileView(APIView):
                         "name": "Test User",
                         "first_name": "Test",
                         "last_name": "User",
+                        "role": "student",
                         "date_joined": "2024-01-01T00:00:00Z"
                     }
                 }
@@ -122,6 +123,8 @@ class UserProfileView(APIView):
                 "name": user.first_name or user.username,  # Tương thích với frontend
                 "first_name": user.first_name,
                 "last_name": user.last_name,
+                "class_name": getattr(user, "class_name", None),
+                "role": user.role,
                 "date_joined": user.date_joined.isoformat() if user.date_joined else None
             }, status=status.HTTP_200_OK)
             

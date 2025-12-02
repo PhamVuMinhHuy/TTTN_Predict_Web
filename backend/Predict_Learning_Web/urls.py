@@ -3,6 +3,7 @@ from main.views.auth_views import RegisterView, LoginView
 from main.views.profile_views import UserProfileView
 from main.views.prediction_views import PredictView, PredictionHistoryView
 from main.views.admin_views import AdminUserListCreateView, AdminUserDeleteView
+from main.views.teacher_views import TeacherStudentListView
 from django.contrib import admin
 from django.urls import path, re_path
 from .swagger import schema_view
@@ -17,6 +18,7 @@ urlpatterns = [
     path('api/predictions/history/', PredictionHistoryView.as_view(), name='prediction-history'),
     path('api/admin/users/', AdminUserListCreateView.as_view(), name='admin-users'),
     path('api/admin/users/<str:user_id>/', AdminUserDeleteView.as_view(), name='admin-user-delete'),
+    path('api/teacher/students/', TeacherStudentListView.as_view(), name='teacher-students'),
     # Swagger URLs
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

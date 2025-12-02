@@ -86,6 +86,7 @@ class AdminUserListCreateView(AdminRequiredMixin, APIView):
                 "first_name": u.first_name,
                 "last_name": u.last_name,
                 "role": u.role,
+                "class_name": getattr(u, "class_name", None),  # <-- thêm
                 "date_joined": u.date_joined.isoformat() if u.date_joined else None,
             })
         return Response({"users": data}, status=status.HTTP_200_OK)
@@ -109,7 +110,13 @@ class AdminUserListCreateView(AdminRequiredMixin, APIView):
                 "email": openapi.Schema(type=openapi.TYPE_STRING),
                 "first_name": openapi.Schema(type=openapi.TYPE_STRING),
                 "last_name": openapi.Schema(type=openapi.TYPE_STRING),
-                "role": openapi.Schema(type=openapi.TYPE_STRING, enum=['user', 'admin']),
+                "role": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=['student', 'teacher', 'admin']
+                ),
+                "class_name": openapi.Schema(
+                    type=openapi.TYPE_STRING
+                ),
             },
             required=["username", "password"]
         ),
@@ -125,7 +132,8 @@ class AdminUserListCreateView(AdminRequiredMixin, APIView):
         email = request.data.get("email", "")
         first_name = request.data.get("first_name", "")
         last_name = request.data.get("last_name", "")
-        role = request.data.get("role", "user")
+        role = request.data.get("role", "student")
+        class_name = request.data.get("class_name", "").strip()
 
         if not username or not password:
             return Response({
@@ -142,12 +150,17 @@ class AdminUserListCreateView(AdminRequiredMixin, APIView):
                 "error": "Email already exists"
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        # Nếu là admin thì bỏ class_name
+        if role == "admin":
+            class_name = None
+
         user = User(
             username=username,
             email=email or None,
             first_name=first_name,
             last_name=last_name,
-            role=role if role in ['user', 'admin'] else 'user',
+            role=role if role in ['student', 'teacher', 'admin'] else 'student',
+            class_name=class_name or None,
         )
         user.set_password(password)
         user.save()
@@ -161,6 +174,7 @@ class AdminUserListCreateView(AdminRequiredMixin, APIView):
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "role": user.role,
+                "class_name": user.class_name,
             }
         }, status=status.HTTP_201_CREATED)
 

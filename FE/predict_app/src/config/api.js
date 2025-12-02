@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
   PREDICT: `${API_BASE_URL}/api/predict/`,
   PREDICTION_HISTORY: `${API_BASE_URL}/api/predictions/history/`,
   ADMIN_USERS: `${API_BASE_URL}/api/admin/users/`, // <-- thêm
+  TEACHER_STUDENTS: `${API_BASE_URL}/api/teacher/students/`,
 };
 
 export { API_BASE_URL };

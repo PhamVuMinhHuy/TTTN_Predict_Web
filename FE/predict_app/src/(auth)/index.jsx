@@ -261,14 +261,21 @@ export default function Auth() {
   const handleSuccess = () => {
     console.log("DEBUG: handleSuccess called");
 
-    // Nếu là admin thì chuyển sang dashboard admin
     const currentUser =
       user || JSON.parse(localStorage.getItem("user") || "null");
-    if (currentUser && currentUser.role === "admin") {
-      navigate("/admin");
-    } else {
-      navigate("/");
+
+    if (currentUser) {
+      if (currentUser.role === "admin") {
+        navigate("/admin");
+        return;
+      }
+      if (currentUser.role === "teacher") {
+        navigate("/teacher");
+        return;
+      }
     }
+
+    navigate("/");
   };
 
   // Get header content based on mode

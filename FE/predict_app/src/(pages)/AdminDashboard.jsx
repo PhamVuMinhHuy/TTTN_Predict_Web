@@ -57,7 +57,8 @@ export default function AdminDashboard() {
     password: "",
     first_name: "",
     last_name: "",
-    role: "user",
+    role: "student",
+    class_name: "", // <-- thêm
   });
   const [submitting, setSubmitting] = useState(false);
   const [hoveredRow, setHoveredRow] = useState(null);
@@ -92,6 +93,7 @@ export default function AdminDashboard() {
     setSubmitting(true);
     setError(null);
 
+    // Gửi cả class_name (backend sẽ bỏ qua nếu role=admin)
     const result = await adminService.createUser(formData);
     if (result.success) {
       const list = await adminService.getUsers();
@@ -104,7 +106,8 @@ export default function AdminDashboard() {
         password: "",
         first_name: "",
         last_name: "",
-        role: "user",
+        role: "student",
+        class_name: "", // reset
       });
     } else {
       setError(result.error);
@@ -190,6 +193,7 @@ export default function AdminDashboard() {
                       <th style={th}>Email</th>
                       <th style={th}>Họ tên</th>
                       <th style={th}>Role</th>
+                      <th style={th}>Lớp</th> {/* <-- thêm */}
                       <th style={th}>Ngày tạo</th>
                       <th style={{ ...th, textAlign: "center" }}>Hành động</th>
                     </tr>
@@ -216,15 +220,23 @@ export default function AdminDashboard() {
                             : "-"}
                         </td>
                         <td style={td}>
-                          {u.role === "admin" ? (
+                          {u.role === "admin" && (
                             <span style={roleAdmin}>Admin</span>
-                          ) : (
-                            <span style={roleUser}>User</span>
+                          )}
+                          {u.role === "teacher" && (
+                            <span style={roleUser}>Teacher</span>
+                          )}
+                          {u.role === "student" && (
+                            <span style={roleUser}>Student</span>
                           )}
                         </td>
+                        <td style={td}>{u.class_name || "-"}</td>{" "}
+                        {/* <-- thêm */}
                         <td style={td}>
                           {u.date_joined
-                            ? new Date(u.date_joined).toLocaleDateString("vi-VN")
+                            ? new Date(u.date_joined).toLocaleDateString(
+                                "vi-VN"
+                              )
                             : "-"}
                         </td>
                         <td style={tdCenter}>
@@ -340,6 +352,31 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              {/* Trường Lớp - chỉ áp dụng cho student/teacher */}
+              <div style={formGroup}>
+                <label style={label} htmlFor="class_name">
+                  Lớp (chỉ dành cho học sinh / giáo viên)
+                </label>
+                <input
+                  id="class_name"
+                  name="class_name"
+                  value={formData.class_name}
+                  onChange={handleInputChange}
+                  onFocus={() => setFocusedField("class_name")}
+                  onBlur={() => setFocusedField(null)}
+                  style={{
+                    ...input,
+                    ...(focusedField === "class_name" ? inputFocus : {}),
+                  }}
+                  placeholder="VD: 10A1, 12A3..."
+                  disabled={formData.role === "admin"} // <-- admin không cần lớp
+                />
+                <div style={helpText}>
+                  Trường này chỉ dùng để quản lý học sinh và giáo viên theo lớp.
+                  Tài khoản Admin không cần nhập lớp.
+                </div>
+              </div>
+
               <div style={formGroup}>
                 <label style={label} htmlFor="password">
                   Mật khẩu *
@@ -377,11 +414,13 @@ export default function AdminDashboard() {
                     ...(focusedField === "role" ? inputFocus : {}),
                   }}
                 >
-                  <option value="user">User</option>
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
                   <option value="admin">Admin</option>
                 </select>
                 <div style={helpText}>
-                  - User: tài khoản bình thường
+                  - Student: tài khoản học sinh/sinh viên
+                  <br />- Teacher: tài khoản giáo viên
                   <br />- Admin: có quyền quản trị hệ thống
                 </div>
               </div>

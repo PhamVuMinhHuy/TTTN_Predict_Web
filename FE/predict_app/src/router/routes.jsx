@@ -2,7 +2,12 @@ import { createBrowserRouter } from "react-router-dom";
 import { lazy } from "react";
 import Layout from "../components/Layout";
 import SuspenseWrapper from "../components/SuspenseWrapper";
-import { ProtectedRoute, PublicRoute, AdminRoute } from "./RouteComponents";
+import {
+  ProtectedRoute,
+  PublicRoute,
+  AdminRoute,
+  TeacherRoute,
+} from "./RouteComponents";
 
 // Lazy load components
 const LandingPage = lazy(() => import("../(pages)/LandingPage"));
@@ -12,6 +17,7 @@ const HistoryPage = lazy(() => import("../(pages)/HistoryPage"));
 const ScoreboardPage = lazy(() => import("../(pages)/ScoreboardPage"));
 const SettingsPage = lazy(() => import("../(pages)/SettingsPage"));
 const AdminDashboard = lazy(() => import("../(pages)/AdminDashboard")); // <-- thêm
+const TeacherDashboard = lazy(() => import("../(pages)/TeacherDashboard"));
 
 export const router = createBrowserRouter([
   {
@@ -84,6 +90,16 @@ export const router = createBrowserRouter([
               <AdminDashboard />
             </SuspenseWrapper>
           </AdminRoute>
+        ),
+      },
+      {
+        path: "/teacher",
+        element: (
+          <TeacherRoute>
+            <SuspenseWrapper loadingMessage="Đang tải Teacher Dashboard...">
+              <TeacherDashboard />
+            </SuspenseWrapper>
+          </TeacherRoute>
         ),
       },
     ],
