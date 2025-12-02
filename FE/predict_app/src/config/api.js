@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
   PREDICTION_HISTORY: `${API_BASE_URL}/api/predictions/history/`,
   ADMIN_USERS: `${API_BASE_URL}/api/admin/users/`, // <-- thêm
   TEACHER_STUDENTS: `${API_BASE_URL}/api/teacher/students/`,
+  TEACHER_PREDICT: `${API_BASE_URL}/api/teacher/predict/`,
 };
 
 export { API_BASE_URL };

@@ -2,34 +2,63 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { teacherService } from "../services/teacherService";
 import {
-  teacherPage,
-  teacherTopBar,
-  logoutIconButton,
-  teacherContainer,
-  teacherTitle,
-  teacherSubtitle,
-  tableCard,
-  tableBase,
+  dashboardPage,
+  dashboardContainer,
+  header,
+  headerLeft,
+  headerTitle,
+  headerSubtitle,
+  headerRight,
+  userInfo,
+  logoutBtn,
+  logoutBtnHover,
+  contentArea,
+  tableContainer,
+  table,
+  tableHead,
   th,
   td,
+  tableRow,
+  tableRowHover,
+  formGrid,
+  formGroup,
+  label,
+  input,
+  inputFocus,
+  select,
+  btnPrimary,
+  btnPrimaryHover,
+  btnSecondary,
+  btnSecondaryHover,
   modalBackdrop,
-  modalContainer,
+  modal,
   modalHeader,
-  smallButton,
-  inputField,
-  miniTh,
-  miniTd,
-} from "../assets/styles/teacher.styles";
+  modalTitle,
+  closeBtn,
+  closeBtnHover,
+  emptyState,
+  emptyStateIcon,
+  emptyStateText,
+  loadingContainer,
+  searchContainer,
+  searchInput,
+} from "../assets/styles/teacherDashboard.styles";
 
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [hoverStates, setHoverStates] = useState({});
+
+  // Data states
   const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Modal and form state
-  const [showModal, setShowModal] = useState(false);
+  // Modal states
+  const [showPredictModal, setShowPredictModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+
+  // Form states
+  const [searchTerm, setSearchTerm] = useState("");
   const [formValues, setFormValues] = useState({
     studyHoursPerWeek: "",
     attendanceRate: "",
@@ -43,20 +72,26 @@ export default function TeacherDashboard() {
   const [predictionResult, setPredictionResult] = useState(null);
 
   useEffect(() => {
-    const fetchStudents = async () => {
-      setLoading(true);
-      setError(null);
-      const result = await teacherService.getStudents();
-      if (result.success) setStudents(result.data);
-      else setError(result.error);
-      setLoading(false);
-    };
-    fetchStudents();
+    loadStudents();
   }, []);
 
-  if (!user || user.role !== "teacher") return null;
+  const loadStudents = async () => {
+    setLoading(true);
+    setError(null);
+    const result = await teacherService.getStudents();
+    if (result.success) {
+      setStudents(result.data);
+    } else {
+      setError(result.error);
+    }
+    setLoading(false);
+  };
 
-  const openModalForStudent = (student) => {
+  const handleHover = (key, value) => {
+    setHoverStates((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const openPredictModal = (student) => {
     setSelectedStudent(student);
     setFormValues({
       studyHoursPerWeek: "",
@@ -68,11 +103,11 @@ export default function TeacherDashboard() {
     });
     setFormError(null);
     setPredictionResult(null);
-    setShowModal(true);
+    setShowPredictModal(true);
   };
 
-  const closeModal = () => {
-    setShowModal(false);
+  const closePredictModal = () => {
+    setShowPredictModal(false);
     setSelectedStudent(null);
   };
 
@@ -130,98 +165,200 @@ export default function TeacherDashboard() {
     setSubmitting(false);
   };
 
+  if (!user || user.role !== "teacher") return null;
+
+  const filteredStudents = students.filter(
+    (s) =>
+      s.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      `${s.first_name} ${s.last_name}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div style={teacherPage}>
-      {/* Thanh top nhỏ chỉ có logout */}
-      <div style={teacherTopBar}>
-        <button onClick={logout} title="Đăng xuất" style={logoutIconButton}>
-          ⏻
-        </button>
-      </div>
-
-      <div style={teacherContainer}>
-        <h1 style={teacherTitle}>Teacher Dashboard</h1>
-        <p style={teacherSubtitle}>
-          Quản lý học sinh trong lớp:{" "}
-          <strong>{user.class_name || "(chưa có lớp)"}</strong>
-        </p>
-
-        {loading ? (
-          <div>Đang tải danh sách học sinh...</div>
-        ) : error ? (
-          <div style={{ color: "#b91c1c" }}>Lỗi: {error}</div>
-        ) : students.length === 0 ? (
-          <div>Chưa có học sinh nào trong lớp.</div>
-        ) : (
-          <div style={tableCard}>
-            <table style={tableBase}>
-              <thead>
-                <tr style={{ backgroundColor: "#f9fafb" }}>
-                  <th style={th}>Username</th>
-                  <th style={th}>Họ tên</th>
-                  <th style={th}>Email</th>
-                  <th style={th}>Lớp</th>
-                  <th style={th}>Điểm gần nhất</th>
-                  <th style={th}>Thời gian</th>
-                  <th style={th}>Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {students.map((s) => {
-                  const fullName = `${s.first_name || ""} ${
-                    s.last_name || ""
-                  }`.trim();
-                  return (
-                    <tr key={s.id}>
-                      <td style={td}>{s.username}</td>
-                      <td style={td}>{fullName || "-"}</td>
-                      <td style={td}>{s.email || "-"}</td>
-                      <td style={td}>{s.class_name || "-"}</td>
-                      <td style={td}>
-                        {s.last_score !== null && s.last_score !== undefined
-                          ? Number(s.last_score).toFixed(2)
-                          : "-"}
-                      </td>
-                      <td style={td}>
-                        {s.last_predicted_at
-                          ? new Date(s.last_predicted_at).toLocaleString(
-                              "vi-VN"
-                            )
-                          : "-"}
-                      </td>
-                      <td style={td}>
-                        <button
-                          style={smallButton}
-                          onClick={() => openModalForStudent(s)}
-                        >
-                          Dự đoán & bảng điểm
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+    <div style={dashboardPage}>
+      <div style={dashboardContainer}>
+        {/* Header */}
+        <div style={header}>
+          <div style={headerLeft}>
+            <h1 style={headerTitle}>Teacher Dashboard</h1>
+            <p style={headerSubtitle}>
+              Lớp: <strong>{user.class_name || "(chưa có lớp)"}</strong>
+            </p>
           </div>
-        )}
+          <div style={headerRight}>
+            <div style={userInfo}>
+              <span>👨‍🏫</span>
+              <span>{user.username}</span>
+            </div>
+            <button
+              onClick={logout}
+              style={{
+                ...logoutBtn,
+                ...(hoverStates.logout ? logoutBtnHover : {}),
+              }}
+              onMouseEnter={() => handleHover("logout", true)}
+              onMouseLeave={() => handleHover("logout", false)}
+            >
+              🚪 Đăng xuất
+            </button>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div style={contentArea}>
+          {loading ? (
+            <div style={loadingContainer}>
+              <div style={{ fontSize: "3rem" }}>⏳</div>
+              <div>Đang tải dữ liệu...</div>
+            </div>
+          ) : (
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "1.5rem",
+                }}
+              >
+                <h2 style={{ fontSize: "1.5rem", fontWeight: "700" }}>
+                  Danh sách học sinh
+                </h2>
+              </div>
+
+              <div style={searchContainer}>
+                <input
+                  type="text"
+                  placeholder="🔍 Tìm kiếm học sinh..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={searchInput}
+                />
+              </div>
+
+              {error ? (
+                <div style={{ ...emptyState, color: "#ef4444" }}>
+                  <div style={emptyStateIcon}>⚠️</div>
+                  <div style={emptyStateText}>Lỗi: {error}</div>
+                </div>
+              ) : filteredStudents.length === 0 ? (
+                <div style={emptyState}>
+                  <div style={emptyStateIcon}>👥</div>
+                  <div style={emptyStateText}>Không tìm thấy học sinh</div>
+                </div>
+              ) : (
+                <div style={tableContainer}>
+                  <table style={table}>
+                    <thead style={tableHead}>
+                      <tr>
+                        <th style={th}>Username</th>
+                        <th style={th}>Họ tên</th>
+                        <th style={th}>Email</th>
+                        <th style={th}>Lớp</th>
+                        <th style={th}>Điểm gần nhất</th>
+                        <th style={th}>Thời gian</th>
+                        <th style={th}>Hành động</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredStudents.map((student) => {
+                        const fullName = `${student.first_name || ""} ${
+                          student.last_name || ""
+                        }`.trim();
+                        return (
+                          <tr
+                            key={student.id}
+                            style={{
+                              ...tableRow,
+                              ...(hoverStates[`row-${student.id}`]
+                                ? tableRowHover
+                                : {}),
+                            }}
+                            onMouseEnter={() =>
+                              setHoverStates((p) => ({
+                                ...p,
+                                [`row-${student.id}`]: true,
+                              }))
+                            }
+                            onMouseLeave={() =>
+                              setHoverStates((p) => ({
+                                ...p,
+                                [`row-${student.id}`]: false,
+                              }))
+                            }
+                          >
+                            <td style={td}>{student.username}</td>
+                            <td style={td}>{fullName || "-"}</td>
+                            <td style={td}>{student.email || "-"}</td>
+                            <td style={td}>{student.class_name || "-"}</td>
+                            <td style={td}>
+                              {student.last_score !== null &&
+                              student.last_score !== undefined
+                                ? Number(student.last_score).toFixed(2)
+                                : "-"}
+                            </td>
+                            <td style={td}>
+                              {student.last_predicted_at
+                                ? new Date(
+                                    student.last_predicted_at
+                                  ).toLocaleString("vi-VN")
+                                : "-"}
+                            </td>
+                            <td style={td}>
+                              <button
+                                onClick={() => openPredictModal(student)}
+                                style={{
+                                  ...btnPrimary,
+                                  ...(hoverStates[`btn-${student.id}`]
+                                    ? btnPrimaryHover
+                                    : {}),
+                                }}
+                                onMouseEnter={() =>
+                                  setHoverStates((p) => ({
+                                    ...p,
+                                    [`btn-${student.id}`]: true,
+                                  }))
+                                }
+                                onMouseLeave={() =>
+                                  setHoverStates((p) => ({
+                                    ...p,
+                                    [`btn-${student.id}`]: false,
+                                  }))
+                                }
+                              >
+                                Dự đoán điểm
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {showModal && selectedStudent && (
-        <div style={modalBackdrop} onClick={closeModal}>
-          <div style={modalContainer} onClick={(e) => e.stopPropagation()}>
+      {/* Prediction Modal */}
+      {showPredictModal && selectedStudent && (
+        <div style={modalBackdrop} onClick={closePredictModal}>
+          <div style={modal} onClick={(e) => e.stopPropagation()}>
             <div style={modalHeader}>
-              <h2 style={{ fontSize: "1.2rem", fontWeight: 600 }}>
+              <h2 style={modalTitle}>
                 Dự đoán cho học sinh: {selectedStudent.username} (
                 {selectedStudent.class_name || "-"})
               </h2>
               <button
-                onClick={closeModal}
+                onClick={closePredictModal}
                 style={{
-                  border: "none",
-                  background: "transparent",
-                  fontSize: "1.2rem",
-                  cursor: "pointer",
+                  ...closeBtn,
+                  ...(hoverStates.closeModal ? closeBtnHover : {}),
                 }}
+                onMouseEnter={() => handleHover("closeModal", true)}
+                onMouseLeave={() => handleHover("closeModal", false)}
               >
                 ✕
               </button>
@@ -231,15 +368,9 @@ export default function TeacherDashboard() {
               onSubmit={handleSubmitPredict}
               style={{ display: "grid", gap: "0.75rem" }}
             >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "0.75rem",
-                }}
-              >
-                <div>
-                  <label>Thời gian học/tuần (giờ)</label>
+              <div style={formGrid}>
+                <div style={formGroup}>
+                  <label style={label}>Thời gian học/tuần (giờ) *</label>
                   <input
                     type="number"
                     name="studyHoursPerWeek"
@@ -248,11 +379,12 @@ export default function TeacherDashboard() {
                     min="0"
                     max="168"
                     step="0.5"
-                    style={inputField}
+                    style={input}
+                    required
                   />
                 </div>
-                <div>
-                  <label>Tỉ lệ có mặt (%)</label>
+                <div style={formGroup}>
+                  <label style={label}>Tỉ lệ có mặt (%) *</label>
                   <input
                     type="number"
                     name="attendanceRate"
@@ -261,11 +393,12 @@ export default function TeacherDashboard() {
                     min="0"
                     max="100"
                     step="0.1"
-                    style={inputField}
+                    style={input}
+                    required
                   />
                 </div>
-                <div>
-                  <label>Điểm thi trước đó (0-100)</label>
+                <div style={formGroup}>
+                  <label style={label}>Điểm thi trước đó (0-100) *</label>
                   <input
                     type="number"
                     name="pastExamScores"
@@ -274,16 +407,18 @@ export default function TeacherDashboard() {
                     min="0"
                     max="100"
                     step="0.1"
-                    style={inputField}
+                    style={input}
+                    required
                   />
                 </div>
-                <div>
-                  <label>Trình độ phụ huynh</label>
+                <div style={formGroup}>
+                  <label style={label}>Trình độ phụ huynh *</label>
                   <select
                     name="parentalEducationLevel"
                     value={formValues.parentalEducationLevel}
                     onChange={handleFormChange}
-                    style={inputField}
+                    style={select}
+                    required
                   >
                     <option value="">-- Chọn --</option>
                     <option value="HighSchool">HighSchool</option>
@@ -292,26 +427,28 @@ export default function TeacherDashboard() {
                     <option value="PhD">PhD</option>
                   </select>
                 </div>
-                <div>
-                  <label>Internet tại nhà</label>
+                <div style={formGroup}>
+                  <label style={label}>Internet tại nhà *</label>
                   <select
                     name="internetAccessAtHome"
                     value={formValues.internetAccessAtHome}
                     onChange={handleFormChange}
-                    style={inputField}
+                    style={select}
+                    required
                   >
                     <option value="">-- Chọn --</option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
                   </select>
                 </div>
-                <div>
-                  <label>Hoạt động ngoại khóa</label>
+                <div style={formGroup}>
+                  <label style={label}>Hoạt động ngoại khóa *</label>
                   <select
                     name="extracurricularActivities"
                     value={formValues.extracurricularActivities}
                     onChange={handleFormChange}
-                    style={inputField}
+                    style={select}
+                    required
                   >
                     <option value="">-- Chọn --</option>
                     <option value="Yes">Yes</option>
@@ -321,7 +458,7 @@ export default function TeacherDashboard() {
               </div>
 
               {formError && (
-                <div style={{ color: "#b91c1c", fontSize: "0.9rem" }}>
+                <div style={{ color: "#ef4444", fontSize: "0.9rem" }}>
                   Lỗi: {formError}
                 </div>
               )}
@@ -330,14 +467,14 @@ export default function TeacherDashboard() {
                 type="submit"
                 disabled={submitting}
                 style={{
-                  marginTop: "0.5rem",
-                  padding: "0.5rem 1rem",
-                  borderRadius: "0.5rem",
-                  border: "none",
-                  backgroundColor: submitting ? "#9ca3af" : "#10b981",
-                  color: "#fff",
-                  cursor: submitting ? "not-allowed" : "pointer",
+                  ...btnPrimary,
+                  ...(submitting ? { opacity: 0.6, cursor: "not-allowed" } : {}),
+                  ...(hoverStates.submitBtn && !submitting
+                    ? btnPrimaryHover
+                    : {}),
                 }}
+                onMouseEnter={() => handleHover("submitBtn", true)}
+                onMouseLeave={() => handleHover("submitBtn", false)}
               >
                 {submitting ? "Đang dự đoán..." : "📊 Dự đoán điểm"}
               </button>
@@ -347,55 +484,56 @@ export default function TeacherDashboard() {
               <div
                 style={{
                   marginTop: "1rem",
-                  padding: "0.75rem",
-                  borderRadius: "0.5rem",
-                  backgroundColor: "#f0fdf4",
-                  border: "1px solid #bbf7d0",
+                  padding: "1rem",
+                  borderRadius: "0.75rem",
+                  background: "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)",
+                  border: "2px solid #10b981",
                 }}
               >
-                <div style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
-                  Kết quả dự đoán: {predictionResult.predictedScore}/100
-                </div>
-                <table
+                <div
                   style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontSize: "0.85rem",
+                    fontWeight: "700",
+                    fontSize: "1.2rem",
+                    marginBottom: "0.75rem",
+                    color: "#065f46",
                   }}
                 >
-                  <thead>
-                    <tr>
-                      <th style={miniTh}>Thời gian học</th>
-                      <th style={miniTh}>Tỉ lệ có mặt</th>
-                      <th style={miniTh}>Điểm trước</th>
-                      <th style={miniTh}>Trình độ PH</th>
-                      <th style={miniTh}>Internet</th>
-                      <th style={miniTh}>Ngoại khóa</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style={miniTd}>
-                        {predictionResult.inputData.studyHoursPerWeek}
-                      </td>
-                      <td style={miniTd}>
-                        {predictionResult.inputData.attendanceRate}%
-                      </td>
-                      <td style={miniTd}>
-                        {predictionResult.inputData.pastExamScores}
-                      </td>
-                      <td style={miniTd}>
-                        {predictionResult.inputData.parentalEducationLevel}
-                      </td>
-                      <td style={miniTd}>
-                        {predictionResult.inputData.internetAccessAtHome}
-                      </td>
-                      <td style={miniTd}>
-                        {predictionResult.inputData.extracurricularActivities}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                  🎯 Kết quả dự đoán: {predictionResult.predictedScore}/100
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                    gap: "0.5rem",
+                    fontSize: "0.85rem",
+                    color: "#047857",
+                  }}
+                >
+                  <div>
+                    <strong>Thời gian học:</strong>{" "}
+                    {predictionResult.inputData.studyHoursPerWeek}h
+                  </div>
+                  <div>
+                    <strong>Tỉ lệ có mặt:</strong>{" "}
+                    {predictionResult.inputData.attendanceRate}%
+                  </div>
+                  <div>
+                    <strong>Điểm trước:</strong>{" "}
+                    {predictionResult.inputData.pastExamScores}
+                  </div>
+                  <div>
+                    <strong>Trình độ PH:</strong>{" "}
+                    {predictionResult.inputData.parentalEducationLevel}
+                  </div>
+                  <div>
+                    <strong>Internet:</strong>{" "}
+                    {predictionResult.inputData.internetAccessAtHome}
+                  </div>
+                  <div>
+                    <strong>Ngoại khóa:</strong>{" "}
+                    {predictionResult.inputData.extracurricularActivities}
+                  </div>
+                </div>
               </div>
             )}
           </div>
