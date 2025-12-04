@@ -88,6 +88,8 @@ export const useAuth = () => {
     setUser(null);
     setToken(null);
     setError(null);
+    // Redirect to login page
+    window.location.href = '/auth';
   }, [setUser, setToken]);
 
   const forgotPassword = useCallback(async (email) => {
