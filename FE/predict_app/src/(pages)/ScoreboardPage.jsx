@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { useLocalStorage } from "../hooks/useLocalStorage";
 import Header from "../components/Header";
 import {
   scoreboardContainer,
@@ -21,15 +20,16 @@ import {
   tableCell,
   tableCellCenter,
 } from "../../assets/styles/scoreboard.styles";
+import { scoreStudentService } from "../services/scoreStudentService";
 
 const ScoreboardPage = () => {
-  const { user } = useAuth();
-  const [predictionHistory, setPredictionHistory] = useLocalStorage(
-    `prediction_history_${user?.id || "guest"}`,
-    []
-  );
+  const { user, token } = useAuth();
+  // Bỏ useLocalStorage, dùng state thường
+  const [predictionHistory, setPredictionHistory] = useState([]);
   const [hoveredItem, setHoveredItem] = useState(null);
   const [hoveredButton, setHoveredButton] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -53,21 +53,104 @@ const ScoreboardPage = () => {
     return levels[level] || level;
   };
 
-
   const formatScore = (score) => {
     if (!score && score !== 0) return "-";
     return Number(score).toFixed(2).replace(".", ",");
   };
 
+  useEffect(() => {
+    const fetchScoreHistory = async () => {
+      // Nếu không có token -> chuyển về login
+      const tokenFromStorage = localStorage.getItem("token");
+      const hasToken = token || tokenFromStorage;
+      if (!hasToken) {
+        setLoading(false);
+        setError("Bạn cần đăng nhập để xem bảng điểm");
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const result = await scoreStudentService.getHistory(50, 0);
+        if (result.success) {
+          // Map backend items -> format giống đang dùng ở bảng
+          const mapped = result.data.items.map((item) => ({
+            id: item.id,
+            timestamp: item.createdAt,
+            inputs: {
+              studyHoursPerWeek: item.studyHoursPerWeek,
+              attendanceRate: item.attendanceRate,
+              pastExamScores: item.pastExamScores,
+              parentalEducationLevel: item.parentalEducationLevel,
+              internetAccessAtHome: item.internetAccessAtHome,
+              extracurricularActivities: item.extracurricularActivities,
+            },
+            // Không có predictedScore vì ScoreStudent chỉ lưu input
+            finalExamScore: null,
+          }));
+          setPredictionHistory(mapped);
+        } else {
+          setError(result.error);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchScoreHistory();
+  }, [token]);
+
+  if (loading) {
+    return (
+      <div style={scoreboardContainer}>
+        <Header />
+        <div style={{ ...scoreboardContent, padding: "2rem 1rem" }}>
+          <div style={{ textAlign: "center", padding: "2rem" }}>
+            <div>Đang tải bảng điểm...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && predictionHistory.length === 0) {
+    return (
+      <div style={scoreboardContainer}>
+        <Header />
+        <div style={{ ...scoreboardContent, padding: "2rem 1rem" }}>
+          <div style={emptyStateContainer}>
+            <div style={{ color: "#e74c3c", marginBottom: "1rem" }}>
+              Lỗi: {error}
+            </div>
+            <a
+              href="/auth?mode=login"
+              style={{
+                ...emptyStateButton,
+                ...(hoveredButton ? emptyStateButtonHover : {}),
+              }}
+              onMouseEnter={() => setHoveredButton(true)}
+              onMouseLeave={() => setHoveredButton(false)}
+            >
+              Đăng nhập lại
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={scoreboardContainer}>
       <Header />
-      <div style={{ ...scoreboardContent, padding: '2rem 1rem' }}>
+      <div style={{ ...scoreboardContent, padding: "2rem 1rem" }}>
         <h1 style={scoreboardTitle}>🏆 Bảng Điểm</h1>
 
         <p style={scoreboardSubtitle}>
-          Xem lại các dự đoán điểm số và dữ liệu đầu vào của bạn
+          Xem lại các lần nhập dữ liệu điểm số và thông tin học tập của bạn
         </p>
 
         {predictionHistory.length === 0 ? (
@@ -75,7 +158,7 @@ const ScoreboardPage = () => {
             <div style={emptyStateIcon}>📭</div>
             <h2 style={emptyStateTitle}>Chưa có dữ liệu</h2>
             <p style={emptyStateText}>
-              Bạn chưa thực hiện dự đoán nào. Hãy thử dự đoán điểm số để xem
+              Bạn chưa có lần nhập dữ liệu nào. Hãy thử dự đoán điểm số để xem
               kết quả ở đây!
             </p>
             <a
@@ -102,17 +185,15 @@ const ScoreboardPage = () => {
                   <th style={tableHeaderCell}>Trình độ phụ huynh</th>
                   <th style={tableHeaderCell}>Internet tại nhà</th>
                   <th style={tableHeaderCell}>Hoạt động ngoại khóa</th>
-                  <th style={tableHeaderCell}>Điểm cuối kỳ</th>
+                  <th style={tableHeaderCell}>Thời gian nhập</th>
                 </tr>
               </thead>
               <tbody>
                 {predictionHistory.map((prediction, index) => {
-                  const finalScore =
-                    prediction.finalExamScore || prediction.finalGrade;
                   const inputs = prediction.inputs || {};
                   return (
                     <tr
-                      key={index}
+                      key={prediction.id || index}
                       style={{
                         ...tableRow,
                         ...(hoveredItem === index
@@ -162,7 +243,9 @@ const ScoreboardPage = () => {
                           : "-"}
                       </td>
                       <td style={tableCell}>
-                        {finalScore ? formatScore(finalScore) : "-"}
+                        {prediction.timestamp
+                          ? formatDate(prediction.timestamp)
+                          : "-"}
                       </td>
                     </tr>
                   );
@@ -177,4 +260,3 @@ const ScoreboardPage = () => {
 };
 
 export default ScoreboardPage;
-

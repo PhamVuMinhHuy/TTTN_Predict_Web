@@ -9,7 +9,7 @@ import jwt
 from django.conf import settings
 
 from main.services.prediction_service import PredictionService
-from main.models import User, Prediction
+from main.models import User, Prediction, ScoreStudent
 
 
 class PredictView(APIView):
@@ -147,7 +147,7 @@ class PredictView(APIView):
                     user = User.objects(id=user_id).first()
                     if user:
                         print(f"DEBUG: PredictView - User found: {user.username}")
-                        # Lưu prediction vào database
+                        # Lưu prediction vào database (CHỈ Prediction, KHÔNG lưu ScoreStudent)
                         prediction = Prediction(
                             user=user,
                             study_hours_per_week=study_hours,
@@ -156,7 +156,8 @@ class PredictView(APIView):
                             parental_education_level=str(request.data.get('parentalEducationLevel', '')),
                             internet_access_at_home=str(request.data.get('internetAccessAtHome', '')),
                             extracurricular_activities=str(request.data.get('extracurricularActivities', '')),
-                            predicted_score=predicted_score_rounded
+                            predicted_score=predicted_score_rounded,
+                            predicted_by=None  # Self-prediction
                         )
                         prediction.save()
                         print(f"DEBUG: Prediction saved to database for user: {user.username}, ID: {prediction.id}")
@@ -299,9 +300,9 @@ class PredictionHistoryView(APIView):
             limit = int(request.query_params.get('limit', 50))
             offset = int(request.query_params.get('offset', 0))
             
-            # Lấy predictions của user, sắp xếp theo thời gian mới nhất
-            predictions = Prediction.objects(user=user).order_by('-created_at').skip(offset).limit(limit)
-            total = Prediction.objects(user=user).count()
+            # Lấy predictions của user (CHỈ tự dự đoán, không bao gồm giáo viên dự đoán)
+            predictions = Prediction.objects(user=user, predicted_by=None).order_by('-created_at').skip(offset).limit(limit)
+            total = Prediction.objects(user=user, predicted_by=None).count()
 
             # Serialize predictions
             predictions_data = []
