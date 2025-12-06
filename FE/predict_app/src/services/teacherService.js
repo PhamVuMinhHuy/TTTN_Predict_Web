@@ -66,7 +66,7 @@ class TeacherService {
       return { success: false, error: "No authentication token" };
     }
 
-    const token = rawToken.replace(/^\"|\"$/g, "");
+    const token = rawToken.replace(/^"|"$/g, "");
 
     try {
       const response = await fetch(API_ENDPOINTS.TEACHER_SAVE_SCORES, {
@@ -98,7 +98,7 @@ class TeacherService {
       return { success: false, error: "No authentication token" };
     }
 
-    const token = rawToken.replace(/^\"|\"$/g, "");
+    const token = rawToken.replace(/^"|"$/g, "");
 
     try {
       const response = await fetch(API_ENDPOINTS.TEACHER_ALL_SCORES, {
@@ -125,7 +125,7 @@ class TeacherService {
       return { success: false, error: "No authentication token" };
     }
 
-    const token = rawToken.replace(/^\"|\"$/g, "");
+    const token = rawToken.replace(/^"|"$/g, "");
 
     try {
       const response = await fetch(API_ENDPOINTS.TEACHER_PREDICTION_HISTORY, {
@@ -152,16 +152,22 @@ class TeacherService {
       return { success: false, error: "No authentication token" };
     }
 
-    const token = rawToken.replace(/^\"|\"$/g, "");
+    const token = rawToken.replace(/^"|"$/g, "");
 
     try {
-      const response = await fetch(`${API_ENDPOINTS.TEACHER_PREDICTION_HISTORY.replace('/prediction-history/', `/prediction/${predictionId}/`)}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${API_ENDPOINTS.TEACHER_PREDICTION_HISTORY.replace(
+          "/prediction-history/",
+          `/prediction/${predictionId}/`
+        )}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await response.json();
       if (!response.ok) {

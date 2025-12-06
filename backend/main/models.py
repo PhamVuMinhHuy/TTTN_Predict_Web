@@ -84,3 +84,20 @@ class ScoreStudent(Document):
             ('user', '-created_at'),
         ],
     }
+
+
+class PasswordResetOTP(Document):
+    """Model để lưu mã OTP cho reset password"""
+    email = fields.EmailField(required=True)
+    otp_code = fields.StringField(required=True, max_length=6)
+    created_at = fields.DateTimeField(default=datetime.utcnow)
+    expires_at = fields.DateTimeField(required=True)
+    is_verified = fields.BooleanField(default=False)
+    
+    meta = {
+        'collection': 'password_reset_otps',
+        'indexes': ['email', 'created_at']
+    }
+    
+    def __str__(self):
+        return f"OTP for {self.email} - {self.otp_code}"

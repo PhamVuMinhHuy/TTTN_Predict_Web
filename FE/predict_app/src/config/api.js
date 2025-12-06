@@ -13,6 +13,9 @@ export const API_ENDPOINTS = {
   TEACHER_ALL_SCORES: `${API_BASE_URL}/api/teacher/all-scores/`,
   TEACHER_PREDICTION_HISTORY: `${API_BASE_URL}/api/teacher/prediction-history/`,
   SCORE_STUDENT_HISTORY: `${API_BASE_URL}/api/score-students/history/`,
+  FORGOT_PASSWORD: `${API_BASE_URL}/api/auth/forgot-password/`,
+  VERIFY_OTP: `${API_BASE_URL}/api/auth/verify-otp/`,
+  RESET_PASSWORD: `${API_BASE_URL}/api/auth/reset-password/`,
 };
 
 export { API_BASE_URL };

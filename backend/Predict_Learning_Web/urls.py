@@ -1,5 +1,5 @@
 from main.views.home_view import home
-from main.views.auth_views import RegisterView, LoginView
+from main.views.auth_views import RegisterView, LoginView, ForgotPasswordRequestView, VerifyOTPView, ResetPasswordView
 from main.views.profile_views import UserProfileView
 from main.views.prediction_views import PredictView, PredictionHistoryView
 from main.views.score_student_views import ScoreStudentHistoryView
@@ -15,6 +15,9 @@ urlpatterns = [
     path('auth/register/', RegisterView.as_view(), name='register'),
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/profile/', UserProfileView.as_view(), name='user-profile'),
+    path('api/auth/forgot-password/', ForgotPasswordRequestView.as_view(), name='forgot-password'),
+    path('api/auth/verify-otp/', VerifyOTPView.as_view(), name='verify-otp'),
+    path('api/auth/reset-password/', ResetPasswordView.as_view(), name='reset-password'),
     path('api/predict/', PredictView.as_view(), name='predict'),
     path('api/predictions/history/', PredictionHistoryView.as_view(), name='prediction-history'),
     path('api/score-students/history/', ScoreStudentHistoryView.as_view(), name='score-student-history'),

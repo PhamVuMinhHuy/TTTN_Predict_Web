@@ -18,6 +18,7 @@ const ScoreboardPage = lazy(() => import("../(pages)/ScoreboardPage"));
 const SettingsPage = lazy(() => import("../(pages)/SettingsPage"));
 const AdminDashboard = lazy(() => import("../(pages)/AdminDashboard")); // <-- thêm
 const TeacherDashboard = lazy(() => import("../(pages)/TeacherDashboard"));
+const ForgotPasswordPage = lazy(() => import("../(pages)/ForgotPasswordPage"));
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +39,16 @@ export const router = createBrowserRouter([
           <PublicRoute>
             <SuspenseWrapper loadingMessage="Đang tải trang đăng nhập...">
               <Auth />
+            </SuspenseWrapper>
+          </PublicRoute>
+        ),
+      },
+      {
+        path: "/forgot-password",
+        element: (
+          <PublicRoute>
+            <SuspenseWrapper loadingMessage="Đang tải...">
+              <ForgotPasswordPage />
             </SuspenseWrapper>
           </PublicRoute>
         ),

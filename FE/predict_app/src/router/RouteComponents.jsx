@@ -45,8 +45,17 @@ export const PublicRoute = ({ children }) => {
   }
 
   if (user) {
-    console.log("DEBUG: PublicRoute - redirecting to home");
-    return <Navigate to="/" replace />;
+    console.log("DEBUG: PublicRoute - user logged in, redirecting based on role");
+    
+    // Redirect based on user role
+    if (user.role === "admin") {
+      return <Navigate to="/admin" replace />;
+    }
+    if (user.role === "teacher") {
+      return <Navigate to="/teacher" replace />;
+    }
+    // Student - redirect to predict page
+    return <Navigate to="/predict" replace />;
   }
 
   console.log("DEBUG: PublicRoute - allowing access");

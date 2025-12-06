@@ -39,6 +39,7 @@ function LoginForm({ onSwitch, onSuccess }) {
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const { login, loading, error, clearError } = useAuth();
 
@@ -98,14 +99,8 @@ function LoginForm({ onSwitch, onSuccess }) {
   );
 
   const handleForgotPassword = useCallback(() => {
-    const email = values.email;
-    if (email) {
-      // You could implement forgot password functionality here
-      window.alert(`Chức năng quên mật khẩu cho email: ${email}`);
-    } else {
-      window.alert("Vui lòng nhập email trước khi chọn quên mật khẩu");
-    }
-  }, [values.email]);
+    navigate('/forgot-password');
+  }, [navigate]);
 
   const isFormValid = Object.keys(LOGIN_VALIDATION_RULES).every(
     (key) => !errors[key] && values[key]
@@ -273,9 +268,13 @@ export default function Auth() {
         navigate("/teacher");
         return;
       }
+      // Student - redirect to predict page
+      navigate("/predict");
+      return;
     }
 
-    navigate("/");
+    // Default fallback
+    navigate("/predict");
   };
 
   // Get header content based on mode

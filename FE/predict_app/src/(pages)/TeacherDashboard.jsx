@@ -469,26 +469,6 @@ export default function TeacherDashboard() {
                     <div style={styles.statCard}>
                       <div style={styles.statCardHeader}>
                         <div>
-                          <div style={styles.statCardTitle}>Điểm TB</div>
-                          <div style={styles.statCardValue}>
-                            {statistics.avgScore.toFixed(1)}
-                          </div>
-                        </div>
-                        <div
-                          style={{
-                            ...styles.statCardIcon,
-                            background:
-                              "linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)",
-                          }}
-                        >
-                          📊
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={styles.statCard}>
-                      <div style={styles.statCardHeader}>
-                        <div>
                           <div style={styles.statCardTitle}>Dự đoán gần đây</div>
                           <div style={styles.statCardValue}>
                             {statistics.recentPredictions}
@@ -724,12 +704,6 @@ export default function TeacherDashboard() {
                                 <button
                                   onClick={() => handleDeletePrediction(pred.id)}
                                   style={styles.deleteButton}
-                                  onMouseEnter={(e) => {
-                                    e.target.style.background = "#dc2626";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.target.style.background = "#ef4444";
-                                  }}
                                 >
                                   🗑️ Xóa
                                 </button>
@@ -1229,7 +1203,7 @@ export default function TeacherDashboard() {
                 fontWeight: "600",
                 color: "#1f2937",
               }}>
-                Xác nhận xóa người dùng
+                Xác nhận xóa lịch sử dự đoán
               </h3>
             </div>
             
@@ -1240,7 +1214,7 @@ export default function TeacherDashboard() {
               fontSize: "0.875rem",
               lineHeight: "1.5",
             }}>
-              Bạn có chắc chắn muốn xóa tài khoản "teacher1"? Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa lịch sử dự đoán này không? Hành động này không thể hoàn tác.
             </p>
             
             {/* Buttons */}
