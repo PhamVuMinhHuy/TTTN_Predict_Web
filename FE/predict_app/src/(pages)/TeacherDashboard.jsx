@@ -21,9 +21,12 @@ export default function TeacherDashboard() {
   // Modal states
   const [showPredictModal, setShowPredictModal] = useState(false);
   const [showInputModal, setShowInputModal] = useState(false);
+  const [showEditScoreModal, setShowEditScoreModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmMessage, setConfirmMessage] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedScore, setSelectedScore] = useState(null);
   
   // Toast notification
   const [toast, setToast] = useState(null);
@@ -227,6 +230,7 @@ export default function TeacherDashboard() {
   };
 
   const handleDeletePrediction = (predictionId) => {
+    setConfirmMessage("Bạn có chắc chắn muốn xóa dự đoán này?");
     setConfirmAction(() => async () => {
       const result = await teacherService.deletePrediction(predictionId);
       if (result.success) {
@@ -238,6 +242,94 @@ export default function TeacherDashboard() {
       setShowConfirmModal(false);
     });
     setShowConfirmModal(true);
+  };
+
+  // Edit Score Modal handlers
+  const openEditScoreModal = (score, studentData) => {
+    setSelectedScore({ ...score, studentName: studentData.firstName + " " + studentData.lastName || studentData.username });
+    setFormValues({
+      studyHoursPerWeek: score.studyHoursPerWeek?.toString() || "",
+      attendanceRate: score.attendanceRate?.toString() || "",
+      pastExamScores: score.pastExamScores?.toString() || "",
+      parentalEducationLevel: score.parentalEducationLevel || "",
+      internetAccessAtHome: score.internetAccessAtHome || "",
+      extracurricularActivities: score.extracurricularActivities || "",
+    });
+    setFormError(null);
+    setShowEditScoreModal(true);
+  };
+
+  const closeEditScoreModal = () => {
+    setShowEditScoreModal(false);
+    setSelectedScore(null);
+  };
+
+  const handleSubmitEditScore = async (e) => {
+    e.preventDefault();
+    if (!selectedScore) return;
+
+    if (
+      !formValues.studyHoursPerWeek ||
+      !formValues.attendanceRate ||
+      !formValues.pastExamScores ||
+      !formValues.parentalEducationLevel ||
+      !formValues.internetAccessAtHome ||
+      !formValues.extracurricularActivities
+    ) {
+      setFormError("Vui lòng nhập đầy đủ các trường");
+      return;
+    }
+
+    setFormError(null);
+    setSubmitting(true);
+
+    const result = await teacherService.updateScore(selectedScore.id, {
+      studyHoursPerWeek: parseFloat(formValues.studyHoursPerWeek),
+      attendanceRate: parseFloat(formValues.attendanceRate),
+      pastExamScores: parseFloat(formValues.pastExamScores),
+      parentalEducationLevel: formValues.parentalEducationLevel,
+      internetAccessAtHome: formValues.internetAccessAtHome,
+      extracurricularActivities: formValues.extracurricularActivities,
+    });
+
+    if (result.success) {
+      showToast("Đã cập nhật điểm thành công!", "success");
+      loadAllScores();
+      closeEditScoreModal();
+    } else {
+      setFormError(result.error);
+    }
+
+    setSubmitting(false);
+  };
+
+  const handleDeleteScore = (scoreId) => {
+    setConfirmMessage("Bạn có chắc chắn muốn xóa bản ghi điểm này?");
+    setConfirmAction(() => async () => {
+      const result = await teacherService.deleteScore(scoreId);
+      if (result.success) {
+        showToast("Đã xóa điểm thành công!", "success");
+        loadAllScores();
+      } else {
+        showToast("Lỗi: " + result.error, "error");
+      }
+      setShowConfirmModal(false);
+    });
+    setShowConfirmModal(true);
+  };
+
+  // State for tracking which prediction email is being sent
+  const [sendingEmailId, setSendingEmailId] = useState(null);
+
+  const handleSendPredictionEmail = async (predictionId) => {
+    setSendingEmailId(predictionId);
+    const result = await teacherService.sendPredictionEmail(predictionId);
+    if (result.success) {
+      showToast(`✉️ ${result.data.message}`, "success");
+    } else {
+      showToast("Lỗi: " + result.error, "error");
+    }
+    setSendingEmailId(null);
   };
 
   const handleSubmitPredict = async (e) => {
@@ -661,6 +753,7 @@ export default function TeacherDashboard() {
                         <thead>
                           <tr style={styles.tableHeadRow}>
                             <th style={styles.th}>Học sinh</th>
+                            <th style={styles.th}>Email</th>
                             <th style={styles.th}>Lớp</th>
                             <th style={styles.th}>Giờ học/tuần</th>
                             <th style={styles.th}>Tỉ lệ có mặt</th>
@@ -686,6 +779,11 @@ export default function TeacherDashboard() {
                               <td style={styles.td}>
                                 <strong>{pred.studentName}</strong>
                               </td>
+                              <td style={styles.td}>
+                                <span style={{ color: "#3b82f6", fontSize: "0.85rem" }}>
+                                  {pred.studentEmail || "-"}
+                                </span>
+                              </td>
                               <td style={styles.td}>{pred.className || "-"}</td>
                               <td style={styles.td}>{pred.studyHoursPerWeek}h</td>
                               <td style={styles.td}>{pred.attendanceRate}%</td>
@@ -701,12 +799,25 @@ export default function TeacherDashboard() {
                                   : "-"}
                               </td>
                               <td style={styles.td}>
-                                <button
-                                  onClick={() => handleDeletePrediction(pred.id)}
-                                  style={styles.deleteButton}
-                                >
-                                  🗑️ Xóa
-                                </button>
+                                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                                  <button
+                                    onClick={() => handleSendPredictionEmail(pred.id)}
+                                    disabled={sendingEmailId === pred.id}
+                                    style={{
+                                      ...styles.emailButton,
+                                      opacity: sendingEmailId === pred.id ? 0.7 : 1,
+                                      cursor: sendingEmailId === pred.id ? "not-allowed" : "pointer",
+                                    }}
+                                  >
+                                    {sendingEmailId === pred.id ? "⏳ Đang gửi..." : "✉️ Gửi email"}
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeletePrediction(pred.id)}
+                                    style={styles.deleteButton}
+                                  >
+                                    🗑️ Xóa
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -764,6 +875,7 @@ export default function TeacherDashboard() {
                                       <th style={styles.th}>Internet</th>
                                       <th style={styles.th}>Ngoại khóa</th>
                                       <th style={styles.th}>Thời gian</th>
+                                      <th style={styles.th}>Thao tác</th>
                                     </tr>
                                   </thead>
                                   <tbody>
@@ -803,6 +915,22 @@ export default function TeacherDashboard() {
                                                 score.createdAt
                                               ).toLocaleString("vi-VN")
                                             : "-"}
+                                        </td>
+                                        <td style={styles.td}>
+                                          <div style={{ display: "flex", gap: "0.5rem" }}>
+                                            <button
+                                              onClick={() => openEditScoreModal(score, studentData)}
+                                              style={styles.editButton}
+                                            >
+                                              ✏️ Sửa
+                                            </button>
+                                            <button
+                                              onClick={() => handleDeleteScore(score.id)}
+                                              style={styles.deleteButton}
+                                            >
+                                              🗑️ Xóa
+                                            </button>
+                                          </div>
                                         </td>
                                       </tr>
                                     ))}
@@ -1177,6 +1305,145 @@ export default function TeacherDashboard() {
         `}
       </style>
 
+      {/* Edit Score Modal */}
+      {showEditScoreModal && selectedScore && (
+        <div style={styles.modalOverlay} onClick={closeEditScoreModal}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <div style={styles.modalIcon}>✏️</div>
+              <h3 style={styles.modalTitle}>
+                Chỉnh sửa điểm - {selectedScore.studentName}
+              </h3>
+              <button
+                onClick={closeEditScoreModal}
+                onMouseEnter={() => setHoverClose(true)}
+                onMouseLeave={() => setHoverClose(false)}
+                style={{
+                  ...styles.closeButton,
+                  ...(hoverClose ? styles.closeButtonHover : {}),
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitEditScore} style={styles.form}>
+              <div style={styles.formGrid}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Thời gian học/tuần (giờ) *</label>
+                  <input
+                    type="number"
+                    name="studyHoursPerWeek"
+                    value={formValues.studyHoursPerWeek}
+                    onChange={handleFormChange}
+                    min="0"
+                    max="168"
+                    step="0.5"
+                    style={styles.input}
+                    required
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Tỉ lệ có mặt (%) *</label>
+                  <input
+                    type="number"
+                    name="attendanceRate"
+                    value={formValues.attendanceRate}
+                    onChange={handleFormChange}
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    style={styles.input}
+                    required
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Điểm thi trước đó (0-100) *</label>
+                  <input
+                    type="number"
+                    name="pastExamScores"
+                    value={formValues.pastExamScores}
+                    onChange={handleFormChange}
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    style={styles.input}
+                    required
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Trình độ phụ huynh *</label>
+                  <select
+                    name="parentalEducationLevel"
+                    value={formValues.parentalEducationLevel}
+                    onChange={handleFormChange}
+                    style={styles.select}
+                    required
+                  >
+                    <option value="">-- Chọn --</option>
+                    <option value="HighSchool">HighSchool</option>
+                    <option value="Bachelors">Bachelors</option>
+                    <option value="Masters">Masters</option>
+                    <option value="PhD">PhD</option>
+                  </select>
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Internet tại nhà *</label>
+                  <select
+                    name="internetAccessAtHome"
+                    value={formValues.internetAccessAtHome}
+                    onChange={handleFormChange}
+                    style={styles.select}
+                    required
+                  >
+                    <option value="">-- Chọn --</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Hoạt động ngoại khóa *</label>
+                  <select
+                    name="extracurricularActivities"
+                    value={formValues.extracurricularActivities}
+                    onChange={handleFormChange}
+                    style={styles.select}
+                    required
+                  >
+                    <option value="">-- Chọn --</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+              </div>
+
+              {formError && (
+                <div style={styles.errorText}>❌ Lỗi: {formError}</div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                onMouseEnter={() => setHoverSubmit(true)}
+                onMouseLeave={() => setHoverSubmit(false)}
+                style={{
+                  ...styles.submitButton,
+                  ...(submitting ? styles.submitButtonDisabled : {}),
+                  ...(hoverSubmit && !submitting ? styles.submitButtonHover : {}),
+                }}
+              >
+                {submitting ? "⏳ Đang lưu..." : "💾 Cập nhật điểm"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <div style={styles.modalOverlay}>
@@ -1196,14 +1463,13 @@ export default function TeacherDashboard() {
               marginBottom: "1rem",
             }}>
               <span style={{ fontSize: "1.5rem" }}>⚠️</span>
-              <span style={{ fontSize: "1.5rem" }}>⚠️</span>
               <h3 style={{
                 margin: 0,
                 fontSize: "1.125rem",
                 fontWeight: "600",
                 color: "#1f2937",
               }}>
-                Xác nhận xóa lịch sử dự đoán
+                Xác nhận hành động
               </h3>
             </div>
             
@@ -1214,7 +1480,7 @@ export default function TeacherDashboard() {
               fontSize: "0.875rem",
               lineHeight: "1.5",
             }}>
-              Bạn có chắc chắn muốn xóa lịch sử dự đoán này không? Hành động này không thể hoàn tác.
+              {confirmMessage || "Bạn có chắc chắn muốn thực hiện hành động này? Hành động này không thể hoàn tác."}
             </p>
             
             {/* Buttons */}
@@ -1605,6 +1871,39 @@ const styles = {
   predictButtonHover: {
     transform: "translateY(-2px)",
     boxShadow: "0 4px 12px rgba(102, 126, 234, 0.4)",
+  },
+  deleteButton: {
+    padding: "0.5rem 1rem",
+    borderRadius: "0.5rem",
+    border: "none",
+    background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: "0.875rem",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+  },
+  emailButton: {
+    padding: "0.5rem 1rem",
+    borderRadius: "0.5rem",
+    border: "none",
+    background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: "0.875rem",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+  },
+  editButton: {
+    padding: "0.5rem 1rem",
+    borderRadius: "0.5rem",
+    border: "none",
+    background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: "0.875rem",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
   },
   
   // Modal

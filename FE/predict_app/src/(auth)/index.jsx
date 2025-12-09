@@ -25,7 +25,8 @@ import {
   formPanelStyle,
   supportText,
 } from "../../assets/styles/auth.styles";
-import Signup from "./signup";
+// Đã tắt chức năng đăng ký - không sử dụng nữa
+// import Signup from "./signup";
 import { useForm } from "../hooks/useForm";
 import { useAuth } from "../hooks/useAuth";
 import { validationRules } from "../utils/validation";
@@ -217,7 +218,7 @@ function LoginForm({ onSwitch, onSuccess }) {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "center",
           marginTop: 8,
         }}
       >
@@ -229,6 +230,7 @@ function LoginForm({ onSwitch, onSuccess }) {
         >
           Quên mật khẩu?
         </button>
+        {/* Đã ẩn phần đăng ký vì chức năng này không còn được sử dụng
         <div style={footerStyle}>
           Bạn chưa có tài khoản?{" "}
           <button
@@ -239,6 +241,7 @@ function LoginForm({ onSwitch, onSuccess }) {
             Đăng ký
           </button>
         </div>
+        */}
       </div>
     </form>
   );
@@ -249,8 +252,10 @@ function LoginForm({ onSwitch, onSuccess }) {
 export default function Auth() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const initialMode = searchParams.get("mode") || "login";
-  const [mode, setMode] = useState(initialMode);
+  // Luôn sử dụng mode "login" vì chức năng đăng ký đã bị tắt
+  // const initialMode = searchParams.get("mode") || "login";
+  // const [mode, setMode] = useState(initialMode);
+  const mode = "login"; // Luôn là login mode
   const { user } = useAuth(); // <-- lấy user từ hook
 
   const handleSuccess = () => {
@@ -277,7 +282,12 @@ export default function Auth() {
     navigate("/predict");
   };
 
-  // Get header content based on mode
+  // Header content - chỉ hiển thị nội dung đăng nhập
+  const headerContent = {
+    title: "Chào mừng trở lại!",
+    subtitle: "Đăng nhập vào hệ thống dự đoán điểm học tập",
+  };
+  /* Đã tắt chức năng đăng ký
   const headerContent =
     mode === "login"
       ? {
@@ -288,6 +298,7 @@ export default function Auth() {
           title: "Tạo tài khoản mới",
           subtitle: "Điền thông tin để tạo tài khoản",
         };
+  */
 
   const infoHighlights = [
     {
@@ -304,6 +315,7 @@ export default function Auth() {
     },
   ];
 
+  /* Đã tắt chức năng đăng ký - không cần các handler này nữa
   // Handle mode switch with useCallback to prevent unnecessary re-renders
   const handleModeSwitch = useCallback((newMode) => {
     setMode(newMode);
@@ -314,13 +326,14 @@ export default function Auth() {
     console.log("DEBUG: handleBackToLogin called");
     setMode("login");
   }, []);
+  */
+  // Placeholder function để tránh lỗi - không thực sự được gọi
+  const handleModeSwitch = useCallback(() => {}, []);
 
   console.log("DEBUG: Auth component - current mode:", mode);
 
-  const supportCopy =
-    mode === "login"
-      ? "Tiếp tục theo dõi tiến bộ học tập và xem các dự đoán mới nhất của bạn."
-      : "Tạo tài khoản để lưu kết quả, nhận lộ trình ôn tập và đồng bộ tiến độ.";
+  // Support text - chỉ hiển thị nội dung đăng nhập
+  const supportCopy = "Tiếp tục theo dõi tiến bộ học tập và xem các dự đoán mới nhất của bạn.";
 
   return (
     <div style={containerStyle}>
@@ -357,11 +370,15 @@ export default function Auth() {
             <p style={supportText}>{supportCopy}</p>
           </div>
 
+          {/* Luôn hiển thị LoginForm - chức năng đăng ký đã bị tắt */}
+          <LoginForm onSwitch={handleModeSwitch} onSuccess={handleSuccess} />
+          {/* Đã tắt chức năng đăng ký
           {mode === "login" ? (
             <LoginForm onSwitch={handleModeSwitch} onSuccess={handleSuccess} />
           ) : (
             <Signup onBack={handleBackToLogin} onSuccess={handleSuccess} />
           )}
+          */}
         </div>
       </div>
     </div>

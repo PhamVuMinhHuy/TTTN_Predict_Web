@@ -9,6 +9,7 @@ from django.conf import settings
 
 from main.models import User, Prediction, ScoreStudent
 from main.services.prediction_service import PredictionService
+from main.services.email_service import EmailService
 
 
 class TeacherRequiredMixin:
@@ -515,6 +516,7 @@ class TeacherPredictionHistoryView(TeacherRequiredMixin, APIView):
                 "studentId": str(student.id),
                 "studentUsername": student.username,
                 "studentName": f"{student.first_name} {student.last_name}".strip() or student.username,
+                "studentEmail": student.email,
                 "className": getattr(student, "class_name", None),
                 "studyHoursPerWeek": pred.study_hours_per_week,
                 "attendanceRate": pred.attendance_rate,
@@ -595,3 +597,347 @@ class TeacherDeletePredictionView(TeacherRequiredMixin, APIView):
                 "error": "Internal server error",
                 "details": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class TeacherUpdateScoreView(TeacherRequiredMixin, APIView):
+    """PUT: Cập nhật điểm đã nhập của học sinh"""
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Teacher - Update a student score record",
+        manual_parameters=[
+            openapi.Parameter(
+                "Authorization",
+                openapi.IN_HEADER,
+                description="Bearer token (teacher only)",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+            openapi.Parameter(
+                "score_id",
+                openapi.IN_PATH,
+                description="Score ID to update",
+                type=openapi.TYPE_STRING,
+                required=True,
+            )
+        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'studyHoursPerWeek': openapi.Schema(type=openapi.TYPE_NUMBER, description='Số giờ học mỗi tuần'),
+                'attendanceRate': openapi.Schema(type=openapi.TYPE_NUMBER, description='Tỉ lệ có mặt (%)'),
+                'pastExamScores': openapi.Schema(type=openapi.TYPE_NUMBER, description='Điểm thi trước đó'),
+                'parentalEducationLevel': openapi.Schema(type=openapi.TYPE_STRING, description='Trình độ giáo dục phụ huynh'),
+                'internetAccessAtHome': openapi.Schema(type=openapi.TYPE_STRING, description='Có internet tại nhà'),
+                'extracurricularActivities': openapi.Schema(type=openapi.TYPE_STRING, description='Hoạt động ngoại khóa'),
+            },
+            required=['studyHoursPerWeek', 'attendanceRate', 'pastExamScores', 
+                     'parentalEducationLevel', 'internetAccessAtHome', 'extracurricularActivities']
+        ),
+        responses={200: "OK", 400: "Bad Request", 401: "Unauthorized", 403: "Forbidden", 404: "Not Found"},
+    )
+    def put(self, request, score_id):
+        teacher, error_response = self.get_teacher_user(request)
+        if error_response:
+            return error_response
+
+        try:
+            # Find score record
+            score = ScoreStudent.objects(id=score_id).first()
+            if not score:
+                return Response(
+                    {"error": "Score record not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Get the student associated with this score
+            student = score.user
+            if not student:
+                return Response(
+                    {"error": "Student not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Verify student is in teacher's class
+            if not getattr(teacher, "class_name", None) or student.class_name != teacher.class_name:
+                return Response(
+                    {"error": "You can only update scores for students in your class"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Validate input data
+            required_fields = [
+                'studyHoursPerWeek',
+                'attendanceRate', 
+                'pastExamScores',
+                'parentalEducationLevel',
+                'internetAccessAtHome',
+                'extracurricularActivities'
+            ]
+            
+            missing_fields = [field for field in required_fields if field not in request.data]
+            if missing_fields:
+                return Response({
+                    "error": "Missing required fields",
+                    "details": f"Required fields: {', '.join(missing_fields)}"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Validate data types and ranges
+            try:
+                study_hours = float(request.data.get('studyHoursPerWeek'))
+                attendance = float(request.data.get('attendanceRate'))
+                past_scores = float(request.data.get('pastExamScores'))
+            except (ValueError, TypeError):
+                return Response({
+                    "error": "Invalid data types",
+                    "details": "studyHoursPerWeek, attendanceRate, and pastExamScores must be numbers"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Validate ranges
+            if study_hours < 0 or study_hours > 168:
+                return Response({
+                    "error": "Invalid studyHoursPerWeek",
+                    "details": "Must be between 0 and 168"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            if attendance < 0 or attendance > 100:
+                return Response({
+                    "error": "Invalid attendanceRate",
+                    "details": "Must be between 0 and 100"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            if past_scores < 0 or past_scores > 100:
+                return Response({
+                    "error": "Invalid pastExamScores",
+                    "details": "Must be between 0 and 100"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Update score record
+            score.study_hours_per_week = study_hours
+            score.attendance_rate = attendance
+            score.past_exam_scores = past_scores
+            score.parental_education_level = str(request.data.get('parentalEducationLevel', ''))
+            score.internet_access_at_home = str(request.data.get('internetAccessAtHome', ''))
+            score.extracurricular_activities = str(request.data.get('extracurricularActivities', ''))
+            score.save()
+
+            return Response({
+                "message": "Score updated successfully",
+                "data": {
+                    "id": str(score.id),
+                    "studentId": str(student.id),
+                    "studentName": f"{student.first_name} {student.last_name}".strip(),
+                    "studyHoursPerWeek": study_hours,
+                    "attendanceRate": attendance,
+                    "pastExamScores": past_scores,
+                    "parentalEducationLevel": str(request.data.get('parentalEducationLevel', '')),
+                    "internetAccessAtHome": str(request.data.get('internetAccessAtHome', '')),
+                    "extracurricularActivities": str(request.data.get('extracurricularActivities', '')),
+                    "createdAt": score.created_at.isoformat() if score.created_at else None,
+                }
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(f"DEBUG: TeacherUpdateScoreView error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({
+                "error": "Internal server error",
+                "details": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class TeacherDeleteScoreView(TeacherRequiredMixin, APIView):
+    """DELETE: Xóa điểm đã nhập của học sinh"""
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Teacher - Delete a student score record",
+        manual_parameters=[
+            openapi.Parameter(
+                "Authorization",
+                openapi.IN_HEADER,
+                description="Bearer token (teacher only)",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+            openapi.Parameter(
+                "score_id",
+                openapi.IN_PATH,
+                description="Score ID to delete",
+                type=openapi.TYPE_STRING,
+                required=True,
+            )
+        ],
+        responses={200: "OK", 401: "Unauthorized", 403: "Forbidden", 404: "Not Found"},
+    )
+    def delete(self, request, score_id):
+        teacher, error_response = self.get_teacher_user(request)
+        if error_response:
+            return error_response
+
+        try:
+            # Find score record
+            score = ScoreStudent.objects(id=score_id).first()
+            if not score:
+                return Response(
+                    {"error": "Score record not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Get the student associated with this score
+            student = score.user
+            if not student:
+                return Response(
+                    {"error": "Student not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Verify student is in teacher's class
+            if not getattr(teacher, "class_name", None) or student.class_name != teacher.class_name:
+                return Response(
+                    {"error": "You can only delete scores for students in your class"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Delete score record
+            score.delete()
+
+            return Response({
+                "message": "Score deleted successfully",
+                "deletedId": score_id
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(f"DEBUG: TeacherDeleteScoreView error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({
+                "error": "Internal server error",
+                "details": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class TeacherSendPredictionEmailView(TeacherRequiredMixin, APIView):
+    """POST: Gửi kết quả dự đoán qua email cho học sinh"""
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Teacher - Send prediction result to student email",
+        manual_parameters=[
+            openapi.Parameter(
+                "Authorization",
+                openapi.IN_HEADER,
+                description="Bearer token (teacher only)",
+                type=openapi.TYPE_STRING,
+                required=True,
+            )
+        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'prediction_id': openapi.Schema(type=openapi.TYPE_STRING, description='ID của prediction'),
+            },
+            required=['prediction_id']
+        ),
+        responses={200: "Email sent successfully", 400: "Bad Request", 401: "Unauthorized", 403: "Forbidden", 404: "Not Found"},
+    )
+    def post(self, request):
+        teacher, error_response = self.get_teacher_user(request)
+        if error_response:
+            return error_response
+
+        prediction_id = request.data.get('prediction_id')
+        if not prediction_id:
+            return Response(
+                {"error": "prediction_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Find prediction
+            prediction = Prediction.objects(id=prediction_id).first()
+            if not prediction:
+                return Response(
+                    {"error": "Prediction not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Verify this prediction was made by this teacher
+            if not prediction.predicted_by or str(prediction.predicted_by.id) != str(teacher.id):
+                return Response(
+                    {"error": "You can only send emails for your own predictions"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Get student info
+            student = prediction.user
+            if not student:
+                return Response(
+                    {"error": "Student not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Check if student has email
+            if not student.email:
+                return Response(
+                    {"error": "Học sinh chưa có email trong hệ thống"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Prepare teacher name
+            teacher_name = f"{teacher.first_name} {teacher.last_name}".strip()
+            if not teacher_name:
+                teacher_name = teacher.username
+
+            # Prepare student name
+            student_name = f"{student.first_name} {student.last_name}".strip()
+            if not student_name:
+                student_name = student.username
+
+            # Prepare input data
+            input_data = {
+                'studyHoursPerWeek': prediction.study_hours_per_week,
+                'attendanceRate': prediction.attendance_rate,
+                'pastExamScores': prediction.past_exam_scores,
+                'parentalEducationLevel': prediction.parental_education_level,
+                'internetAccessAtHome': prediction.internet_access_at_home,
+                'extracurricularActivities': prediction.extracurricular_activities,
+            }
+
+            # Send email
+            email_sent = EmailService.send_prediction_result_email(
+                student_email=student.email,
+                student_name=student_name,
+                teacher_name=teacher_name,
+                input_data=input_data,
+                predicted_score=prediction.predicted_score
+            )
+
+            if not email_sent:
+                return Response(
+                    {"error": "Không thể gửi email. Vui lòng thử lại sau."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+            return Response({
+                "message": f"Đã gửi kết quả dự đoán đến email {student.email}",
+                "sentTo": student.email,
+                "studentName": student_name
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(f"DEBUG: TeacherSendPredictionEmailView error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({
+                "error": "Internal server error",
+                "details": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

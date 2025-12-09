@@ -117,9 +117,11 @@ const Header = () => {
             <Link to="/auth?mode=login" className="login-btn">
               Đăng nhập
             </Link>
+            {/* Đã ẩn nút đăng ký vì chức năng này không còn được sử dụng
             <Link to="/auth?mode=register" className="signup-btn">
               Đăng ký
             </Link>
+            */}
           </div>
         )}
       </div>

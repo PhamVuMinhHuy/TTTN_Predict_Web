@@ -179,6 +179,94 @@ class TeacherService {
       return { success: false, error: err.message };
     }
   }
+
+  async sendPredictionEmail(predictionId) {
+    const rawToken = localStorage.getItem("token");
+    if (!rawToken) {
+      return { success: false, error: "No authentication token" };
+    }
+
+    const token = rawToken.replace(/^"|"$/g, "");
+
+    try {
+      const response = await fetch(API_ENDPOINTS.TEACHER_SEND_PREDICTION_EMAIL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          prediction_id: predictionId,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Không thể gửi email");
+      }
+
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  async updateScore(scoreId, inputData) {
+    const rawToken = localStorage.getItem("token");
+    if (!rawToken) {
+      return { success: false, error: "No authentication token" };
+    }
+
+    const token = rawToken.replace(/^"|"$/g, "");
+
+    try {
+      const response = await fetch(`${API_ENDPOINTS.TEACHER_SCORES}${scoreId}/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(inputData),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Không thể cập nhật điểm");
+      }
+
+      return { success: true, data: data.data };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  async deleteScore(scoreId) {
+    const rawToken = localStorage.getItem("token");
+    if (!rawToken) {
+      return { success: false, error: "No authentication token" };
+    }
+
+    const token = rawToken.replace(/^"|"$/g, "");
+
+    try {
+      const response = await fetch(`${API_ENDPOINTS.TEACHER_SCORES}${scoreId}/delete/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Không thể xóa điểm");
+      }
+
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
 }
 
 export const teacherService = new TeacherService();

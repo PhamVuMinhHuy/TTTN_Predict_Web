@@ -4,7 +4,7 @@ from main.views.profile_views import UserProfileView
 from main.views.prediction_views import PredictView, PredictionHistoryView
 from main.views.score_student_views import ScoreStudentHistoryView
 from main.views.admin_views import AdminUserListCreateView, AdminUserDeleteView
-from main.views.teacher_views import TeacherStudentListView, TeacherPredictView, TeacherSaveScoresView, TeacherGetAllScoresView, TeacherPredictionHistoryView, TeacherDeletePredictionView
+from main.views.teacher_views import TeacherStudentListView, TeacherPredictView, TeacherSaveScoresView, TeacherGetAllScoresView, TeacherPredictionHistoryView, TeacherDeletePredictionView, TeacherSendPredictionEmailView, TeacherUpdateScoreView, TeacherDeleteScoreView
 from django.contrib import admin
 from django.urls import path, re_path
 from .swagger import schema_view
@@ -29,6 +29,9 @@ urlpatterns = [
     path('api/teacher/all-scores/', TeacherGetAllScoresView.as_view(), name='teacher-all-scores'),
     path('api/teacher/prediction-history/', TeacherPredictionHistoryView.as_view(), name='teacher-prediction-history'),
     path('api/teacher/prediction/<str:prediction_id>/', TeacherDeletePredictionView.as_view(), name='teacher-delete-prediction'),
+    path('api/teacher/send-prediction-email/', TeacherSendPredictionEmailView.as_view(), name='teacher-send-prediction-email'),
+    path('api/teacher/scores/<str:score_id>/', TeacherUpdateScoreView.as_view(), name='teacher-update-score'),
+    path('api/teacher/scores/<str:score_id>/delete/', TeacherDeleteScoreView.as_view(), name='teacher-delete-score'),
     # Swagger URLs
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
