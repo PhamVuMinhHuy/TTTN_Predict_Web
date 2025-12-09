@@ -1,134 +1,178 @@
-// History Page Styles
-
+// Modern History Page Styles - Study Theme 2025 (Improved Readability)
 export const historyContainer = {
-  minHeight: '100vh',
-  backgroundColor: '#f8fafc',
+  fontFamily: "'Inter', 'Roboto', Arial, sans-serif",
+  minHeight: "100vh",
+  background: `
+    radial-gradient(ellipse at 30% 70%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 30%, rgba(78, 205, 196, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)
+  `,
 };
 
 export const historyContent = {
-  maxWidth: '900px',
-  margin: '0 auto',
-  padding: '3rem 2rem',
+  maxWidth: "1000px",
+  margin: "0 auto",
+  padding: "40px 24px 80px",
 };
 
 export const historyTitle = {
-  fontSize: '2.5rem',
-  fontWeight: 'bold',
-  marginBottom: '1rem',
-  color: '#1f2937',
-  textAlign: 'center',
+  fontSize: "36px",
+  fontWeight: "800",
+  textAlign: "center",
+  marginBottom: "16px",
+  color: "#ffffff",
+  textShadow: "0 2px 15px rgba(59, 130, 246, 0.3)",
 };
 
 export const historySubtitle = {
-  fontSize: '1.1rem',
-  color: '#6b7280',
-  textAlign: 'center',
-  marginBottom: '2rem',
+  fontSize: "17px",
+  color: "#cbd5e1",
+  textAlign: "center",
+  marginBottom: "48px",
+  maxWidth: "600px",
+  margin: "0 auto 48px",
+  lineHeight: "1.6",
 };
 
-// Empty State Styles
+// Empty State
 export const emptyStateContainer = {
-  backgroundColor: '#fff',
-  padding: '3rem',
-  borderRadius: '0.75rem',
-  boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-  textAlign: 'center',
+  textAlign: "center",
+  padding: "80px 40px",
+  background: "rgba(255, 255, 255, 0.08)",
+  backdropFilter: "blur(20px)",
+  borderRadius: "28px",
+  border: "1px solid rgba(255, 255, 255, 0.12)",
 };
 
 export const emptyStateIcon = {
-  fontSize: '4rem',
-  marginBottom: '1rem',
+  fontSize: "80px",
+  marginBottom: "24px",
+  filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2))",
 };
 
 export const emptyStateTitle = {
-  fontSize: '1.5rem',
-  fontWeight: '600',
-  color: '#1f2937',
-  marginBottom: '0.5rem',
+  fontSize: "28px",
+  fontWeight: "700",
+  color: "#ffffff",
+  marginBottom: "16px",
 };
 
 export const emptyStateText = {
-  color: '#6b7280',
-  marginBottom: '1.5rem',
+  fontSize: "16px",
+  color: "#cbd5e1",
+  marginBottom: "32px",
+  lineHeight: "1.6",
+  maxWidth: "400px",
+  margin: "0 auto 32px",
 };
 
 export const emptyStateButton = {
-  display: 'inline-block',
-  padding: '0.75rem 1.5rem',
-  backgroundColor: '#3b82f6',
-  color: '#fff',
-  textDecoration: 'none',
-  borderRadius: '0.5rem',
-  fontWeight: '500',
-  fontSize: '1rem',
-  transition: 'all 0.2s ease',
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "10px",
+  padding: "16px 32px",
+  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+  color: "#ffffff",
+  textDecoration: "none",
+  borderRadius: "14px",
+  fontSize: "16px",
+  fontWeight: "700",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  boxShadow: "0 8px 25px rgba(59, 130, 246, 0.4)",
 };
 
 export const emptyStateButtonHover = {
-  backgroundColor: '#2563eb',
-  transform: 'translateY(-1px)',
+  transform: "translateY(-3px)",
+  boxShadow: "0 14px 35px rgba(59, 130, 246, 0.5)",
 };
 
-// History List Styles
+// History List
 export const historyList = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '1rem',
+  display: "flex",
+  flexDirection: "column",
+  gap: "20px",
 };
 
 export const historyItem = {
-  backgroundColor: '#fff',
-  padding: '1.5rem',
-  borderRadius: '0.75rem',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  borderLeft: '4px solid #3b82f6',
-  transition: 'all 0.2s ease',
+  background: "rgba(255, 255, 255, 0.1)",
+  backdropFilter: "blur(20px)",
+  borderRadius: "20px",
+  padding: "28px 32px",
+  border: "1px solid rgba(255, 255, 255, 0.12)",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  cursor: "pointer",
 };
 
 export const historyItemHover = {
-  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-  transform: 'translateY(-2px)',
+  transform: "translateY(-4px)",
+  background: "rgba(255, 255, 255, 0.14)",
+  borderColor: "rgba(59, 130, 246, 0.4)",
+  boxShadow: "0 16px 40px rgba(0, 0, 0, 0.2)",
 };
 
 export const historyItemHeader = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start',
-  marginBottom: '0.5rem',
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: "16px",
 };
 
 export const historyItemTitle = {
-  fontSize: '1.25rem',
-  fontWeight: '600',
-  color: '#1f2937',
+  fontSize: "18px",
+  fontWeight: "700",
+  color: "#ffffff",
   margin: 0,
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
 };
 
 export const historyItemTimestamp = {
-  fontSize: '0.875rem',
-  color: '#6b7280',
-  backgroundColor: '#f3f4f6',
-  padding: '0.25rem 0.75rem',
-  borderRadius: '0.375rem',
+  fontSize: "14px",
+  color: "#94a3b8",
+  fontWeight: "500",
 };
 
 export const historyItemDetails = {
-  color: '#4b5563',
-  fontSize: '0.95rem',
-  lineHeight: '1.6',
-};
-
-export const historyItemGrade = {
-  fontSize: '1.5rem',
-  fontWeight: 'bold',
-  color: '#3b82f6',
-  marginTop: '0.75rem',
-  marginBottom: '0.5rem',
+  fontSize: "14px",
+  lineHeight: "1.8",
+  color: "#e2e8f0",
+  padding: "16px",
+  background: "rgba(255, 255, 255, 0.06)",
+  borderRadius: "12px",
+  marginTop: "12px",
 };
 
 export const historyItemGradeLabel = {
-  fontSize: '0.875rem',
-  color: '#6b7280',
-  marginRight: '0.5rem',
+  fontSize: "14px",
+  color: "#cbd5e1",
+  marginRight: "12px",
+  fontWeight: "500",
 };
 
+export const historyItemGrade = {
+  fontSize: "28px",
+  fontWeight: "800",
+  color: "#34d399",
+  textShadow: "0 2px 10px rgba(52, 211, 153, 0.3)",
+};
+
+// Loading State
+export const loadingContainer = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "80px 40px",
+  color: "#cbd5e1",
+  fontSize: "18px",
+};
+
+export const loadingSpinner = {
+  width: "40px",
+  height: "40px",
+  border: "3px solid rgba(255, 255, 255, 0.15)",
+  borderTopColor: "#3b82f6",
+  borderRadius: "50%",
+  animation: "spin 1s linear infinite",
+  marginRight: "16px",
+};

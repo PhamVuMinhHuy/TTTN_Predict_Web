@@ -1,0 +1,119 @@
+/* Global Styles - Dark Theme Form Controls */
+
+/* Hide default number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Style placeholder text */
+::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1;
+}
+
+::-webkit-input-placeholder {
+  color: #94a3b8 !important;
+}
+
+::-moz-placeholder {
+  color: #94a3b8 !important;
+}
+
+:-ms-input-placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Style select dropdown */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 20px;
+  padding-right: 48px !important;
+  cursor: pointer;
+}
+
+select option {
+  background-color: #1e1b4b;
+  color: #ffffff;
+  padding: 12px 16px;
+}
+
+select option:hover,
+select option:focus,
+select option:checked {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+/* Style radio buttons */
+input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+/* Focus outline for accessibility */
+input:focus,
+select:focus {
+  outline: none;
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Selection styling */
+::selection {
+  background-color: rgba(59, 130, 246, 0.3);
+  color: #ffffff;
+}
+
+/* Animation keyframes */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}

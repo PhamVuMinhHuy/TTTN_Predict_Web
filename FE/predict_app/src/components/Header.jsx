@@ -1,13 +1,41 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import "../../assets/styles/Header.css";
+import {
+  headerStyle,
+  headerContent,
+  logo,
+  logoText,
+  navBar,
+  navLink,
+  navLinkHover,
+  navLinkActive,
+  userMenuContainer,
+  userIconButton,
+  userIconButtonHover,
+  userDropdown,
+  userInfo,
+  userName,
+  userEmail,
+  menuButtonSettings,
+  menuButtonSettingsHover,
+  menuButtonLogout,
+  menuButtonLogoutHover,
+  authButtons,
+  loginBtn,
+  loginBtnHover,
+} from "../../assets/styles/header.styles";
 
 const Header = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState(null);
+  const [hoveredUserBtn, setHoveredUserBtn] = useState(false);
+  const [hoveredSettings, setHoveredSettings] = useState(false);
+  const [hoveredLogout, setHoveredLogout] = useState(false);
+  const [hoveredLoginBtn, setHoveredLoginBtn] = useState(false);
   const userMenuRef = useRef(null);
 
   const isActive = (path) => {
@@ -44,67 +72,68 @@ const Header = () => {
     setShowUserMenu(false);
   };
 
+  const navLinks = [
+    { path: "/", label: "Home" },
+    { path: "/predict", label: "Predict" },
+    { path: "/history", label: "History" },
+    { path: "/scoreboard", label: "Scoreboard" },
+  ];
+
   return (
-    <header className="header">
-      <div className="header-content">
-        <div className="logo">
-          📊 <span className="logo-text">PredictGrade</span>
+    <header style={headerStyle}>
+      <div style={headerContent}>
+        <div style={logo}>
+          📊 <span style={logoText}>PredictGrade</span>
         </div>
 
         {user && (
           <>
-            <nav className="nav-bar">
-              <Link
-                to="/"
-                className={`nav-link ${isActive("/") ? "active" : ""}`}
-              >
-                Home
-              </Link>
-              <Link
-                to="/predict"
-                className={`nav-link ${isActive("/predict") ? "active" : ""}`}
-              >
-                Predict
-              </Link>
-              <Link
-                to="/history"
-                className={`nav-link ${isActive("/history") ? "active" : ""}`}
-              >
-                History
-              </Link>
-              <Link
-                to="/scoreboard"
-                className={`nav-link ${
-                  isActive("/scoreboard") ? "active" : ""
-                }`}
-              >
-                Scoreboard
-              </Link>
+            <nav style={navBar}>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  style={{
+                    ...navLink,
+                    ...(isActive(link.path) ? navLinkActive : {}),
+                    ...(hoveredLink === link.path && !isActive(link.path) ? navLinkHover : {}),
+                  }}
+                  onMouseEnter={() => setHoveredLink(link.path)}
+                  onMouseLeave={() => setHoveredLink(null)}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </nav>
-            <div className="user-menu-container" ref={userMenuRef}>
+            <div style={userMenuContainer} ref={userMenuRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="user-icon-button"
+                style={{
+                  ...userIconButton,
+                  ...(hoveredUserBtn ? userIconButtonHover : {}),
+                }}
+                onMouseEnter={() => setHoveredUserBtn(true)}
+                onMouseLeave={() => setHoveredUserBtn(false)}
               >
                 👤
               </button>
               {showUserMenu && (
-                <div className="user-dropdown">
-                  <div className="user-info">
-                    <div className="user-name">{user.name}</div>
-                    <div className="user-email">{user.email}</div>
+                <div style={userDropdown}>
+                  <div style={userInfo}>
+                    <div style={userName}>{user.name}</div>
+                    <div style={userEmail}>{user.email}</div>
                   </div>
                   <button
                     onClick={handleSettings}
-                    className="menu-button menu-button-settings"
+                    style={menuButtonSettings}
                   >
                     ⚙️ Cài đặt
                   </button>
                   <button
                     onClick={handleLogout}
-                    className="menu-button menu-button-logout"
+                    style={menuButtonLogout}
                   >
-                    Đăng xuất
+                    🚪 Đăng xuất
                   </button>
                 </div>
               )}
@@ -113,15 +142,18 @@ const Header = () => {
         )}
 
         {!user && (
-          <div className="auth-buttons">
-            <Link to="/auth?mode=login" className="login-btn">
+          <div style={authButtons}>
+            <Link 
+              to="/auth?mode=login" 
+              style={{
+                ...loginBtn,
+                ...(hoveredLoginBtn ? loginBtnHover : {}),
+              }}
+              onMouseEnter={() => setHoveredLoginBtn(true)}
+              onMouseLeave={() => setHoveredLoginBtn(false)}
+            >
               Đăng nhập
             </Link>
-            {/* Đã ẩn nút đăng ký vì chức năng này không còn được sử dụng
-            <Link to="/auth?mode=register" className="signup-btn">
-              Đăng ký
-            </Link>
-            */}
           </div>
         )}
       </div>

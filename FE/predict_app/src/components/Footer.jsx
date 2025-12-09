@@ -10,7 +10,7 @@ const Footer = () => {
     <footer style={footer}>
       <div style={container}>
         <p style={footerText}>
-          ©  PredictGrade - Hệ thống dự đoán điểm học tập thông minh | Phát triển bởi TTTN
+          © 2025 PredictGrade - Hệ thống dự đoán điểm học tập thông minh | Phát triển bởi TTTN
         </p>
       </div>
     </footer>

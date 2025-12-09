@@ -1,509 +1,316 @@
-// Landing Page Styles
-
-// Utility function to get hover styles
-export const getHoverStyle = (baseStyle, hoverStyle) => ({
-  ...baseStyle,
-  ...hoverStyle,
-});
-
-// Utility function for responsive styles
-export const getResponsiveStyle = (baseStyle, isMobile = false, isVeryMobile = false) => {
-  if (isVeryMobile) {
-    const mobileKey = `veryMobile${baseStyle.name || ''}`;
-    const veryMobileStyle = mobileKey ? window[mobileKey] : {};
-    return { ...baseStyle, ...veryMobileStyle };
-  }
-  if (isMobile) {
-    const mobileKey = `mobile${baseStyle.name || ''}`;
-    const mobileStyle = mobileKey ? window[mobileKey] : {};
-    return { ...baseStyle, ...mobileStyle };
-  }
-  return baseStyle;
-};
-
+// Modern Landing Page Styles - Study Theme 2025 (Improved Readability)
 export const landingContainer = {
-  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-  lineHeight: 1.6,
-  color: '#333',
-  margin: 0,
-  padding: 0,
+  fontFamily: "'Inter', 'Roboto', Arial, sans-serif",
+  minHeight: "100vh",
+  background: `
+    linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)
+  `,
+  color: "#ffffff",
 };
 
-// Header Styles
-export const header = {
-  backgroundColor: '#fff',
-  boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-  position: 'sticky',
-  top: 0,
-  zIndex: 100,
-};
-
-export const headerContent = {
-  maxWidth: '1200px',
-  margin: '0 auto',
-  padding: '1rem 2rem',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: '2rem',
-};
-
-export const logo = {
-  display: 'flex',
-  alignItems: 'center',
-  fontSize: '1.5rem',
-  fontWeight: 'bold',
-};
-
-export const logoText = {
-  marginLeft: '0.5rem',
-  color: '#3b82f6',
-};
-
-export const authButtons = {
-  display: 'flex',
-  gap: '1rem',
-};
-
-export const loginBtn = {
-  padding: '0.5rem 1.5rem',
-  backgroundColor: 'transparent',
-  color: '#3b82f6',
-  border: '1px solid #3b82f6',
-  borderRadius: '0.5rem',
-  cursor: 'pointer',
-  fontWeight: '500',
-  transition: 'all 0.3s ease',
-  fontSize: '0.9rem',
-};
-
-export const loginBtnHover = {
-  backgroundColor: '#3b82f6',
-  color: '#fff',
-  transform: 'translateY(-1px)',
-};
-
-export const signupBtn = {
-  padding: '0.5rem 1.5rem',
-  backgroundColor: '#3b82f6',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '0.5rem',
-  cursor: 'pointer',
-  fontWeight: '500',
-  transition: 'all 0.3s ease',
-  fontSize: '0.9rem',
-};
-
-export const signupBtnHover = {
-  backgroundColor: '#2563eb',
-  transform: 'translateY(-1px)',
-};
-
-// Navigation Bar Styles
-export const navBar = {
-  display: 'flex',
-  gap: '0.25rem',
-  alignItems: 'center',
-  padding: '0.375rem',
-  backgroundColor: '#f8fafc',
-  borderRadius: '0.75rem',
-  flex: 1,
-  justifyContent: 'center',
-  maxWidth: '600px',
-  margin: '0 auto',
-  boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.06)',
-  border: '1px solid #e2e8f0',
-  minWidth: '300px',
-  flexShrink: 1,
-};
-
-export const navLink = {
-  padding: '0.75rem 1.5rem',
-  color: '#64748b',
-  textDecoration: 'none',
-  fontWeight: '500',
-  fontSize: '0.95rem',
-  borderRadius: '0.5rem',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  cursor: 'pointer',
-  position: 'relative',
-  whiteSpace: 'nowrap',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  letterSpacing: '0.01em',
-  overflow: 'hidden',
-  flex: 1,
-  textAlign: 'center',
-};
-
-export const navLinkHover = {
-  color: '#3b82f6',
-  backgroundColor: '#eff6ff',
-  transform: 'translateY(-1px)',
-  boxShadow: '0 2px 8px rgba(59, 130, 246, 0.15)',
-};
-
-export const navLinkActive = {
-  color: '#ffffff',
-  backgroundColor: '#3b82f6',
-  fontWeight: '600',
-  boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
-  transform: 'translateY(-1px)',
+export const container = {
+  maxWidth: "1200px",
+  margin: "0 auto",
+  padding: "0 24px",
 };
 
 // Hero Section
 export const hero = {
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  color: '#fff',
-  padding: '4rem 2rem',
-  display: 'flex',
-  alignItems: 'center',
-  maxWidth: '1200px',
-  margin: '0 auto',
-  gap: '3rem',
-  minHeight: '500px',
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "100px 48px 80px",
+  maxWidth: "1400px",
+  margin: "0 auto",
+  gap: "60px",
+  position: "relative",
+  overflow: "hidden",
 };
 
 export const heroContent = {
   flex: 1,
+  maxWidth: "600px",
+  zIndex: 1,
 };
 
 export const heroTitle = {
-  fontSize: '3rem',
-  fontWeight: 'bold',
-  marginBottom: '1rem',
-  lineHeight: 1.2,
+  fontSize: "56px",
+  fontWeight: "800",
+  lineHeight: "1.1",
+  marginBottom: "24px",
+  color: "#ffffff",
+  textShadow: "0 2px 20px rgba(59, 130, 246, 0.3)",
 };
 
 export const heroSubtitle = {
-  fontSize: '1.2rem',
-  marginBottom: '2rem',
-  opacity: 0.9,
-  lineHeight: 1.5,
+  fontSize: "20px",
+  lineHeight: "1.7",
+  color: "#e2e8f0",
+  marginBottom: "40px",
+  maxWidth: "500px",
 };
 
 export const ctaButton = {
-  padding: '1rem 2rem',
-  fontSize: '1.1rem',
-  backgroundColor: '#fff',
-  color: '#3b82f6',
-  border: 'none',
-  borderRadius: '0.75rem',
-  cursor: 'pointer',
-  fontWeight: 'bold',
-  transition: 'all 0.3s ease',
-  boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "12px",
+  padding: "18px 36px",
+  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+  color: "#ffffff",
+  border: "none",
+  borderRadius: "16px",
+  fontSize: "18px",
+  fontWeight: "700",
+  cursor: "pointer",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  boxShadow: "0 8px 30px rgba(59, 130, 246, 0.4)",
+  letterSpacing: "0.025em",
 };
 
 export const ctaButtonHover = {
-  transform: 'translateY(-2px)',
-  boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
+  transform: "translateY(-4px)",
+  boxShadow: "0 16px 40px rgba(59, 130, 246, 0.5)",
 };
 
-// Hero Mock Chart
 export const heroImage = {
   flex: 1,
-  display: 'flex',
-  justifyContent: 'center',
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 1,
 };
 
+// Mock Chart
 export const mockChart = {
-  backgroundColor: '#fff',
-  padding: '2rem',
-  borderRadius: '1rem',
-  boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-  width: '300px',
+  background: "rgba(255, 255, 255, 0.1)",
+  backdropFilter: "blur(20px)",
+  borderRadius: "24px",
+  padding: "32px",
+  width: "100%",
+  maxWidth: "450px",
+  border: "1px solid rgba(255, 255, 255, 0.15)",
+  boxShadow: "0 20px 50px rgba(0, 0, 0, 0.3)",
 };
 
 export const chartTitle = {
-  color: '#333',
-  fontWeight: 'bold',
-  marginBottom: '1rem',
-  textAlign: 'center',
-  fontSize: '1.1rem',
+  fontSize: "18px",
+  fontWeight: "700",
+  marginBottom: "28px",
+  color: "#ffffff",
+  textAlign: "center",
 };
 
 export const chartBars = {
-  display: 'flex',
-  alignItems: 'end',
-  gap: '1rem',
-  height: '200px',
-  justifyContent: 'center',
+  display: "flex",
+  alignItems: "flex-end",
+  justifyContent: "space-around",
+  height: "220px",
+  gap: "16px",
 };
 
 export const chartBar = {
-  width: '40px',
-  borderRadius: '4px 4px 0 0',
-  position: 'relative',
-  display: 'flex',
-  alignItems: 'end',
-  justifyContent: 'center',
-  transition: 'all 0.3s ease',
+  width: "60px",
+  borderRadius: "12px 12px 0 0",
+  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  padding: "12px 0",
+  cursor: "pointer",
+  position: "relative",
 };
 
 export const chartBarHover = {
-  transform: 'translateY(-5px)',
+  transform: "translateY(-8px) scaleY(1.05)",
+  filter: "brightness(1.15)",
 };
 
 export const barLabel = {
-  position: 'absolute',
-  bottom: '-25px',
-  fontSize: '12px',
-  color: '#666',
-  fontWeight: '500',
+  fontSize: "13px",
+  fontWeight: "600",
+  color: "#ffffff",
+  marginTop: "auto",
+  textShadow: "0 1px 3px rgba(0,0,0,0.3)",
 };
 
 // Features Section
 export const featuresSection = {
-  padding: '4rem 2rem',
-  backgroundColor: '#f8fafc',
+  padding: "100px 48px",
+  background: "rgba(255, 255, 255, 0.03)",
 };
 
 export const sectionTitle = {
-  fontSize: '2.5rem',
-  fontWeight: 'bold',
-  textAlign: 'center',
-  marginBottom: '3rem',
-  color: '#1f2937',
+  fontSize: "42px",
+  fontWeight: "800",
+  textAlign: "center",
+  marginBottom: "60px",
+  color: "#ffffff",
+  textShadow: "0 2px 20px rgba(59, 130, 246, 0.3)",
 };
 
 export const featuresGrid = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-  gap: '2rem',
-  maxWidth: '1200px',
-  margin: '0 auto',
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+  gap: "28px",
+  maxWidth: "1200px",
+  margin: "0 auto",
 };
 
 export const featureCard = {
-  backgroundColor: '#fff',
-  padding: '2rem',
-  borderRadius: '1rem',
-  textAlign: 'center',
-  boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-  transition: 'all 0.3s ease',
+  background: "rgba(255, 255, 255, 0.08)",
+  backdropFilter: "blur(20px)",
+  borderRadius: "24px",
+  padding: "36px 28px",
+  border: "1px solid rgba(255, 255, 255, 0.12)",
+  cursor: "pointer",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
 };
 
 export const featureCardHover = {
-  transform: 'translateY(-5px)',
-  boxShadow: '0 6px 25px rgba(0,0,0,0.15)',
+  transform: "translateY(-8px)",
+  background: "rgba(255, 255, 255, 0.12)",
+  borderColor: "rgba(59, 130, 246, 0.5)",
+  boxShadow: "0 20px 40px rgba(59, 130, 246, 0.2)",
 };
 
 export const featureIcon = {
-  fontSize: '3rem',
-  marginBottom: '1rem',
+  width: "72px",
+  height: "72px",
+  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+  borderRadius: "20px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: "36px",
+  marginBottom: "24px",
+  boxShadow: "0 8px 20px rgba(59, 130, 246, 0.3)",
 };
 
 export const featureTitle = {
-  fontSize: '1.5rem',
-  fontWeight: 'bold',
-  marginBottom: '1rem',
-  color: '#1f2937',
+  fontSize: "22px",
+  fontWeight: "700",
+  color: "#ffffff",
+  marginBottom: "14px",
 };
 
 export const featureDesc = {
-  color: '#6b7280',
-  lineHeight: 1.6,
+  fontSize: "16px",
+  lineHeight: "1.7",
+  color: "#cbd5e1",
   margin: 0,
 };
 
-// How It Works
+// How It Works Section
 export const howItWorks = {
-  padding: '4rem 2rem',
-  backgroundColor: '#fff',
+  padding: "100px 48px",
+  background: "transparent",
 };
 
 export const stepsContainer = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '2rem',
-  maxWidth: '900px',
-  margin: '0 auto',
-  flexWrap: 'wrap',
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "flex-start",
+  flexWrap: "wrap",
+  gap: "24px",
+  maxWidth: "1100px",
+  margin: "0 auto",
 };
 
 export const step = {
-  textAlign: 'center',
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  textAlign: "center",
+  maxWidth: "300px",
   flex: 1,
-  minWidth: '200px',
+  minWidth: "250px",
 };
 
 export const stepNumber = {
-  width: '60px',
-  height: '60px',
-  borderRadius: '50%',
-  backgroundColor: '#3b82f6',
-  color: '#fff',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '1.5rem',
-  fontWeight: 'bold',
-  margin: '0 auto 1rem',
-  transition: 'all 0.3s ease',
+  width: "80px",
+  height: "80px",
+  borderRadius: "24px",
+  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+  color: "#ffffff",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: "32px",
+  fontWeight: "800",
+  marginBottom: "24px",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  boxShadow: "0 8px 25px rgba(59, 130, 246, 0.4)",
+  cursor: "pointer",
 };
 
 export const stepNumberHover = {
-  transform: 'scale(1.1)',
-  backgroundColor: '#2563eb',
+  transform: "scale(1.1) rotate(5deg)",
+  boxShadow: "0 12px 35px rgba(59, 130, 246, 0.5)",
 };
 
 export const stepContent = {
-  color: '#1f2937',
+  padding: "0 16px",
 };
 
 export const stepContentTitle = {
-  fontSize: '1.2rem',
-  margin: '0 0 0.5rem 0',
-  fontWeight: '600',
+  fontSize: "20px",
+  fontWeight: "700",
+  color: "#ffffff",
+  marginBottom: "12px",
 };
 
 export const stepContentDesc = {
+  fontSize: "15px",
+  lineHeight: "1.7",
+  color: "#cbd5e1",
   margin: 0,
-  color: '#6b7280',
-  fontSize: '0.9rem',
 };
 
 export const stepArrow = {
-  fontSize: '2rem',
-  color: '#3b82f6',
-  fontWeight: 'bold',
+  fontSize: "36px",
+  color: "#60a5fa",
+  display: "flex",
+  alignItems: "center",
+  paddingTop: "20px",
+  fontWeight: "300",
 };
 
 // CTA Section
 export const ctaSection = {
-  padding: '4rem 2rem',
-  backgroundColor: '#1f2937',
-  color: '#fff',
-  textAlign: 'center',
+  padding: "100px 48px",
+  background: "linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)",
+  borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+  textAlign: "center",
 };
 
 export const ctaTitle = {
-  fontSize: '2.5rem',
-  fontWeight: 'bold',
-  marginBottom: '1rem',
+  fontSize: "40px",
+  fontWeight: "800",
+  marginBottom: "20px",
+  color: "#ffffff",
+  textShadow: "0 2px 15px rgba(59, 130, 246, 0.3)",
 };
 
 export const ctaSubtitle = {
-  fontSize: '1.2rem',
-  marginBottom: '2rem',
-  opacity: 0.9,
-  maxWidth: '600px',
-  marginLeft: 'auto',
-  marginRight: 'auto',
+  fontSize: "18px",
+  lineHeight: "1.7",
+  color: "#e2e8f0",
+  maxWidth: "600px",
+  margin: "0 auto 40px",
 };
 
 // Footer
 export const footer = {
-  backgroundColor: '#111827',
-  color: '#9ca3af',
-  padding: '2rem',
-  textAlign: 'center',
+  padding: "32px 48px",
+  background: "rgba(0, 0, 0, 0.3)",
+  borderTop: "1px solid rgba(255, 255, 255, 0.1)",
 };
 
 export const footerText = {
+  textAlign: "center",
+  color: "#94a3b8",
+  fontSize: "14px",
   margin: 0,
-  fontSize: '0.9rem',
-};
-
-// Container Utility
-export const container = {
-  maxWidth: '1200px',
-  margin: '0 auto',
-  padding: '0 2rem',
-};
-
-// Responsive Design - Mobile styles
-export const mobileHero = {
-  flexDirection: 'column',
-  textAlign: 'center',
-  padding: '3rem 1rem',
-};
-
-export const mobileHeroTitle = {
-  fontSize: '2rem',
-};
-
-export const mobileHeroSubtitle = {
-  fontSize: '1rem',
-};
-
-export const mobileMockChart = {
-  width: '280px',
-  padding: '1.5rem',
-};
-
-export const mobileStepsContainer = {
-  flexDirection: 'column',
-};
-
-export const mobileStepArrow = {
-  transform: 'rotate(90deg)',
-};
-
-export const mobileHeaderContent = {
-  padding: '1rem',
-};
-
-export const mobileAuthButtons = {
-  gap: '0.5rem',
-};
-
-export const mobileLoginBtn = {
-  padding: '0.5rem 1rem',
-  fontSize: '0.9rem',
-};
-
-export const mobileSignupBtn = {
-  padding: '0.5rem 1rem',
-  fontSize: '0.9rem',
-};
-
-export const mobileSectionTitle = {
-  fontSize: '2rem',
-};
-
-export const mobileCtaTitle = {
-  fontSize: '2rem',
-};
-
-export const mobileContainer = {
-  padding: '0 1rem',
-};
-
-export const mobileFeaturesGrid = {
-  gridTemplateColumns: '1fr',
-  gap: '1.5rem',
-};
-
-// Very small mobile styles (480px and below)
-export const veryMobileHeroTitle = {
-  fontSize: '1.75rem',
-};
-
-export const veryMobileHeroSubtitle = {
-  fontSize: '0.9rem',
-};
-
-export const veryMobileCtaButton = {
-  padding: '0.875rem 1.5rem',
-  fontSize: '1rem',
-};
-
-export const veryMobileMockChart = {
-  width: '250px',
-  padding: '1rem',
-};
-
-export const veryMobileChartBars = {
-  height: '150px',
-  gap: '0.5rem',
-};
-
-export const veryMobileChartBar = {
-  width: '30px',
+  fontWeight: "500",
 };

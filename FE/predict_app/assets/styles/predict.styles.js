@@ -1,177 +1,190 @@
-// Predict Page Styles
-
+// Modern Predict Page Styles - Study Theme 2025 (Improved Readability)
 export const predictContainer = {
-  minHeight: '100vh',
-  backgroundColor: '#f8fafc',
+  fontFamily: "'Inter', 'Roboto', Arial, sans-serif",
+  minHeight: "100vh",
+  background: `
+    radial-gradient(ellipse at 20% 80%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(78, 205, 196, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)
+  `,
 };
 
 export const predictContent = {
-  padding: '4rem 2rem',
-  textAlign: 'center',
-  maxWidth: '800px',
-  margin: '0 auto',
+  maxWidth: "800px",
+  margin: "0 auto",
+  padding: "40px 24px 80px",
 };
 
 export const predictTitle = {
-  fontSize: '2.5rem',
-  marginBottom: '1rem',
-  color: '#1f2937',
+  fontSize: "36px",
+  fontWeight: "800",
+  textAlign: "center",
+  marginBottom: "40px",
+  color: "#ffffff",
+  textShadow: "0 2px 10px rgba(102, 126, 234, 0.3)",
 };
 
-export const predictSubtitle = {
-  fontSize: '1.2rem',
-  color: '#6b7280',
-  marginBottom: '2rem',
-};
-
-export const predictButtonContainer = {
-  display: 'flex',
-  gap: '1rem',
-  justifyContent: 'center',
-};
-
-export const predictButton = {
-  padding: '0.75rem 1.5rem',
-  backgroundColor: '#3b82f6',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '0.5rem',
-  textDecoration: 'none',
-  fontWeight: '500',
-  fontSize: '1rem',
-  display: 'inline-block',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-};
-
-export const predictButtonHover = {
-  backgroundColor: '#2563eb',
-  transform: 'translateY(-1px)',
-};
-
-export const predictStartButton = {
-  padding: '0.75rem 1.5rem',
-  backgroundColor: '#10b981',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '0.5rem',
-  cursor: 'pointer',
-  fontWeight: '500',
-  fontSize: '1rem',
-  transition: 'all 0.2s ease',
-};
-
-export const predictStartButtonHover = {
-  backgroundColor: '#059669',
-  transform: 'translateY(-1px)',
-};
-
-// Form Styles
 export const predictForm = {
-  backgroundColor: '#ffffff',
-  padding: '2.5rem',
-  borderRadius: '1rem',
-  boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-  maxWidth: '600px',
-  margin: '0 auto',
-  textAlign: 'left',
+  background: "rgba(255, 255, 255, 0.1)",
+  backdropFilter: "blur(20px)",
+  borderRadius: "28px",
+  padding: "40px",
+  border: "1px solid rgba(255, 255, 255, 0.15)",
+  boxShadow: "0 20px 50px rgba(0, 0, 0, 0.3)",
 };
 
 export const formGroup = {
-  marginBottom: '1.5rem',
+  marginBottom: "24px",
 };
 
 export const formLabel = {
-  display: 'block',
-  fontSize: '0.95rem',
-  fontWeight: '600',
-  color: '#334155',
-  marginBottom: '0.5rem',
+  display: "block",
+  fontSize: "15px",
+  fontWeight: "600",
+  color: "#ffffff",
+  marginBottom: "10px",
+  letterSpacing: "0.025em",
 };
 
 export const formInput = {
-  width: '100%',
-  padding: '0.75rem 1rem',
-  borderRadius: '0.5rem',
-  border: '1px solid #e2e8f0',
-  fontSize: '1rem',
-  boxSizing: 'border-box',
-  outline: 'none',
-  transition: 'all 0.2s ease',
-  backgroundColor: '#ffffff',
-};
-
-export const formInputError = {
-  borderColor: '#ef4444',
+  width: "100%",
+  padding: "16px 20px",
+  borderRadius: "14px",
+  border: "2px solid rgba(255, 255, 255, 0.25)",
+  background: "rgba(30, 27, 75, 0.8)",
+  color: "#ffffff",
+  fontSize: "16px",
+  outline: "none",
+  boxSizing: "border-box",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
 };
 
 export const formInputFocus = {
-  borderColor: '#3b82f6',
-  boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
+  borderColor: "#60a5fa",
+  background: "rgba(96, 165, 250, 0.15)",
+  boxShadow: "0 0 0 4px rgba(96, 165, 250, 0.2)",
+};
+
+export const formInputError = {
+  borderColor: "#f87171",
+  background: "rgba(248, 113, 113, 0.15)",
+  boxShadow: "0 0 0 4px rgba(248, 113, 113, 0.2)",
 };
 
 export const errorMessage = {
-  color: '#ef4444',
-  fontSize: '0.875rem',
-  marginTop: '0.5rem',
+  color: "#fca5a5",
+  fontSize: "13px",
+  marginTop: "8px",
+  display: "flex",
+  alignItems: "center",
+  gap: "6px",
 };
 
 export const submitButton = {
-  width: '100%',
-  padding: '0.875rem 1.5rem',
-  backgroundColor: '#3b82f6',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '0.5rem',
-  fontSize: '1rem',
-  fontWeight: '600',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-  marginTop: '1rem',
+  width: "100%",
+  padding: "18px 24px",
+  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+  color: "#ffffff",
+  border: "none",
+  borderRadius: "16px",
+  fontSize: "18px",
+  fontWeight: "700",
+  cursor: "pointer",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  boxShadow: "0 8px 25px rgba(59, 130, 246, 0.4)",
+  letterSpacing: "0.025em",
+  marginTop: "16px",
 };
 
 export const submitButtonHover = {
-  backgroundColor: '#2563eb',
-  transform: 'translateY(-1px)',
-  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+  transform: "translateY(-3px)",
+  boxShadow: "0 14px 35px rgba(59, 130, 246, 0.5)",
 };
 
 export const submitButtonDisabled = {
-  opacity: 0.6,
-  cursor: 'not-allowed',
+  opacity: 0.5,
+  cursor: "not-allowed",
+  transform: "none",
+  boxShadow: "none",
 };
 
-// Result Styles
+// Result Container
 export const resultContainer = {
-  backgroundColor: '#ffffff',
-  padding: '2rem',
-  borderRadius: '1rem',
-  boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-  maxWidth: '600px',
-  margin: '2rem auto 0',
-  textAlign: 'center',
+  marginTop: "40px",
+  background: "rgba(255, 255, 255, 0.1)",
+  backdropFilter: "blur(20px)",
+  borderRadius: "28px",
+  padding: "40px",
+  border: "1px solid rgba(255, 255, 255, 0.15)",
+  boxShadow: "0 20px 50px rgba(0, 0, 0, 0.3)",
+  animation: "slideUp 0.5s ease-out",
 };
 
 export const resultTitle = {
-  fontSize: '1.25rem',
-  fontWeight: '600',
-  color: '#1f2937',
-  marginBottom: '1rem',
+  fontSize: "24px",
+  fontWeight: "700",
+  color: "#ffffff",
+  marginBottom: "24px",
+  textAlign: "center",
 };
 
 export const resultGrade = {
-  fontSize: '3rem',
-  fontWeight: 'bold',
-  color: '#3b82f6',
-  margin: '1rem 0',
+  fontSize: "72px",
+  fontWeight: "800",
+  textAlign: "center",
+  marginBottom: "32px",
+  color: "#34d399",
+  textShadow: "0 4px 15px rgba(52, 211, 153, 0.4)",
 };
 
 export const resultDetails = {
-  marginTop: '1.5rem',
-  padding: '1rem',
-  backgroundColor: '#f8fafc',
-  borderRadius: '0.5rem',
-  fontSize: '0.9rem',
-  color: '#64748b',
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+  gap: "16px",
+  padding: "24px",
+  background: "rgba(255, 255, 255, 0.08)",
+  borderRadius: "16px",
+  border: "1px solid rgba(255, 255, 255, 0.1)",
+  color: "#ffffff",
 };
 
+export const resultDetailItem = {
+  padding: "12px 16px",
+  background: "rgba(255, 255, 255, 0.08)",
+  borderRadius: "12px",
+  color: "#ffffff",
+  fontSize: "14px",
+};
+
+// Radio button styles
+export const radioGroup = {
+  display: "flex",
+  gap: "24px",
+  marginTop: "12px",
+};
+
+export const radioLabel = {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  cursor: "pointer",
+  color: "#ffffff",
+  fontSize: "15px",
+  padding: "12px 20px",
+  background: "rgba(255, 255, 255, 0.08)",
+  borderRadius: "12px",
+  border: "2px solid rgba(255, 255, 255, 0.15)",
+  transition: "all 0.2s ease",
+};
+
+export const radioLabelActive = {
+  borderColor: "#60a5fa",
+  background: "rgba(96, 165, 250, 0.2)",
+};
+
+export const radioInput = {
+  width: "20px",
+  height: "20px",
+  accentColor: "#60a5fa",
+  cursor: "pointer",
+};

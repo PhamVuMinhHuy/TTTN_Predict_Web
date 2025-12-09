@@ -1,163 +1,234 @@
-// Settings Page Styles
+// Modern Settings Page Styles - Study Theme 2025 (Improved Readability)
 
 export const settingsContainer = {
-  minHeight: 'calc(100vh - 80px)',
-  maxWidth: '1400px',
-  margin: '0 auto',
-  padding: '1.5rem 2rem',
+  minHeight: '100vh',
   fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-  background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
+  background: `
+    radial-gradient(ellipse at 20% 80%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(78, 205, 196, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)
+  `,
+  padding: '40px 24px 80px',
+};
+
+export const settingsContent = {
+  maxWidth: '700px',
+  margin: '0 auto',
 };
 
 export const settingsTitle = {
-  fontSize: '2rem',
-  fontWeight: '700',
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  backgroundClip: 'text',
-  marginBottom: '0.25rem',
+  fontSize: '36px',
+  fontWeight: '800',
+  color: '#ffffff',
+  textShadow: '0 2px 15px rgba(59, 130, 246, 0.3)',
+  marginBottom: '8px',
   textAlign: 'center',
   letterSpacing: '-0.02em',
 };
 
 export const settingsSubtitle = {
-  fontSize: '0.9rem',
-  color: '#64748b',
+  fontSize: '16px',
+  color: '#cbd5e1',
   textAlign: 'center',
-  marginBottom: '1.5rem',
+  marginBottom: '40px',
   fontWeight: '400',
 };
 
 export const settingsCard = {
-  backgroundColor: '#fff',
-  borderRadius: '2rem',
-  padding: '2rem',
-  maxWidth: '1000px',
-  width: '100%',
-  margin: '0 auto',
-  boxShadow: '0 25px 70px rgba(0, 0, 0, 0.15), 0 10px 30px rgba(0, 0, 0, 0.1)',
-  border: 'none',
-  position: 'relative',
-  overflow: 'hidden',
+  background: 'rgba(255, 255, 255, 0.1)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: '28px',
+  padding: '40px',
+  border: '1px solid rgba(255, 255, 255, 0.15)',
+  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)',
 };
 
 export const settingsCardHeader = {
   textAlign: 'center',
-  marginBottom: '1.5rem',
-  paddingBottom: '1.5rem',
-  borderBottom: '2px solid #f1f5f9',
+  marginBottom: '32px',
+  paddingBottom: '32px',
+  borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
   position: 'relative',
 };
 
 export const settingsAvatar = {
-  width: '90px',
-  height: '90px',
+  width: '100px',
+  height: '100px',
   borderRadius: '50%',
-  backgroundColor: '#3b82f6',
+  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   fontSize: '2.5rem',
   fontWeight: '700',
   color: '#fff',
-  margin: '0 auto 1rem',
-  boxShadow: '0 10px 30px rgba(59, 130, 246, 0.4), 0 0 0 6px rgba(59, 130, 246, 0.1)',
-  border: '4px solid #fff',
+  margin: '0 auto 20px',
+  boxShadow: '0 10px 30px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.15)',
+  border: '4px solid rgba(255, 255, 255, 0.2)',
   position: 'relative',
 };
 
 export const settingsUserName = {
-  fontSize: '1.5rem',
+  fontSize: '24px',
   fontWeight: '700',
-  color: '#1f2937',
-  marginBottom: '0.5rem',
+  color: '#ffffff',
+  marginBottom: '8px',
   letterSpacing: '-0.02em',
 };
 
 export const settingsUserEmail = {
-  fontSize: '0.95rem',
-  color: '#64748b',
+  fontSize: '15px',
+  color: '#94a3b8',
   fontWeight: '400',
 };
 
 export const settingsSection = {
-  marginBottom: '1rem',
-  padding: '1.25rem',
-  backgroundColor: '#f8fafc',
-  borderRadius: '1rem',
-  border: '2px solid #e2e8f0',
+  marginBottom: '16px',
+  padding: '20px 24px',
+  background: 'rgba(255, 255, 255, 0.08)',
+  borderRadius: '16px',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   display: 'flex',
   alignItems: 'center',
-  gap: '1.25rem',
+  gap: '20px',
   cursor: 'default',
 };
 
 export const settingsSectionHover = {
-  backgroundColor: '#f1f5f9',
-  borderColor: '#3b82f6',
-  transform: 'translateX(6px)',
-  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.1)',
+  background: 'rgba(255, 255, 255, 0.12)',
+  borderColor: 'rgba(59, 130, 246, 0.5)',
+  transform: 'translateX(8px)',
+  boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)',
 };
 
 export const settingsIcon = {
-  width: '48px',
-  height: '48px',
-  borderRadius: '0.875rem',
+  width: '52px',
+  height: '52px',
+  borderRadius: '14px',
+  background: 'rgba(59, 130, 246, 0.2)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: '1.5rem',
+  fontSize: '24px',
   flexShrink: 0,
   transition: 'all 0.3s ease',
 };
 
-export const settingsContent = {
+export const settingsContentInner = {
   flex: 1,
   minWidth: 0,
 };
 
 export const settingsLabel = {
-  fontSize: '0.8125rem',
+  fontSize: '12px',
   fontWeight: '600',
-  color: '#64748b',
-  marginBottom: '0.625rem',
+  color: '#94a3b8',
+  marginBottom: '6px',
   textTransform: 'uppercase',
-  letterSpacing: '0.12em',
+  letterSpacing: '0.1em',
 };
 
 export const settingsValue = {
-  fontSize: '1.1rem',
+  fontSize: '16px',
   fontWeight: '600',
-  color: '#1f2937',
+  color: '#ffffff',
   wordBreak: 'break-word',
   lineHeight: '1.5',
   letterSpacing: '-0.01em',
 };
 
 export const settingsButton = {
-  padding: '1rem 3rem',
-  backgroundColor: '#ef4444',
+  padding: '16px 32px',
+  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
   color: '#fff',
   border: 'none',
-  borderRadius: '0.75rem',
-  fontSize: '1rem',
-  fontWeight: '600',
+  borderRadius: '14px',
+  fontSize: '16px',
+  fontWeight: '700',
   cursor: 'pointer',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  boxShadow: '0 4px 14px rgba(239, 68, 68, 0.4)',
+  boxShadow: '0 8px 25px rgba(239, 68, 68, 0.4)',
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '0.5rem',
+  gap: '10px',
 };
 
 export const settingsButtonHover = {
-  backgroundColor: '#dc2626',
   transform: 'translateY(-3px)',
-  boxShadow: '0 8px 20px rgba(239, 68, 68, 0.5)',
+  boxShadow: '0 12px 35px rgba(239, 68, 68, 0.5)',
 };
 
+export const homeButton = {
+  padding: '16px 32px',
+  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '14px',
+  fontSize: '16px',
+  fontWeight: '700',
+  cursor: 'pointer',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '10px',
+};
+
+export const homeButtonHover = {
+  transform: 'translateY(-3px)',
+  boxShadow: '0 12px 35px rgba(59, 130, 246, 0.5)',
+};
+
+export const buttonContainer = {
+  marginTop: '32px',
+  display: 'flex',
+  gap: '16px',
+  justifyContent: 'center',
+  flexWrap: 'wrap',
+};
+
+// Loading and Error States
+export const loadingContainer = {
+  minHeight: '100vh',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: `
+    linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)
+  `,
+  color: '#cbd5e1',
+  fontSize: '18px',
+};
+
+export const errorContainer = {
+  minHeight: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: `
+    linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)
+  `,
+  padding: '40px',
+  textAlign: 'center',
+};
+
+export const errorText = {
+  color: '#fca5a5',
+  marginBottom: '24px',
+  fontSize: '16px',
+};
+
+export const retryButton = {
+  padding: '14px 28px',
+  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '12px',
+  fontSize: '15px',
+  fontWeight: '600',
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  boxShadow: '0 6px 20px rgba(59, 130, 246, 0.4)',
+};

@@ -9,24 +9,35 @@ import {
   formStyle,
   labelStyle,
   inputStyle,
+  inputFocusStyle,
   primaryButton,
+  primaryButtonHover,
   smallLink,
+  smallLinkHover,
   footerStyle,
   passwordInputWrapper,
   passwordToggleIcon,
+  passwordToggleIconHover,
   infoPanelStyle,
+  infoPanelOverlay,
   infoBadge,
   infoTitle,
   infoSubtitle,
   infoList,
   infoListItem,
+  infoListItemHover,
   infoListIcon,
   infoFooter,
   formPanelStyle,
   supportText,
+  decorCircle1,
+  decorCircle2,
+  studyIconsContainer,
+  studyIcon,
+  studyIconHover,
+  errorMessageStyle,
+  animationStyles,
 } from "../../assets/styles/auth.styles";
-// Đã tắt chức năng đăng ký - không sử dụng nữa
-// import Signup from "./signup";
 import { useForm } from "../hooks/useForm";
 import { useAuth } from "../hooks/useAuth";
 import { validationRules } from "../utils/validation";
@@ -40,6 +51,10 @@ function LoginForm({ onSwitch, onSuccess }) {
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
+  const [hoveredButton, setHoveredButton] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState(false);
+  const [hoveredToggle, setHoveredToggle] = useState(false);
   const navigate = useNavigate();
 
   const { login, loading, error, clearError } = useAuth();
@@ -55,14 +70,12 @@ function LoginForm({ onSwitch, onSuccess }) {
     validateAll,
   } = useForm({ email: "", password: "" }, LOGIN_VALIDATION_RULES);
 
-  // Focus on email input when component mounts
   useEffect(() => {
     if (emailRef.current) {
       emailRef.current.focus();
     }
   }, []);
 
-  // Clear auth error when form values change
   useEffect(() => {
     if (error) {
       clearError();
@@ -73,10 +86,8 @@ function LoginForm({ onSwitch, onSuccess }) {
     async (e) => {
       e.preventDefault();
 
-      // Force validation of all fields before submit
       const isValid = validateAll();
       if (!isValid) {
-        // Mark all fields as touched to show validation errors
         Object.keys(LOGIN_VALIDATION_RULES).forEach((field) => {
           setFieldTouched(field);
         });
@@ -110,68 +121,73 @@ function LoginForm({ onSwitch, onSuccess }) {
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
       {error && (
-        <div
-          style={{
-            color: "#e74c3c",
-            backgroundColor: "#fdf2f2",
-            padding: "10px",
-            borderRadius: "4px",
-            marginBottom: "16px",
-            fontSize: "14px",
-          }}
-        >
-          {error}
+        <div style={errorMessageStyle}>
+          <span>⚠️</span>
+          <span>{error}</span>
         </div>
       )}
 
       <div>
-        <label style={labelStyle}>Địa chỉ email</label>
+        <label style={labelStyle}>📧 Địa chỉ email</label>
         <input
           ref={emailRef}
           type="email"
           value={values.email}
           onChange={(e) => setValue("email", e.target.value)}
+          onFocus={() => setFocusedField("email")}
+          onBlur={() => setFocusedField(null)}
           placeholder="Ví dụ: hocvien@truong.edu.vn"
           style={{
             ...inputStyle,
+            ...(focusedField === "email" ? inputFocusStyle : {}),
             borderColor:
               touched.email && errors.email
-                ? "#e74c3c"
-                : inputStyle.borderColor,
+                ? "#ef4444"
+                : focusedField === "email"
+                ? "#667eea"
+                : inputStyle.border,
           }}
           disabled={loading || isSubmitting}
         />
         {touched.email && errors.email && (
-          <div style={{ color: "#e74c3c", fontSize: "12px", marginTop: "4px" }}>
-            {errors.email}
+          <div style={{ color: "#ef4444", fontSize: "13px", marginTop: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+            <span>❌</span> {errors.email}
           </div>
         )}
       </div>
 
       <div>
-        <label style={labelStyle}>Mật khẩu</label>
+        <label style={labelStyle}>🔒 Mật khẩu</label>
         <div style={passwordInputWrapper}>
           <input
             ref={passwordRef}
             type={showPassword ? "text" : "password"}
             value={values.password}
             onChange={(e) => setValue("password", e.target.value)}
-            placeholder="Nhập mật khẩu bất kì"
+            onFocus={() => setFocusedField("password")}
+            onBlur={() => setFocusedField(null)}
+            placeholder="Nhập mật khẩu của bạn"
             style={{
               ...inputStyle,
-              paddingRight: "45px",
+              paddingRight: "52px",
+              ...(focusedField === "password" ? inputFocusStyle : {}),
               borderColor:
                 touched.password && errors.password
-                  ? "#e74c3c"
-                  : inputStyle.borderColor,
+                  ? "#ef4444"
+                  : focusedField === "password"
+                  ? "#667eea"
+                  : inputStyle.border,
             }}
             disabled={loading || isSubmitting}
           />
           <span
-            style={passwordToggleIcon}
+            style={{
+              ...passwordToggleIcon,
+              ...(hoveredToggle ? passwordToggleIconHover : {}),
+            }}
             onClick={() => setShowPassword(!showPassword)}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#0f172a")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#64748b")}
+            onMouseEnter={() => setHoveredToggle(true)}
+            onMouseLeave={() => setHoveredToggle(false)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
@@ -186,77 +202,71 @@ function LoginForm({ onSwitch, onSuccess }) {
           </span>
         </div>
         {touched.password && errors.password && (
-          <div style={{ color: "#e74c3c", fontSize: "12px", marginTop: "4px" }}>
-            {errors.password}
+          <div style={{ color: "#ef4444", fontSize: "13px", marginTop: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+            <span>❌</span> {errors.password}
           </div>
         )}
       </div>
 
-      <div
+      <button
+        type="submit"
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          ...primaryButton,
+          ...(hoveredButton && !loading && !isSubmitting && isFormValid ? primaryButtonHover : {}),
+          opacity: !isFormValid || loading || isSubmitting ? 0.6 : 1,
+          cursor:
+            !isFormValid || loading || isSubmitting
+              ? "not-allowed"
+              : "pointer",
         }}
+        disabled={!isFormValid || loading || isSubmitting}
+        onMouseEnter={() => setHoveredButton(true)}
+        onMouseLeave={() => setHoveredButton(false)}
       >
-        <button
-          type="submit"
-          style={{
-            ...primaryButton,
-            opacity: !isFormValid || loading || isSubmitting ? 0.6 : 1,
-            cursor:
-              !isFormValid || loading || isSubmitting
-                ? "not-allowed"
-                : "pointer",
-          }}
-          disabled={!isFormValid || loading || isSubmitting}
-        >
-          {loading || isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
-        </button>
-      </div>
+        {loading || isSubmitting ? (
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+            <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⏳</span>
+            Đang đăng nhập...
+          </span>
+        ) : (
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+            🚀 Đăng nhập
+          </span>
+        )}
+      </button>
 
       <div
         style={{
           display: "flex",
           justifyContent: "center",
-          marginTop: 8,
+          marginTop: 16,
         }}
       >
         <button
           type="button"
-          style={smallLink}
+          style={{
+            ...smallLink,
+            ...(hoveredLink ? smallLinkHover : {}),
+          }}
           onClick={handleForgotPassword}
+          onMouseEnter={() => setHoveredLink(true)}
+          onMouseLeave={() => setHoveredLink(false)}
           disabled={loading || isSubmitting}
         >
-          Quên mật khẩu?
+          🔑 Quên mật khẩu?
         </button>
-        {/* Đã ẩn phần đăng ký vì chức năng này không còn được sử dụng
-        <div style={footerStyle}>
-          Bạn chưa có tài khoản?{" "}
-          <button
-            style={{ ...smallLink, marginLeft: 6 }}
-            onClick={() => onSwitch("register")}
-            disabled={loading || isSubmitting}
-          >
-            Đăng ký
-          </button>
-        </div>
-        */}
       </div>
     </form>
   );
 }
 
-// Register form moved into src/(auth)/signup.jsx as Signup component
-
 export default function Auth() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  // Luôn sử dụng mode "login" vì chức năng đăng ký đã bị tắt
-  // const initialMode = searchParams.get("mode") || "login";
-  // const [mode, setMode] = useState(initialMode);
-  const mode = "login"; // Luôn là login mode
-  const { user } = useAuth(); // <-- lấy user từ hook
+  const mode = "login";
+  const { user } = useAuth();
+  const [hoveredItems, setHoveredItems] = useState({});
+  const [hoveredIcons, setHoveredIcons] = useState({});
 
   const handleSuccess = () => {
     console.log("DEBUG: handleSuccess called");
@@ -273,112 +283,171 @@ export default function Auth() {
         navigate("/teacher");
         return;
       }
-      // Student - redirect to predict page
-      navigate("/predict");
+      // Student - redirect to home page
+      navigate("/");
       return;
     }
 
-    // Default fallback
-    navigate("/predict");
+    navigate("/");
   };
 
-  // Header content - chỉ hiển thị nội dung đăng nhập
   const headerContent = {
-    title: "Chào mừng trở lại!",
-    subtitle: "Đăng nhập vào hệ thống dự đoán điểm học tập",
+    title: "Chào mừng trở lại! 👋",
+    subtitle: "Đăng nhập để tiếp tục hành trình học tập",
   };
-  /* Đã tắt chức năng đăng ký
-  const headerContent =
-    mode === "login"
-      ? {
-          title: "Chào mừng trở lại!",
-          subtitle: "Đăng nhập vào hệ thống dự đoán điểm học tập",
-        }
-      : {
-          title: "Tạo tài khoản mới",
-          subtitle: "Điền thông tin để tạo tài khoản",
-        };
-  */
 
   const infoHighlights = [
     {
       icon: "📊",
-      text: "Theo dõi biểu đồ dự đoán điểm cho từng môn học và từng học kỳ.",
+      text: "Theo dõi biểu đồ dự đoán điểm cho từng môn học và học kỳ",
     },
     {
       icon: "🧠",
-      text: "Nhận gợi ý ôn tập cá nhân hoá dựa trên năng lực hiện tại.",
+      text: "Nhận gợi ý ôn tập cá nhân hoá dựa trên năng lực hiện tại",
     },
     {
       icon: "🎯",
-      text: "Đặt mục tiêu điểm số và kiểm tra mức độ hoàn thành theo thời gian.",
+      text: "Đặt mục tiêu và theo dõi tiến độ hoàn thành theo thời gian",
     },
   ];
 
-  /* Đã tắt chức năng đăng ký - không cần các handler này nữa
-  // Handle mode switch with useCallback to prevent unnecessary re-renders
-  const handleModeSwitch = useCallback((newMode) => {
-    setMode(newMode);
-  }, []);
+  const studyIcons = ["📚", "✏️", "🎓", "💡", "🏆"];
 
-  // Handle back to login
-  const handleBackToLogin = useCallback(() => {
-    console.log("DEBUG: handleBackToLogin called");
-    setMode("login");
-  }, []);
-  */
-  // Placeholder function để tránh lỗi - không thực sự được gọi
   const handleModeSwitch = useCallback(() => {}, []);
 
-  console.log("DEBUG: Auth component - current mode:", mode);
-
-  // Support text - chỉ hiển thị nội dung đăng nhập
-  const supportCopy = "Tiếp tục theo dõi tiến bộ học tập và xem các dự đoán mới nhất của bạn.";
+  const supportCopy = "Hệ thống dự đoán điểm số thông minh sử dụng AI";
 
   return (
     <div style={containerStyle}>
+      {/* Add animation styles */}
+      <style>
+        {animationStyles}
+        {`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+          }
+        `}
+      </style>
+      
+      {/* Floating background elements */}
+      <div style={{ 
+        position: "absolute", 
+        top: "10%", 
+        left: "5%", 
+        fontSize: "60px", 
+        opacity: 0.1,
+        animation: "float 6s ease-in-out infinite"
+      }}>📖</div>
+      <div style={{ 
+        position: "absolute", 
+        bottom: "15%", 
+        right: "8%", 
+        fontSize: "50px", 
+        opacity: 0.1,
+        animation: "float 8s ease-in-out infinite",
+        animationDelay: "1s"
+      }}>🎓</div>
+      <div style={{ 
+        position: "absolute", 
+        top: "25%", 
+        right: "15%", 
+        fontSize: "40px", 
+        opacity: 0.08,
+        animation: "float 7s ease-in-out infinite",
+        animationDelay: "2s"
+      }}>✨</div>
+      
       <div style={cardStyle}>
+        {/* Left Panel - Info */}
         <div style={infoPanelStyle}>
-          <span style={infoBadge}>PredictGrade Learning Hub</span>
+          {/* Overlay pattern */}
+          <div style={infoPanelOverlay}></div>
+          
+          {/* Decorative circles */}
+          <div style={decorCircle1}></div>
+          <div style={decorCircle2}></div>
+          
+          <span style={infoBadge}>
+            <span style={{ fontSize: "16px" }}>🎓</span>
+            PredictGrade Learning Hub
+          </span>
+          
           <h2 style={infoTitle}>
             Định hướng học tập thông minh cho từng học sinh
           </h2>
+          
           <p style={infoSubtitle}>
-            Biến dữ liệu điểm số thành lộ trình học tập rõ ràng, giúp bạn tự tin
-            trước mỗi kỳ kiểm tra.
+            Biến dữ liệu điểm số thành lộ trình học tập rõ ràng, giúp bạn tự tin trước mỗi kỳ kiểm tra.
           </p>
+          
           <ul style={infoList}>
-            {infoHighlights.map((item) => (
-              <li key={item.text} style={infoListItem}>
+            {infoHighlights.map((item, index) => (
+              <li 
+                key={item.text} 
+                style={{
+                  ...infoListItem,
+                  ...(hoveredItems[index] ? infoListItemHover : {}),
+                  animationDelay: `${index * 0.1}s`,
+                }}
+                onMouseEnter={() => setHoveredItems(prev => ({ ...prev, [index]: true }))}
+                onMouseLeave={() => setHoveredItems(prev => ({ ...prev, [index]: false }))}
+              >
                 <span style={infoListIcon}>{item.icon}</span>
                 <span>{item.text}</span>
               </li>
             ))}
           </ul>
+          
+          {/* Study icons */}
+          <div style={studyIconsContainer}>
+            {studyIcons.map((icon, index) => (
+              <div 
+                key={index}
+                style={{
+                  ...studyIcon,
+                  ...(hoveredIcons[index] ? studyIconHover : {}),
+                }}
+                onMouseEnter={() => setHoveredIcons(prev => ({ ...prev, [index]: true }))}
+                onMouseLeave={() => setHoveredIcons(prev => ({ ...prev, [index]: false }))}
+              >
+                {icon}
+              </div>
+            ))}
+          </div>
+          
           <div style={infoFooter}>
-            <span>✨</span>
+            <span style={{ fontSize: "20px" }}>✨</span>
             <span>Cùng bạn nuôi dưỡng tinh thần ham học mỗi ngày</span>
           </div>
         </div>
 
+        {/* Right Panel - Form */}
         <div style={formPanelStyle}>
           <div style={headerStyle}>
-            <div>
-              <div style={brandStyle}>{headerContent.title}</div>
-              <div style={subtitleStyle}>{headerContent.subtitle}</div>
-            </div>
+            <div style={{ fontSize: "48px", marginBottom: "8px" }}>📚</div>
+            <div style={brandStyle}>{headerContent.title}</div>
+            <div style={subtitleStyle}>{headerContent.subtitle}</div>
             <p style={supportText}>{supportCopy}</p>
           </div>
 
-          {/* Luôn hiển thị LoginForm - chức năng đăng ký đã bị tắt */}
           <LoginForm onSwitch={handleModeSwitch} onSuccess={handleSuccess} />
-          {/* Đã tắt chức năng đăng ký
-          {mode === "login" ? (
-            <LoginForm onSwitch={handleModeSwitch} onSuccess={handleSuccess} />
-          ) : (
-            <Signup onBack={handleBackToLogin} onSuccess={handleSuccess} />
-          )}
-          */}
+          
+          {/* Footer info */}
+          <div style={{ 
+            marginTop: "32px", 
+            paddingTop: "20px", 
+            borderTop: "1px solid #e5e7eb",
+            textAlign: "center",
+            color: "#9ca3af",
+            fontSize: "13px"
+          }}>
+            <span>🔒 Bảo mật bởi PredictGrade © 2025</span>
+          </div>
         </div>
       </div>
     </div>
