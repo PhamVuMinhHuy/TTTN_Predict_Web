@@ -304,7 +304,7 @@ const PredictPage = () => {
           <div style={formGroup}>
             <label style={formLabel}>Truy cập internet tại nhà *</label>
             <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem" }}>
-              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "#ffffff", fontWeight: "600", fontSize: "15px" }}>
                 <input
                   type="radio"
                   name="internetAccessAtHome"
@@ -317,7 +317,7 @@ const PredictPage = () => {
                 />
                 Yes
               </label>
-              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "#ffffff", fontWeight: "600", fontSize: "15px" }}>
                 <input
                   type="radio"
                   name="internetAccessAtHome"
@@ -339,7 +339,7 @@ const PredictPage = () => {
           <div style={formGroup}>
             <label style={formLabel}>Hoạt động ngoại khóa *</label>
             <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem" }}>
-              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "#ffffff", fontWeight: "600", fontSize: "15px" }}>
                 <input
                   type="radio"
                   name="extracurricularActivities"
@@ -352,7 +352,7 @@ const PredictPage = () => {
                 />
                 Yes
               </label>
-              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "#ffffff", fontWeight: "600", fontSize: "15px" }}>
                 <input
                   type="radio"
                   name="extracurricularActivities"

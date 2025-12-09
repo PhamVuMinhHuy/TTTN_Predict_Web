@@ -194,14 +194,7 @@ const ScoreboardPage = () => {
                   return (
                     <tr
                       key={prediction.id || index}
-                      style={{
-                        ...tableRow,
-                        ...(hoveredItem === index
-                          ? { backgroundColor: "#f9fafb" }
-                          : {}),
-                      }}
-                      onMouseEnter={() => setHoveredItem(index)}
-                      onMouseLeave={() => setHoveredItem(null)}
+                      style={tableRow}
                     >
                       <td style={tableCellCenter}>
                         {predictionHistory.length - index}
