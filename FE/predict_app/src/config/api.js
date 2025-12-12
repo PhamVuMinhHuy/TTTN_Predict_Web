@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
   PREDICT: `${API_BASE_URL}/api/predict/`,
   PREDICTION_HISTORY: `${API_BASE_URL}/api/predictions/history/`,
   ADMIN_USERS: `${API_BASE_URL}/api/admin/users/`,
+  ADMIN_CLASSES: `${API_BASE_URL}/api/admin/classes/`,
   TEACHER_STUDENTS: `${API_BASE_URL}/api/teacher/students/`,
   TEACHER_PREDICT: `${API_BASE_URL}/api/teacher/predict/`,
   TEACHER_SAVE_SCORES: `${API_BASE_URL}/api/teacher/save-scores/`,

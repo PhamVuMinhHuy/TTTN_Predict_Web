@@ -2,6 +2,21 @@ from mongoengine import Document, fields
 from datetime import datetime
 import hashlib
 
+
+class Class(Document):
+    """Model lưu thông tin lớp học"""
+    name = fields.StringField(required=True, unique=True, max_length=50)  # VD: "10A1", "12B2"
+    created_at = fields.DateTimeField(default=datetime.utcnow)
+    
+    meta = {
+        'collection': 'classes',
+        'indexes': ['name']
+    }
+    
+    def __str__(self):
+        return self.name
+
+
 class User(Document):
     """Simple User model for MongoDB connection test"""
     username = fields.StringField(required=True, unique=True, max_length=150)
@@ -16,12 +31,22 @@ class User(Document):
         default='student',
         max_length=20,
     )
-    class_name = fields.StringField(max_length=50)  # <-- chỉ 1 dòng này để thêm Lớp
+    # Migration: giữ class_name cũ để backward compatibility
+    class_name = fields.StringField(max_length=50)  # DEPRECATED - sẽ xóa sau khi migrate xong
+    # Field mới: Reference tới Class document
+    class_ref = fields.ReferenceField('Class', required=False)
 
     meta = {
-        'collection': 'users'
-        # Bỏ indexes để tránh conflict
+        'collection': 'users',
+        'indexes': ['class_ref']
     }
+    
+    @property
+    def get_class_name(self):
+        """Helper để lấy tên lớp - ưu tiên class_ref, fallback về class_name"""
+        if self.class_ref:
+            return self.class_ref.name
+        return self.class_name
     
     def set_password(self, raw_password):
         """Hash and set password"""

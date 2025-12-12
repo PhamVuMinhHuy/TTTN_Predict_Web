@@ -89,7 +89,22 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchInput, setSearchInput] = useState(""); // For immediate input
+  const [debouncedSearch, setDebouncedSearch] = useState(""); // For API call
+  
+  // Statistics from API (not affected by pagination)
+  const [apiStats, setApiStats] = useState({
+    totalUsers: 0,
+    students: 0,
+    teachers: 0,
+    admins: 0,
+  });
 
   const [formData, setFormData] = useState({
     username: "",
@@ -126,6 +141,13 @@ export default function AdminDashboard() {
   // Classes modal state
   const [showClassesModal, setShowClassesModal] = useState(false);
 
+  // Classes management state
+  const [classes, setClasses] = useState([]);
+  const [loadingClasses, setLoadingClasses] = useState(true);
+  const [newClassName, setNewClassName] = useState("");
+  const [creatingClass, setCreatingClass] = useState(false);
+  const [hoveredDeleteClass, setHoveredDeleteClass] = useState(null);
+
   // Toast notification functions
   const showToast = (message, type = "info") => {
     const id = toastIdCounter;
@@ -152,63 +174,90 @@ export default function AdminDashboard() {
     setConfirmModal(null);
   };
 
+  // Debounce search input
   useEffect(() => {
-    const fetchUsers = async () => {
-      setLoadingUsers(true);
-      setError(null);
-      const result = await adminService.getUsers();
-      if (result.success) {
-        setUsers(result.data);
-      } else {
-        setError(result.error);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+      setCurrentPage(1); // Reset to first page on search
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Fetch users function (can be called from multiple places)
+  const fetchUsers = async (page = currentPage, search = debouncedSearch) => {
+    setLoadingUsers(true);
+    setError(null);
+    const result = await adminService.getUsers({ page, limit: pageSize, search });
+    if (result.success) {
+      setUsers(result.data);
+      if (result.pagination) {
+        setTotalPages(result.pagination.totalPages);
+        setTotalUsers(result.pagination.total);
+        setCurrentPage(result.pagination.currentPage);
       }
-      setLoadingUsers(false);
+      // Update statistics from API (not affected by pagination/search)
+      if (result.statistics) {
+        setApiStats(result.statistics);
+      }
+    } else {
+      setError(result.error);
+    }
+    setLoadingUsers(false);
+  };
+
+  // Fetch on mount and when page/search changes
+  useEffect(() => {
+    fetchUsers(currentPage, debouncedSearch);
+  }, [currentPage, debouncedSearch, pageSize]);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      setLoadingClasses(true);
+      const result = await adminService.getClasses();
+      if (result.success) {
+        setClasses(result.data);
+      }
+      setLoadingClasses(false);
     };
 
-    fetchUsers();
+    fetchClasses();
   }, []);
 
-  // Get unique classes from users
+  // Get class names from classes API
   const availableClasses = useMemo(() => {
-    const classes = users
-      .map((u) => u.class_name)
-      .filter((className) => className && className.trim() !== "");
-    return [...new Set(classes)].sort();
-  }, [users]);
+    return classes.map((c) => c.name).sort();
+  }, [classes]);
 
-  // Get classes with their homeroom teachers
+  // Get classes with their homeroom teachers (from API)
   const classesWithTeachers = useMemo(() => {
-    return availableClasses.map((className) => {
+    return classes.map((classData) => {
       const teacher = users.find(
-        (u) => u.role === "teacher" && u.class_name === className
+        (u) => u.role === "teacher" && u.class_name === classData.name
       );
-      const studentCount = users.filter(
-        (u) => u.role === "student" && u.class_name === className
-      ).length;
       
       return {
-        className,
-        teacher: teacher
-          ? `${teacher.first_name || ""} ${teacher.last_name || ""}`.trim() || teacher.username
-          : "Chưa có",
+        id: classData.id,
+        className: classData.name,
+        teacher: classData.teacher_name || "Chưa có",
         teacherEmail: teacher?.email || "-",
-        studentCount,
+        studentCount: classData.student_count || 0,
       };
     });
-  }, [availableClasses, users]);
+  }, [classes, users]);
 
-  // Statistics calculations
+  // Statistics from API (not from paginated users)
   const statistics = useMemo(() => {
-    const totalUsers = users.length;
-    const students = users.filter((u) => u.role === "student").length;
-    const teachers = users.filter((u) => u.role === "teacher").length;
-    const admins = users.filter((u) => u.role === "admin").length;
     const totalClasses = availableClasses.length;
+    return { 
+      totalUsers: apiStats.totalUsers, 
+      students: apiStats.students, 
+      teachers: apiStats.teachers, 
+      admins: apiStats.admins, 
+      totalClasses 
+    };
+  }, [apiStats, availableClasses]);
 
-    return { totalUsers, students, teachers, admins, totalClasses };
-  }, [users, availableClasses]);
-
-  // Filtered users based on search, role filter, and class filter
+  // Filtered users based on role filter and class filter (search is now server-side)
   const filteredUsers = useMemo(() => {
     let filtered = users;
 
@@ -222,22 +271,8 @@ export default function AdminDashboard() {
       filtered = filtered.filter((u) => u.class_name === classFilter);
     }
 
-    // Then apply search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (u) =>
-          u.username?.toLowerCase().includes(query) ||
-          u.email?.toLowerCase().includes(query) ||
-          u.first_name?.toLowerCase().includes(query) ||
-          u.last_name?.toLowerCase().includes(query) ||
-          u.class_name?.toLowerCase().includes(query) ||
-          u.role?.toLowerCase().includes(query)
-      );
-    }
-
     return filtered;
-  }, [users, searchQuery, roleFilter, classFilter]);
+  }, [users, roleFilter, classFilter]);
 
   // Handle statistics card click to filter by role
   const handleRoleFilter = (role) => {
@@ -268,12 +303,26 @@ export default function AdminDashboard() {
     setSubmitting(true);
     setError(null);
 
-    const result = await adminService.createUser(formData);
-    if (result.success) {
-      const list = await adminService.getUsers();
-      if (list.success) {
-        setUsers(list.data);
+    // Tìm class_id từ class_name được chọn
+    let classId = null;
+    if (formData.class_name) {
+      const selectedClass = classes.find(c => c.name === formData.class_name);
+      if (selectedClass) {
+        classId = selectedClass.id;
       }
+    }
+
+    // Gửi cả class_id và class_name (backward compatible)
+    const userData = {
+      ...formData,
+      class_id: classId,
+    };
+
+    const result = await adminService.createUser(userData);
+    if (result.success) {
+      // Refresh users list and go to first page
+      setCurrentPage(1);
+      await fetchUsers(1, debouncedSearch);
       setFormData({
         username: "",
         email: "",
@@ -304,8 +353,53 @@ export default function AdminDashboard() {
 
         const result = await adminService.deleteUser(userId);
         if (result.success) {
-          setUsers((prev) => prev.filter((u) => u.id !== userId));
+          // Refresh users list on current page
+          await fetchUsers(currentPage, debouncedSearch);
           showToast(`✅ Đã xóa tài khoản "${username}" thành công!`, "success");
+        } else {
+          showToast(`❌ Lỗi khi xóa: ${result.error}`, "error");
+        }
+      }
+    );
+  };
+
+  const handleCreateClass = async (e) => {
+    e.preventDefault();
+    if (!newClassName.trim()) {
+      showToast("❌ Vui lòng nhập tên lớp", "error");
+      return;
+    }
+
+    const classNameToCreate = newClassName.trim();
+    setCreatingClass(true);
+    const result = await adminService.createClass(classNameToCreate);
+    if (result.success) {
+      // Refresh danh sách lớp
+      const classesResult = await adminService.getClasses();
+      if (classesResult.success) {
+        setClasses(classesResult.data);
+      }
+      // Tự động chọn lớp vừa tạo vào dropdown
+      setFormData((prev) => ({ ...prev, class_name: classNameToCreate }));
+      setNewClassName("");
+      showToast(`✅ Tạo lớp "${classNameToCreate}" thành công!`, "success");
+    } else {
+      showToast(`❌ Lỗi: ${result.error}`, "error");
+    }
+    setCreatingClass(false);
+  };
+
+  const handleDeleteClass = async (classId, className) => {
+    showConfirmModal(
+      "⚠️ Xác nhận xóa lớp",
+      `Bạn có chắc chắn muốn xóa lớp "${className}"? Chỉ có thể xóa lớp không có học sinh hoặc giáo viên.`,
+      async () => {
+        closeConfirmModal();
+
+        const result = await adminService.deleteClass(classId);
+        if (result.success) {
+          setClasses((prev) => prev.filter((c) => c.id !== classId));
+          showToast(`✅ Đã xóa lớp "${className}" thành công!`, "success");
         } else {
           showToast(`❌ Lỗi khi xóa: ${result.error}`, "error");
         }
@@ -544,19 +638,60 @@ export default function AdminDashboard() {
             </div>
 
             {/* Search bar */}
-            <div style={searchContainer}>
+            <div style={{
+              marginBottom: '1.5rem',
+              position: 'relative',
+            }}>
+              <div style={{
+                position: 'absolute',
+                left: '1rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#9ca3af',
+                fontSize: '1rem',
+                pointerEvents: 'none',
+              }}>
+                🔍
+              </div>
               <input
                 type="text"
-                placeholder="🔍 Tìm kiếm theo tên, email, lớp..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm kiếm theo tên, email, lớp..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 onFocus={() => setFocusedField("search")}
                 onBlur={() => setFocusedField(null)}
                 style={{
-                  ...searchInput,
-                  ...(focusedField === "search" ? searchInputFocus : {}),
+                  width: '100%',
+                  padding: '0.875rem 1rem 0.875rem 2.75rem',
+                  backgroundColor: '#1e293b',
+                  border: focusedField === "search" ? '2px solid #3b82f6' : '2px solid #374151',
+                  borderRadius: '0.75rem',
+                  color: '#e2e8f0',
+                  fontSize: '0.95rem',
+                  outline: 'none',
+                  transition: 'all 0.2s ease',
+                  boxShadow: focusedField === "search" ? '0 0 0 3px rgba(59, 130, 246, 0.2)' : 'none',
                 }}
               />
+              {searchInput && (
+                <button
+                  onClick={() => setSearchInput('')}
+                  style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#9ca3af',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    padding: '0.25rem',
+                  }}
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             {loadingUsers ? (
@@ -582,11 +717,12 @@ export default function AdminDashboard() {
               </>
             ) : filteredUsers.length === 0 ? (
               <div style={emptyState}>
-                {searchQuery
+                {debouncedSearch
                   ? "🔍 Không tìm thấy người dùng phù hợp."
                   : "📭 Chưa có người dùng nào trong hệ thống."}
               </div>
             ) : (
+              <>
               <div style={tableWrapper}>
                 <table style={table}>
                   <thead>
@@ -664,6 +800,172 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls */}
+              <div style={{
+                marginTop: '1.5rem',
+                padding: '1.25rem 1.5rem',
+                background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+                borderRadius: '0.75rem',
+                border: '1px solid #475569',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              }}>
+                {/* Top row: Stats and Page Size */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '1rem',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem',
+                }}>
+                  <div style={{ 
+                    color: '#f1f5f9', 
+                    fontSize: '0.9rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                  }}>
+                    <span>📊</span>
+                    <span>
+                      Hiển thị <strong style={{ color: '#22d3ee' }}>{users.length > 0 ? ((currentPage - 1) * pageSize + 1) : 0} - {Math.min(currentPage * pageSize, totalUsers)}</strong> trong tổng số <strong style={{ color: '#fbbf24' }}>{totalUsers}</strong> người dùng
+                    </span>
+                  </div>
+                  
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.5rem', 
+                    color: '#f1f5f9', 
+                    fontSize: '0.9rem' 
+                  }}>
+                    <span>Hiển thị</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      style={{
+                        padding: '0.5rem 0.75rem',
+                        backgroundColor: '#0f172a',
+                        color: '#f1f5f9',
+                        border: '2px solid #60a5fa',
+                        borderRadius: '0.5rem',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        minWidth: '65px',
+                        fontWeight: '600',
+                      }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                    <span>dòng/trang</span>
+                  </div>
+                </div>
+
+                {/* Bottom row: Pagination buttons - centered */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center',
+                  alignItems: 'center', 
+                  gap: '0.75rem',
+                }}>
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: '0.625rem 1rem',
+                      background: currentPage === 1 ? '#475569' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+                      color: currentPage === 1 ? '#94a3b8' : 'white',
+                      border: currentPage === 1 ? '1px solid #64748b' : '1px solid #60a5fa',
+                      borderRadius: '0.5rem',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      transition: 'all 0.2s ease',
+                      boxShadow: currentPage === 1 ? 'none' : '0 2px 4px rgba(59, 130, 246, 0.3)',
+                    }}
+                    title="Trang đầu"
+                  >
+                    ⏮
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: '0.625rem 1.25rem',
+                      background: currentPage === 1 ? '#475569' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+                      color: currentPage === 1 ? '#94a3b8' : 'white',
+                      border: currentPage === 1 ? '1px solid #64748b' : '1px solid #60a5fa',
+                      borderRadius: '0.5rem',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      transition: 'all 0.2s ease',
+                      boxShadow: currentPage === 1 ? 'none' : '0 2px 4px rgba(59, 130, 246, 0.3)',
+                    }}
+                  >
+                    ← Trước
+                  </button>
+                  
+                  <div style={{
+                    padding: '0.625rem 1.5rem',
+                    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                    borderRadius: '0.5rem',
+                    color: '#f1f5f9',
+                    fontSize: '0.95rem',
+                    fontWeight: '700',
+                    border: '2px solid #60a5fa',
+                    minWidth: '130px',
+                    textAlign: 'center',
+                  }}>
+                    Trang <span style={{ color: '#fbbf24' }}>{currentPage}</span> / {totalPages || 1}
+                  </div>
+                  
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    style={{
+                      padding: '0.625rem 1.25rem',
+                      background: (currentPage === totalPages || totalPages === 0) ? '#475569' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+                      color: (currentPage === totalPages || totalPages === 0) ? '#94a3b8' : 'white',
+                      border: (currentPage === totalPages || totalPages === 0) ? '1px solid #64748b' : '1px solid #60a5fa',
+                      borderRadius: '0.5rem',
+                      cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      transition: 'all 0.2s ease',
+                      boxShadow: (currentPage === totalPages || totalPages === 0) ? 'none' : '0 2px 4px rgba(59, 130, 246, 0.3)',
+                    }}
+                  >
+                    Sau →
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    style={{
+                      padding: '0.625rem 1rem',
+                      background: (currentPage === totalPages || totalPages === 0) ? '#475569' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+                      color: (currentPage === totalPages || totalPages === 0) ? '#94a3b8' : 'white',
+                      border: (currentPage === totalPages || totalPages === 0) ? '1px solid #64748b' : '1px solid #60a5fa',
+                      borderRadius: '0.5rem',
+                      cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      transition: 'all 0.2s ease',
+                      boxShadow: (currentPage === totalPages || totalPages === 0) ? 'none' : '0 2px 4px rgba(59, 130, 246, 0.3)',
+                    }}
+                    title="Trang cuối"
+                  >
+                    ⏭
+                  </button>
+                </div>
+              </div>
+              </>
             )}
           </div>
 
@@ -781,7 +1083,7 @@ export default function AdminDashboard() {
                   <label style={label} htmlFor="class_name">
                     Lớp {formData.role === "student" ? "*" : ""}
                   </label>
-                  <input
+                  <select
                     id="class_name"
                     name="class_name"
                     value={formData.class_name}
@@ -789,16 +1091,88 @@ export default function AdminDashboard() {
                     onFocus={() => setFocusedField("class_name")}
                     onBlur={() => setFocusedField(null)}
                     style={{
-                      ...input,
+                      ...select,
                       ...(focusedField === "class_name" ? inputFocus : {}),
                     }}
-                    placeholder="VD: 10A1, 12A3..."
                     required={formData.role === "student"}
-                  />
+                  >
+                    <option value="">-- Chọn lớp --</option>
+                    {availableClasses.map((className) => (
+                      <option key={className} value={className}>
+                        {className}
+                      </option>
+                    ))}
+                  </select>
                   <div style={helpText}>
-                    {formData.role === "student"
-                      ? "Vui lòng nhập lớp của học sinh"
-                      : "Nhập lớp chủ nhiệm (nếu có)"}
+                    {loadingClasses 
+                      ? "Đang tải danh sách lớp..."
+                      : availableClasses.length === 0 
+                        ? "⚠️ Chưa có lớp nào. Vui lòng tạo lớp mới bên dưới."
+                        : formData.role === "student"
+                          ? "Chọn lớp của học sinh"
+                          : "Chọn lớp chủ nhiệm (nếu có)"}
+                  </div>
+
+                  {/* Form tạo lớp mới nhanh */}
+                  <div style={{ 
+                    marginTop: '1rem', 
+                    padding: '1rem', 
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+                    borderRadius: '0.5rem',
+                    border: '1px dashed rgba(59, 130, 246, 0.3)'
+                  }}>
+                    <div style={{ 
+                      fontSize: '0.85rem', 
+                      color: '#94a3b8', 
+                      marginBottom: '0.5rem',
+                      fontWeight: '500'
+                    }}>
+                      ➕ Hoặc tạo lớp mới:
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        value={newClassName}
+                        onChange={(e) => setNewClassName(e.target.value)}
+                        placeholder="Nhập tên lớp (VD: 10A1...)"
+                        style={{
+                          ...input,
+                          flex: 1,
+                          margin: 0,
+                          padding: '0.5rem 0.75rem',
+                          fontSize: '0.9rem',
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (newClassName.trim()) {
+                              handleCreateClass(e);
+                            }
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleCreateClass}
+                        disabled={creatingClass || !newClassName.trim()}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          backgroundColor: creatingClass || !newClassName.trim() 
+                            ? '#475569' 
+                            : '#10b981',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '0.375rem',
+                          cursor: creatingClass || !newClassName.trim() ? 'not-allowed' : 'pointer',
+                          fontWeight: '500',
+                          fontSize: '0.85rem',
+                          transition: 'all 0.2s ease',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {creatingClass ? "⏳..." : "✓ Tạo"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -944,23 +1318,67 @@ export default function AdminDashboard() {
         `}
       </style>
 
-      {/* Classes Overview Modal */}
+      {/* Classes Management Modal */}
       {showClassesModal && (
         <div style={modalOverlay} onClick={() => setShowClassesModal(false)}>
           <div
             style={{
               ...modal,
-              maxWidth: '700px',
+              maxWidth: '800px',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={modalHeader}>
               <div style={modalIcon}>🏫</div>
-              <h3 style={modalTitle}>Danh sách các lớp và giáo viên chủ nhiệm</h3>
+              <h3 style={modalTitle}>Quản lý lớp học</h3>
             </div>
-            <div style={{ ...modalBody, marginBottom: '1rem' }}>
-              {classesWithTeachers.length === 0 ? (
-                <div style={emptyState}>Chưa có lớp nào trong hệ thống.</div>
+            
+            {/* Form tạo lớp mới */}
+            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #374151' }}>
+              <form onSubmit={handleCreateClass} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={newClassName}
+                  onChange={(e) => setNewClassName(e.target.value)}
+                  placeholder="Nhập tên lớp mới (VD: 10A1, 12B2...)"
+                  style={{
+                    ...input,
+                    flex: 1,
+                    margin: 0,
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={creatingClass || !newClassName.trim()}
+                  style={{
+                    ...submitButton,
+                    padding: '0.75rem 1.5rem',
+                    margin: 0,
+                    opacity: creatingClass || !newClassName.trim() ? 0.5 : 1,
+                  }}
+                >
+                  {creatingClass ? "⏳ Đang tạo..." : "➕ Tạo lớp"}
+                </button>
+              </form>
+            </div>
+
+            <div style={{ ...modalBody, marginBottom: '1rem', maxHeight: '400px', overflowY: 'auto' }}>
+              {loadingClasses ? (
+                <div style={loadingContainer}>
+                  <div
+                    style={{
+                      width: "1.25rem",
+                      height: "1.25rem",
+                      border: "3px solid #e5e7eb",
+                      borderTop: "3px solid #3b82f6",
+                      borderRadius: "50%",
+                      animation: "spin 0.8s linear infinite",
+                    }}
+                  />
+                  <span>Đang tải danh sách lớp...</span>
+                </div>
+              ) : classesWithTeachers.length === 0 ? (
+                <div style={emptyState}>Chưa có lớp nào trong hệ thống. Vui lòng tạo lớp mới.</div>
               ) : (
                 <div style={tableWrapper}>
                   <table style={table}>
@@ -970,16 +1388,17 @@ export default function AdminDashboard() {
                         <th style={th}>Giáo viên chủ nhiệm</th>
                         <th style={th}>Email</th>
                         <th style={{ ...th, textAlign: 'center' }}>Số học sinh</th>
+                        <th style={{ ...th, textAlign: 'center' }}>Hành động</th>
                       </tr>
                     </thead>
                     <tbody>
                       {classesWithTeachers.map((classInfo) => (
-                        <tr key={classInfo.className} style={row}>
+                        <tr key={classInfo.id} style={row}>
                           <td style={td}>
                             <strong>{classInfo.className}</strong>
                           </td>
                           <td style={td}>
-                            {classInfo.teacher === "Chưa có" ? (
+                            {classInfo.teacher === "Chưa có" || !classInfo.teacher ? (
                               <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>
                                 Chưa có giáo viên
                               </span>
@@ -997,6 +1416,20 @@ export default function AdminDashboard() {
                             >
                               {classInfo.studentCount}
                             </span>
+                          </td>
+                          <td style={{ ...td, textAlign: 'center' }}>
+                            <button
+                              style={{
+                                ...deleteButton,
+                                ...(hoveredDeleteClass === classInfo.id ? deleteButtonHover : {}),
+                              }}
+                              onMouseEnter={() => setHoveredDeleteClass(classInfo.id)}
+                              onMouseLeave={() => setHoveredDeleteClass(null)}
+                              onClick={() => handleDeleteClass(classInfo.id, classInfo.className)}
+                              title={classInfo.studentCount > 0 ? "Không thể xóa lớp có học sinh" : "Xóa lớp"}
+                            >
+                              🗑️ Xóa
+                            </button>
                           </td>
                         </tr>
                       ))}

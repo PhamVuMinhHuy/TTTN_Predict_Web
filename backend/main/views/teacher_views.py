@@ -51,6 +51,18 @@ class TeacherRequiredMixin:
 
         return teacher, None
 
+    def get_user_class_name(self, user):
+        """Helper để lấy class name từ user - ưu tiên class_ref, fallback về class_name"""
+        if user.class_ref:
+            return user.class_ref.name
+        return getattr(user, "class_name", None)
+
+    def is_same_class(self, user1, user2):
+        """Kiểm tra 2 users có cùng lớp không"""
+        class1 = self.get_user_class_name(user1)
+        class2 = self.get_user_class_name(user2)
+        return class1 and class2 and class1 == class2
+
 
 class TeacherStudentListView(TeacherRequiredMixin, APIView):
     """GET: Lấy danh sách học sinh cùng class với giáo viên"""
@@ -76,13 +88,22 @@ class TeacherStudentListView(TeacherRequiredMixin, APIView):
         if error_response:
             return error_response
 
-        if not getattr(teacher, "class_name", None):
+        teacher_class = self.get_user_class_name(teacher)
+        if not teacher_class:
             return Response(
-                {"error": "Teacher does not have class_name set"},
+                {"error": "Teacher does not have class assigned"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        students = User.objects(role="student", class_name=teacher.class_name)
+        # Query students: ưu tiên class_ref, fallback về class_name
+        # Tìm students có class_ref.name == teacher_class hoặc class_name == teacher_class
+        students = []
+        all_students = User.objects(role="student")
+        for s in all_students:
+            student_class = self.get_user_class_name(s)
+            if student_class == teacher_class:
+                students.append(s)
+
         data = []
         for s in students:
             last_pred = (
@@ -95,7 +116,7 @@ class TeacherStudentListView(TeacherRequiredMixin, APIView):
                     "first_name": s.first_name,
                     "last_name": s.last_name,
                     "email": s.email,
-                    "class_name": getattr(s, "class_name", None),
+                    "class_name": self.get_user_class_name(s),
                     "last_score": last_pred.predicted_score if last_pred else None,
                     "last_predicted_at": last_pred.created_at.isoformat()
                     if last_pred and last_pred.created_at
@@ -161,7 +182,7 @@ class TeacherPredictView(TeacherRequiredMixin, APIView):
             )
 
         # Verify student is in teacher's class
-        if not getattr(teacher, "class_name", None) or student.class_name != teacher.class_name:
+        if not self.is_same_class(teacher, student):
             return Response(
                 {"error": "Student is not in your class"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -322,7 +343,7 @@ class TeacherSaveScoresView(TeacherRequiredMixin, APIView):
             )
 
         # Verify student is in teacher's class
-        if not getattr(teacher, "class_name", None) or student.class_name != teacher.class_name:
+        if not self.is_same_class(teacher, student):
             return Response(
                 {"error": "Student is not in your class"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -438,14 +459,19 @@ class TeacherGetAllScoresView(TeacherRequiredMixin, APIView):
         if error_response:
             return error_response
 
-        if not getattr(teacher, "class_name", None):
+        teacher_class = self.get_user_class_name(teacher)
+        if not teacher_class:
             return Response(
-                {"error": "Teacher does not have class_name set"},
+                {"error": "Teacher does not have class assigned"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Get all students in teacher's class
-        students = User.objects(role="student", class_name=teacher.class_name)
+        students = []
+        all_students = User.objects(role="student")
+        for s in all_students:
+            if self.get_user_class_name(s) == teacher_class:
+                students.append(s)
         
         result = []
         for student in students:
@@ -470,7 +496,7 @@ class TeacherGetAllScoresView(TeacherRequiredMixin, APIView):
                 "username": student.username,
                 "firstName": student.first_name,
                 "lastName": student.last_name,
-                "className": getattr(student, "class_name", None),
+                "className": self.get_user_class_name(student),
                 "scores": student_scores,
                 "totalScores": len(student_scores),
             })
@@ -517,7 +543,7 @@ class TeacherPredictionHistoryView(TeacherRequiredMixin, APIView):
                 "studentUsername": student.username,
                 "studentName": f"{student.first_name} {student.last_name}".strip() or student.username,
                 "studentEmail": student.email,
-                "className": getattr(student, "class_name", None),
+                "className": self.get_user_class_name(student),
                 "studyHoursPerWeek": pred.study_hours_per_week,
                 "attendanceRate": pred.attendance_rate,
                 "pastExamScores": pred.past_exam_scores,
@@ -661,7 +687,7 @@ class TeacherUpdateScoreView(TeacherRequiredMixin, APIView):
                 )
 
             # Verify student is in teacher's class
-            if not getattr(teacher, "class_name", None) or student.class_name != teacher.class_name:
+            if not self.is_same_class(teacher, student):
                 return Response(
                     {"error": "You can only update scores for students in your class"},
                     status=status.HTTP_403_FORBIDDEN,
@@ -798,7 +824,7 @@ class TeacherDeleteScoreView(TeacherRequiredMixin, APIView):
                 )
 
             # Verify student is in teacher's class
-            if not getattr(teacher, "class_name", None) or student.class_name != teacher.class_name:
+            if not self.is_same_class(teacher, student):
                 return Response(
                     {"error": "You can only delete scores for students in your class"},
                     status=status.HTTP_403_FORBIDDEN,
