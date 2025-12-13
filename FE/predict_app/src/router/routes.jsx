@@ -18,7 +18,7 @@ const ScoreboardPage = lazy(() => import("../(pages)/ScoreboardPage"));
 const SettingsPage = lazy(() => import("../(pages)/SettingsPage"));
 const AdminDashboard = lazy(() => import("../(pages)/AdminDashboard")); // <-- thêm
 const TeacherDashboard = lazy(() => import("../(pages)/TeacherDashboard"));
-const ForgotPasswordPage = lazy(() => import("../(pages)/ForgotPasswordPage"));
+const ForgotPasswordPage = lazy(() => import("../(auth)/forgetpassword"));
 
 export const router = createBrowserRouter([
   {

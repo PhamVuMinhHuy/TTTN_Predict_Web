@@ -1,7 +1,7 @@
 import { API_ENDPOINTS } from "../config/api.js";
 
 class AdminService {
-  async getUsers({ page = 1, limit = 10, search = "" } = {}) {
+  async getUsers({ page = 1, limit = 10, search = "", role = "" } = {}) {
     const token = localStorage.getItem("token");
     if (!token) {
       return { success: false, error: "No authentication token" };
@@ -14,6 +14,9 @@ class AdminService {
       params.append("limit", limit);
       if (search) {
         params.append("search", search);
+      }
+      if (role) {
+        params.append("role", role);
       }
       
       const url = `${API_ENDPOINTS.ADMIN_USERS}?${params.toString()}`;

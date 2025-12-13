@@ -187,7 +187,7 @@ export default function AdminDashboard() {
   const fetchUsers = async (page = currentPage, search = debouncedSearch) => {
     setLoadingUsers(true);
     setError(null);
-    const result = await adminService.getUsers({ page, limit: pageSize, search });
+    const result = await adminService.getUsers({ page, limit: pageSize, search, role: roleFilter || "" });
     if (result.success) {
       setUsers(result.data);
       if (result.pagination) {
@@ -205,10 +205,16 @@ export default function AdminDashboard() {
     setLoadingUsers(false);
   };
 
-  // Fetch on mount and when page/search changes
+  // Fetch on mount and when page/search/role changes
+  useEffect(() => {
+    setCurrentPage(1); // Reset to page 1 when filter changes
+    fetchUsers(1, debouncedSearch);
+  }, [debouncedSearch, pageSize, roleFilter]);
+
+  // Fetch when page changes (without resetting)
   useEffect(() => {
     fetchUsers(currentPage, debouncedSearch);
-  }, [currentPage, debouncedSearch, pageSize]);
+  }, [currentPage]);
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -257,22 +263,17 @@ export default function AdminDashboard() {
     };
   }, [apiStats, availableClasses]);
 
-  // Filtered users based on role filter and class filter (search is now server-side)
+  // Filtered users - role filter is now server-side, only class filter is client-side
   const filteredUsers = useMemo(() => {
     let filtered = users;
 
-    // Apply role filter first
-    if (roleFilter) {
-      filtered = filtered.filter((u) => u.role === roleFilter);
-    }
-
-    // Apply class filter
+    // Apply class filter (client-side only)
     if (classFilter) {
       filtered = filtered.filter((u) => u.class_name === classFilter);
     }
 
     return filtered;
-  }, [users, roleFilter, classFilter]);
+  }, [users, classFilter]);
 
   // Handle statistics card click to filter by role
   const handleRoleFilter = (role) => {
@@ -810,28 +811,13 @@ export default function AdminDashboard() {
                 border: '1px solid #475569',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               }}>
-                {/* Top row: Stats and Page Size */}
+                {/* Top row: Page Size only */}
                 <div style={{
                   display: 'flex',
-                  justifyContent: 'space-between',
+                  justifyContent: 'flex-end',
                   alignItems: 'center',
                   marginBottom: '1rem',
-                  flexWrap: 'wrap',
-                  gap: '0.75rem',
                 }}>
-                  <div style={{ 
-                    color: '#f1f5f9', 
-                    fontSize: '0.9rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                  }}>
-                    <span>📊</span>
-                    <span>
-                      Hiển thị <strong style={{ color: '#22d3ee' }}>{users.length > 0 ? ((currentPage - 1) * pageSize + 1) : 0} - {Math.min(currentPage * pageSize, totalUsers)}</strong> trong tổng số <strong style={{ color: '#fbbf24' }}>{totalUsers}</strong> người dùng
-                    </span>
-                  </div>
-                  
                   <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -1136,11 +1122,16 @@ export default function AdminDashboard() {
                         onChange={(e) => setNewClassName(e.target.value)}
                         placeholder="Nhập tên lớp (VD: 10A1...)"
                         style={{
-                          ...input,
                           flex: 1,
-                          margin: 0,
                           padding: '0.5rem 0.75rem',
+                          borderRadius: '0.5rem',
+                          border: '2px solid #d1d5db',
                           fontSize: '0.9rem',
+                          fontFamily: 'inherit',
+                          outline: 'none',
+                          color: '#111827',
+                          backgroundColor: '#ffffff',
+                          WebkitTextFillColor: '#111827',
                         }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -1242,7 +1233,7 @@ export default function AdminDashboard() {
 
       {/* Confirmation Modal */}
       {confirmModal && (
-        <div style={modalOverlay} onClick={closeConfirmModal}>
+        <div style={{ ...modalOverlay, zIndex: 10000 }} onClick={closeConfirmModal}>
           <div style={modal} onClick={(e) => e.stopPropagation()}>
             <div style={modalHeader}>
               <div style={modalIcon}>⚠️</div>
@@ -1334,7 +1325,7 @@ export default function AdminDashboard() {
             </div>
             
             {/* Form tạo lớp mới */}
-            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #374151' }}>
+            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #e5e7eb' }}>
               <form onSubmit={handleCreateClass} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                 <input
                   type="text"
@@ -1342,22 +1333,38 @@ export default function AdminDashboard() {
                   onChange={(e) => setNewClassName(e.target.value)}
                   placeholder="Nhập tên lớp mới (VD: 10A1, 12B2...)"
                   style={{
-                    ...input,
-                    flex: 1,
-                    margin: 0,
+                    flexGrow: 1,
+                    flexShrink: 1,
+                    minWidth: '200px',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '0.5rem',
+                    border: '2px solid #d1d5db',
+                    fontSize: '0.95rem',
+                    fontFamily: 'inherit',
+                    outline: 'none',
+                    color: '#111827',
+                    backgroundColor: '#ffffff',
+                    WebkitTextFillColor: '#111827',
+                    boxSizing: 'border-box',
                   }}
                 />
                 <button
                   type="submit"
                   disabled={creatingClass || !newClassName.trim()}
                   style={{
-                    ...submitButton,
+                    flexShrink: 0,
                     padding: '0.75rem 1.5rem',
-                    margin: 0,
-                    opacity: creatingClass || !newClassName.trim() ? 0.5 : 1,
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    backgroundColor: creatingClass || !newClassName.trim() ? '#9ca3af' : '#10b981',
+                    color: '#ffffff',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    cursor: creatingClass || !newClassName.trim() ? 'not-allowed' : 'pointer',
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  {creatingClass ? "⏳ Đang tạo..." : "➕ Tạo lớp"}
+                  {creatingClass ? "⏳ Đang tạo..." : "➕ TẠO LỚP"}
                 </button>
               </form>
             </div>

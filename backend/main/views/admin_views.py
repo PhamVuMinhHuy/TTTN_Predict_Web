@@ -81,10 +81,12 @@ class AdminUserListCreateView(AdminRequiredMixin, APIView):
             page = int(request.query_params.get('page', 1))
             limit = int(request.query_params.get('limit', 10))
             search = request.query_params.get('search', '').strip()
+            role_filter = request.query_params.get('role', '').strip()  # Filter by role
         except ValueError:
             page = 1
             limit = 10
             search = ''
+            role_filter = ''
 
         # Ensure valid values
         page = max(1, page)
@@ -92,6 +94,10 @@ class AdminUserListCreateView(AdminRequiredMixin, APIView):
 
         # Build query
         users_query = User.objects.all()
+
+        # Apply role filter if provided
+        if role_filter and role_filter in ['student', 'teacher', 'admin']:
+            users_query = users_query.filter(role=role_filter)
 
         # Apply search filter if provided
         if search:

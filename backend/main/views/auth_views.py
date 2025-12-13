@@ -159,8 +159,10 @@ class ForgotPasswordRequestView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Check if user exists
-            user = User.objects(email=email).first()
+            # Check if user exists (case-insensitive search using regex)
+            import re
+            user = User.objects(email=re.compile(f'^{re.escape(email)}$', re.IGNORECASE)).first()
+            
             if not user:
                 return Response(
                     {"error": "Email không tồn tại trong hệ thống"},
@@ -336,8 +338,9 @@ class ResetPasswordView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Find user
-            user = User.objects(email=email).first()
+            # Find user (case-insensitive search)
+            import re
+            user = User.objects(email=re.compile(f'^{re.escape(email)}$', re.IGNORECASE)).first()
             if not user:
                 return Response(
                     {"error": "Người dùng không tồn tại"},
