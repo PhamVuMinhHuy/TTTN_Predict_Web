@@ -108,7 +108,7 @@ class AuthService:
                 user = User.objects(email=username).first()
                 if not user:
                     print(f"DEBUG: User not found with username or email: {username}")
-                    raise ValidationError({"detail": "Invalid username or password"})
+                    raise ValidationError({"detail": "Email không đúng hoặc không tồn tại"})
                 else:
                     print(f"DEBUG: User found by email: {user.username}")
             else:
@@ -117,7 +117,7 @@ class AuthService:
             print(f"DEBUG: Checking password for user: {user.username}")
             if not user.check_password(password):
                 print(f"DEBUG: Password check failed for user: {user.username}")
-                raise ValidationError({"detail": "Invalid username or password"})
+                raise ValidationError({"detail": "Mật khẩu không đúng"})
             
             print(f"DEBUG: Password check passed for user: {user.username}")
 

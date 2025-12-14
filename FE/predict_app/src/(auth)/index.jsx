@@ -76,11 +76,15 @@ function LoginForm({ onSwitch, onSuccess }) {
     }
   }, []);
 
+  // Xóa error khi user bắt đầu nhập lại (values thay đổi)
+  const prevValues = useRef(values);
   useEffect(() => {
-    if (error) {
+    // Chỉ xóa error nếu values thực sự thay đổi (user đang gõ)
+    if (prevValues.current !== values && error) {
       clearError();
     }
-  }, [values, error, clearError]);
+    prevValues.current = values;
+  }, [values, clearError, error]);
 
   const handleSubmit = useCallback(
     async (e) => {
