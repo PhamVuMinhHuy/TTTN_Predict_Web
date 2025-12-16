@@ -23,10 +23,9 @@ import {
 import { scoreStudentService } from "../services/scoreStudentService";
 
 const ScoreboardPage = () => {
-  const { user, token } = useAuth();
+  const { token } = useAuth();
   // Bỏ useLocalStorage, dùng state thường
   const [predictionHistory, setPredictionHistory] = useState([]);
-  const [hoveredItem, setHoveredItem] = useState(null);
   const [hoveredButton, setHoveredButton] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

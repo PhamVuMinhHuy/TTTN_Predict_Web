@@ -145,6 +145,8 @@ class AuthService:
                     "id": str(user.id),
                     "username": user.username,
                     "email": user.email,
+                    "first_name": getattr(user, "first_name", "") or "",
+                    "last_name": getattr(user, "last_name", "") or "",
                     "role": getattr(user, "role", "student"),
                     "class_name": getattr(user, "class_name", None),
                 },

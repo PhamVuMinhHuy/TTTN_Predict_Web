@@ -30,6 +30,8 @@ export const useAuth = () => {
               (backendUser.email && backendUser.email.split("@")[0]) ||
               credentials.email.split("@")[0],
             username: backendUser.username || null,
+            first_name: backendUser.first_name || "",
+            last_name: backendUser.last_name || "",
             role: backendUser.role || "student",
             class_name: backendUser.class_name || null,
           };

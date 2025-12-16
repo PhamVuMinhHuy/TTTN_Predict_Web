@@ -485,6 +485,11 @@ export default function TeacherDashboard() {
               <div style={styles.headerUserAvatar}>👨‍🏫</div>
               <div style={styles.headerUserDetails}>
                 <div style={styles.headerUserName}>{user.username}</div>
+                {(user.first_name || user.last_name) && (
+                  <div style={styles.headerUserFullName}>
+                    {`${user.first_name || ""} ${user.last_name || ""}`.trim()}
+                  </div>
+                )}
                 <div style={styles.headerUserRole}>Giáo viên</div>
                 {user.class_name && (
                   <div style={styles.headerUserClass}>Lớp: {user.class_name}</div>

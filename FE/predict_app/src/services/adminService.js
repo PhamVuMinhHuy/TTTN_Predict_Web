@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from "../config/api.js";
-
+//lấy thông tin người dùng
 class AdminService {
   async getUsers({ page = 1, limit = 10, search = "", role = "" } = {}) {
     const token = localStorage.getItem("token");
@@ -18,7 +18,7 @@ class AdminService {
       if (role) {
         params.append("role", role);
       }
-      
+
       const url = `${API_ENDPOINTS.ADMIN_USERS}?${params.toString()}`;
 
       const response = await fetch(url, {
@@ -34,11 +34,11 @@ class AdminService {
         throw new Error(data.error || "Không thể tải danh sách người dùng");
       }
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         data: data.users || [],
         pagination: data.pagination || null,
-        statistics: data.statistics || null
+        statistics: data.statistics || null,
       };
     } catch (err) {
       return { success: false, error: err.message };
@@ -165,12 +165,15 @@ class AdminService {
     }
 
     try {
-      const response = await fetch(`${API_ENDPOINTS.ADMIN_CLASSES}${classId}/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token.trim().replace(/^["']|["']$/g, "")}`,
-        },
-      });
+      const response = await fetch(
+        `${API_ENDPOINTS.ADMIN_CLASSES}${classId}/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token.trim().replace(/^["']|["']$/g, "")}`,
+          },
+        }
+      );
 
       if (response.status === 204) {
         return { success: true };

@@ -172,6 +172,7 @@ const PredictPage = () => {
       setIsSubmitting,
       setFieldTouched,
       setPredictionHistory,
+      token,
     ]
   );
 

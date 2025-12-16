@@ -44,7 +44,7 @@ const ForgotPasswordPage = () => {
       } else {
         setError(data.error || "Không thể gửi mã OTP. Vui lòng thử lại.");
       }
-    } catch (an) {
+    } catch (_error) {
       setError("Lỗi kết nối. Vui lòng kiểm tra internet và thử lại.");
     } finally {
       setLoading(false);
@@ -74,7 +74,7 @@ const ForgotPasswordPage = () => {
       } else {
         setError(data.error || "Mã OTP không hợp lệ hoặc đã hết hạn.");
       }
-    } catch (err) {
+    } catch (_error) {
       setError("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setLoading(false);
@@ -116,7 +116,7 @@ const ForgotPasswordPage = () => {
       } else {
         setError(data.error || "Không thể đặt lại mật khẩu. Vui lòng thử lại.");
       }
-    } catch (err) {
+    } catch (_error) {
       setError("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setLoading(false);

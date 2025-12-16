@@ -26,7 +26,7 @@ import {
 } from "../../assets/styles/history.styles";
 
 const HistoryPage = () => {
-  const { user, token } = useAuth();
+  const { token } = useAuth();
   const navigate = useNavigate();
   const [predictionHistory, setPredictionHistory] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   containerStyle,
   cardStyle,
@@ -14,7 +14,6 @@ import {
   primaryButtonHover,
   smallLink,
   smallLinkHover,
-  footerStyle,
   passwordInputWrapper,
   passwordToggleIcon,
   passwordToggleIconHover,
@@ -47,7 +46,7 @@ const LOGIN_VALIDATION_RULES = {
   password: validationRules.password,
 };
 
-function LoginForm({ onSwitch, onSuccess }) {
+function LoginForm({ onSuccess }) {
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -115,7 +114,7 @@ function LoginForm({ onSwitch, onSuccess }) {
   );
 
   const handleForgotPassword = useCallback(() => {
-    navigate('/forgot-password');
+    navigate("/forgot-password");
   }, [navigate]);
 
   const isFormValid = Object.keys(LOGIN_VALIDATION_RULES).every(
@@ -154,7 +153,16 @@ function LoginForm({ onSwitch, onSuccess }) {
           disabled={loading || isSubmitting}
         />
         {touched.email && errors.email && (
-          <div style={{ color: "#ef4444", fontSize: "13px", marginTop: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+          <div
+            style={{
+              color: "#ef4444",
+              fontSize: "13px",
+              marginTop: "6px",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
             <span>❌</span> {errors.email}
           </div>
         )}
@@ -206,7 +214,16 @@ function LoginForm({ onSwitch, onSuccess }) {
           </span>
         </div>
         {touched.password && errors.password && (
-          <div style={{ color: "#ef4444", fontSize: "13px", marginTop: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+          <div
+            style={{
+              color: "#ef4444",
+              fontSize: "13px",
+              marginTop: "6px",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
             <span>❌</span> {errors.password}
           </div>
         )}
@@ -216,24 +233,45 @@ function LoginForm({ onSwitch, onSuccess }) {
         type="submit"
         style={{
           ...primaryButton,
-          ...(hoveredButton && !loading && !isSubmitting && isFormValid ? primaryButtonHover : {}),
+          ...(hoveredButton && !loading && !isSubmitting && isFormValid
+            ? primaryButtonHover
+            : {}),
           opacity: !isFormValid || loading || isSubmitting ? 0.6 : 1,
           cursor:
-            !isFormValid || loading || isSubmitting
-              ? "not-allowed"
-              : "pointer",
+            !isFormValid || loading || isSubmitting ? "not-allowed" : "pointer",
         }}
         disabled={!isFormValid || loading || isSubmitting}
         onMouseEnter={() => setHoveredButton(true)}
         onMouseLeave={() => setHoveredButton(false)}
       >
         {loading || isSubmitting ? (
-          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-            <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⏳</span>
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+            }}
+          >
+            <span
+              style={{
+                animation: "spin 1s linear infinite",
+                display: "inline-block",
+              }}
+            >
+              ⏳
+            </span>
             Đang đăng nhập...
           </span>
         ) : (
-          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+            }}
+          >
             🚀 Đăng nhập
           </span>
         )}
@@ -265,9 +303,7 @@ function LoginForm({ onSwitch, onSuccess }) {
 }
 
 export default function Auth() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const mode = "login";
   const { user } = useAuth();
   const [hoveredItems, setHoveredItems] = useState({});
   const [hoveredIcons, setHoveredIcons] = useState({});
@@ -317,8 +353,6 @@ export default function Auth() {
 
   const studyIcons = ["📚", "✏️", "🎓", "💡", "🏆"];
 
-  const handleModeSwitch = useCallback(() => {}, []);
-
   const supportCopy = "Hệ thống dự đoán điểm số thông minh sử dụng AI";
 
   return (
@@ -337,93 +371,114 @@ export default function Auth() {
           }
         `}
       </style>
-      
+
       {/* Floating background elements */}
-      <div style={{ 
-        position: "absolute", 
-        top: "10%", 
-        left: "5%", 
-        fontSize: "60px", 
-        opacity: 0.1,
-        animation: "float 6s ease-in-out infinite"
-      }}>📖</div>
-      <div style={{ 
-        position: "absolute", 
-        bottom: "15%", 
-        right: "8%", 
-        fontSize: "50px", 
-        opacity: 0.1,
-        animation: "float 8s ease-in-out infinite",
-        animationDelay: "1s"
-      }}>🎓</div>
-      <div style={{ 
-        position: "absolute", 
-        top: "25%", 
-        right: "15%", 
-        fontSize: "40px", 
-        opacity: 0.08,
-        animation: "float 7s ease-in-out infinite",
-        animationDelay: "2s"
-      }}>✨</div>
-      
+      <div
+        style={{
+          position: "absolute",
+          top: "10%",
+          left: "5%",
+          fontSize: "60px",
+          opacity: 0.1,
+          animation: "float 6s ease-in-out infinite",
+        }}
+      >
+        📖
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          bottom: "15%",
+          right: "8%",
+          fontSize: "50px",
+          opacity: 0.1,
+          animation: "float 8s ease-in-out infinite",
+          animationDelay: "1s",
+        }}
+      >
+        🎓
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          top: "25%",
+          right: "15%",
+          fontSize: "40px",
+          opacity: 0.08,
+          animation: "float 7s ease-in-out infinite",
+          animationDelay: "2s",
+        }}
+      >
+        ✨
+      </div>
+
       <div style={cardStyle}>
         {/* Left Panel - Info */}
         <div style={infoPanelStyle}>
           {/* Overlay pattern */}
           <div style={infoPanelOverlay}></div>
-          
+
           {/* Decorative circles */}
           <div style={decorCircle1}></div>
           <div style={decorCircle2}></div>
-          
+
           <span style={infoBadge}>
             <span style={{ fontSize: "16px" }}>🎓</span>
             PredictGrade Learning Hub
           </span>
-          
+
           <h2 style={infoTitle}>
             Định hướng học tập thông minh cho từng học sinh
           </h2>
-          
+
           <p style={infoSubtitle}>
-            Biến dữ liệu điểm số thành lộ trình học tập rõ ràng, giúp bạn tự tin trước mỗi kỳ kiểm tra.
+            Biến dữ liệu điểm số thành lộ trình học tập rõ ràng, giúp bạn tự tin
+            trước mỗi kỳ kiểm tra.
           </p>
-          
+
           <ul style={infoList}>
             {infoHighlights.map((item, index) => (
-              <li 
-                key={item.text} 
+              <li
+                key={item.text}
                 style={{
                   ...infoListItem,
                   ...(hoveredItems[index] ? infoListItemHover : {}),
                   animationDelay: `${index * 0.1}s`,
                 }}
-                onMouseEnter={() => setHoveredItems(prev => ({ ...prev, [index]: true }))}
-                onMouseLeave={() => setHoveredItems(prev => ({ ...prev, [index]: false }))}
+                onMouseEnter={() =>
+                  setHoveredItems((prev) => ({ ...prev, [index]: true }))
+                }
+                onMouseLeave={() =>
+                  setHoveredItems((prev) => ({ ...prev, [index]: false }))
+                }
               >
                 <span style={infoListIcon}>{item.icon}</span>
                 <span>{item.text}</span>
               </li>
             ))}
           </ul>
-          
+
           {/* Study icons */}
           <div style={studyIconsContainer}>
             {studyIcons.map((icon, index) => (
-              <div 
+              <div
                 key={index}
                 style={{
                   ...studyIcon,
                   ...(hoveredIcons[index] ? studyIconHover : {}),
                 }}
-                onMouseEnter={() => setHoveredIcons(prev => ({ ...prev, [index]: true }))}
-                onMouseLeave={() => setHoveredIcons(prev => ({ ...prev, [index]: false }))}
+                onMouseEnter={() =>
+                  setHoveredIcons((prev) => ({ ...prev, [index]: true }))
+                }
+                onMouseLeave={() =>
+                  setHoveredIcons((prev) => ({ ...prev, [index]: false }))
+                }
               >
                 {icon}
               </div>
             ))}
           </div>
-          
+
           <div style={infoFooter}>
             <span style={{ fontSize: "20px" }}>✨</span>
             <span>Cùng bạn nuôi dưỡng tinh thần ham học mỗi ngày</span>
@@ -439,17 +494,19 @@ export default function Auth() {
             <p style={supportText}>{supportCopy}</p>
           </div>
 
-          <LoginForm onSwitch={handleModeSwitch} onSuccess={handleSuccess} />
-          
+          <LoginForm onSuccess={handleSuccess} />
+
           {/* Footer info */}
-          <div style={{ 
-            marginTop: "32px", 
-            paddingTop: "20px", 
-            borderTop: "1px solid #e5e7eb",
-            textAlign: "center",
-            color: "#9ca3af",
-            fontSize: "13px"
-          }}>
+          <div
+            style={{
+              marginTop: "32px",
+              paddingTop: "20px",
+              borderTop: "1px solid #e5e7eb",
+              textAlign: "center",
+              color: "#9ca3af",
+              fontSize: "13px",
+            }}
+          >
             <span>🔒 Bảo mật bởi PredictGrade © 2025</span>
           </div>
         </div>

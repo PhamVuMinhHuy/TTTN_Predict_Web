@@ -3,7 +3,7 @@ from main.views.auth_views import RegisterView, LoginView, ForgotPasswordRequest
 from main.views.profile_views import UserProfileView
 from main.views.prediction_views import PredictView, PredictionHistoryView
 from main.views.score_student_views import ScoreStudentHistoryView
-from main.views.admin_views import AdminUserListCreateView, AdminUserDeleteView, AdminClassListCreateView, AdminClassDeleteView
+from main.views.admin_views import AdminUserListCreateView, AdminUserDetailView, AdminClassListCreateView, AdminClassDeleteView
 from main.views.teacher_views import TeacherStudentListView, TeacherPredictView, TeacherSaveScoresView, TeacherGetAllScoresView, TeacherPredictionHistoryView, TeacherDeletePredictionView, TeacherSendPredictionEmailView, TeacherUpdateScoreView, TeacherDeleteScoreView
 from django.contrib import admin
 from django.urls import path, re_path
@@ -22,7 +22,7 @@ urlpatterns = [
     path('api/predictions/history/', PredictionHistoryView.as_view(), name='prediction-history'),
     path('api/score-students/history/', ScoreStudentHistoryView.as_view(), name='score-student-history'),
     path('api/admin/users/', AdminUserListCreateView.as_view(), name='admin-users'),
-    path('api/admin/users/<str:user_id>/', AdminUserDeleteView.as_view(), name='admin-user-delete'),
+    path('api/admin/users/<str:user_id>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('api/admin/classes/', AdminClassListCreateView.as_view(), name='admin-classes'),
     path('api/admin/classes/<str:class_id>/', AdminClassDeleteView.as_view(), name='admin-class-delete'),
     path('api/teacher/students/', TeacherStudentListView.as_view(), name='teacher-students'),

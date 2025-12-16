@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { adminService } from "../services/adminService";
 import {
@@ -24,17 +24,6 @@ import {
   cardTitleRow,
   cardTitle,
   badge,
-  searchContainer,
-  searchInput,
-  searchInputFocus,
-  classFilterContainer,
-  classFilterTitle,
-  classChipsWrapper,
-  classChip,
-  classChipHover,
-  classChipActive,
-  clearFilterButton,
-  clearFilterButtonHover,
   tableWrapper,
   table,
   tableHeadRow,
@@ -49,6 +38,8 @@ import {
   userSelfTag,
   deleteButton,
   deleteButtonHover,
+  editButton,
+  editButtonHover,
   emptyState,
   errorText,
   form,
@@ -67,7 +58,6 @@ import {
   toastSuccess,
   toastError,
   toastWarning,
-  toastIcon,
   toastMessage,
   toastClose,
   toastCloseHover,
@@ -89,15 +79,14 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalUsers, setTotalUsers] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [searchInput, setSearchInput] = useState(""); // For immediate input
   const [debouncedSearch, setDebouncedSearch] = useState(""); // For API call
-  
+
   // Statistics from API (not affected by pagination)
   const [apiStats, setApiStats] = useState({
     totalUsers: 0,
@@ -118,13 +107,14 @@ export default function AdminDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [hoveredRow, setHoveredRow] = useState(null);
   const [hoveredDelete, setHoveredDelete] = useState(null);
+  const [hoveredEdit, setHoveredEdit] = useState(null);
   const [hoveredStat, setHoveredStat] = useState(null);
 
   const [hoverLogout, setHoverLogout] = useState(false);
   const [hoverSubmit, setHoverSubmit] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const [roleFilter, setRoleFilter] = useState(null); // null = all, 'student', 'teacher', 'admin'
-  const [classFilter, setClassFilter] = useState(null); // null = all, or specific class name
+  const [classFilter] = useState(null); // null = all, or specific class name
 
   // Toast notification state
   const [toasts, setToasts] = useState([]);
@@ -135,8 +125,6 @@ export default function AdminDashboard() {
   const [hoverModalCancel, setHoverModalCancel] = useState(false);
   const [hoverModalConfirm, setHoverModalConfirm] = useState(false);
   const [hoverToastClose, setHoverToastClose] = useState(null);
-  const [hoveredClassChip, setHoveredClassChip] = useState(null);
-  const [hoverClearFilter, setHoverClearFilter] = useState(false);
 
   // Classes modal state
   const [showClassesModal, setShowClassesModal] = useState(false);
@@ -147,6 +135,18 @@ export default function AdminDashboard() {
   const [newClassName, setNewClassName] = useState("");
   const [creatingClass, setCreatingClass] = useState(false);
   const [hoveredDeleteClass, setHoveredDeleteClass] = useState(null);
+
+  // Edit user modal state
+  const [editModal, setEditModal] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    email: "",
+    first_name: "",
+    last_name: "",
+    role: "",
+    class_name: "",
+    password: "",
+  });
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   // Toast notification functions
   const showToast = (message, type = "info") => {
@@ -184,37 +184,44 @@ export default function AdminDashboard() {
   }, [searchInput]);
 
   // Fetch users function (can be called from multiple places)
-  const fetchUsers = async (page = currentPage, search = debouncedSearch) => {
-    setLoadingUsers(true);
-    setError(null);
-    const result = await adminService.getUsers({ page, limit: pageSize, search, role: roleFilter || "" });
-    if (result.success) {
-      setUsers(result.data);
-      if (result.pagination) {
-        setTotalPages(result.pagination.totalPages);
-        setTotalUsers(result.pagination.total);
-        setCurrentPage(result.pagination.currentPage);
+  const fetchUsers = useCallback(
+    async ({ page, search }) => {
+      setLoadingUsers(true);
+      setError(null);
+      const result = await adminService.getUsers({
+        page,
+        limit: pageSize,
+        search,
+        role: roleFilter || "",
+      });
+      if (result.success) {
+        setUsers(result.data);
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages);
+          setCurrentPage(result.pagination.currentPage);
+        }
+        // Update statistics from API (not affected by pagination/search)
+        if (result.statistics) {
+          setApiStats(result.statistics);
+        }
+      } else {
+        setError(result.error);
       }
-      // Update statistics from API (not affected by pagination/search)
-      if (result.statistics) {
-        setApiStats(result.statistics);
-      }
-    } else {
-      setError(result.error);
-    }
-    setLoadingUsers(false);
-  };
+      setLoadingUsers(false);
+    },
+    [pageSize, roleFilter]
+  );
 
   // Fetch on mount and when page/search/role changes
   useEffect(() => {
     setCurrentPage(1); // Reset to page 1 when filter changes
-    fetchUsers(1, debouncedSearch);
-  }, [debouncedSearch, pageSize, roleFilter]);
+    fetchUsers({ page: 1, search: debouncedSearch });
+  }, [debouncedSearch, pageSize, roleFilter, fetchUsers]);
 
   // Fetch when page changes (without resetting)
   useEffect(() => {
-    fetchUsers(currentPage, debouncedSearch);
-  }, [currentPage]);
+    fetchUsers({ page: currentPage, search: debouncedSearch });
+  }, [currentPage, debouncedSearch, fetchUsers]);
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -240,7 +247,7 @@ export default function AdminDashboard() {
       const teacher = users.find(
         (u) => u.role === "teacher" && u.class_name === classData.name
       );
-      
+
       return {
         id: classData.id,
         className: classData.name,
@@ -254,12 +261,12 @@ export default function AdminDashboard() {
   // Statistics from API (not from paginated users)
   const statistics = useMemo(() => {
     const totalClasses = availableClasses.length;
-    return { 
-      totalUsers: apiStats.totalUsers, 
-      students: apiStats.students, 
-      teachers: apiStats.teachers, 
-      admins: apiStats.admins, 
-      totalClasses 
+    return {
+      totalUsers: apiStats.totalUsers,
+      students: apiStats.students,
+      teachers: apiStats.teachers,
+      admins: apiStats.admins,
+      totalClasses,
     };
   }, [apiStats, availableClasses]);
 
@@ -285,16 +292,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Handle class filter
-  const handleClassFilter = (className) => {
-    if (classFilter === className) {
-      // If clicking the same filter, clear it
-      setClassFilter(null);
-    } else {
-      setClassFilter(className);
-    }
-  };
-
   const handleInputChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -307,7 +304,7 @@ export default function AdminDashboard() {
     // Tìm class_id từ class_name được chọn
     let classId = null;
     if (formData.class_name) {
-      const selectedClass = classes.find(c => c.name === formData.class_name);
+      const selectedClass = classes.find((c) => c.name === formData.class_name);
       if (selectedClass) {
         classId = selectedClass.id;
       }
@@ -323,7 +320,7 @@ export default function AdminDashboard() {
     if (result.success) {
       // Refresh users list and go to first page
       setCurrentPage(1);
-      await fetchUsers(1, debouncedSearch);
+      await fetchUsers({ page: 1, search: debouncedSearch });
       setFormData({
         username: "",
         email: "",
@@ -355,7 +352,7 @@ export default function AdminDashboard() {
         const result = await adminService.deleteUser(userId);
         if (result.success) {
           // Refresh users list on current page
-          await fetchUsers(currentPage, debouncedSearch);
+          await fetchUsers({ page: currentPage, search: debouncedSearch });
           showToast(`✅ Đã xóa tài khoản "${username}" thành công!`, "success");
         } else {
           showToast(`❌ Lỗi khi xóa: ${result.error}`, "error");
@@ -406,6 +403,80 @@ export default function AdminDashboard() {
         }
       }
     );
+  };
+
+  // Edit user functions
+  const openEditModal = (userToEdit) => {
+    setEditModal(userToEdit);
+    setEditFormData({
+      email: userToEdit.email || "",
+      first_name: userToEdit.first_name || "",
+      last_name: userToEdit.last_name || "",
+      role: userToEdit.role || "student",
+      class_name: userToEdit.class_name || "",
+      password: "",
+    });
+  };
+
+  const closeEditModal = () => {
+    setEditModal(null);
+    setEditFormData({
+      email: "",
+      first_name: "",
+      last_name: "",
+      role: "",
+      class_name: "",
+      password: "",
+    });
+  };
+
+  const handleEditInputChange = (e) => {
+    setEditFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    if (!editModal) return;
+
+    setEditSubmitting(true);
+
+    // Tìm class_id từ class_name được chọn
+    let classId = null;
+    if (editFormData.class_name && editFormData.role !== "admin") {
+      const selectedClass = classes.find((c) => c.name === editFormData.class_name);
+      if (selectedClass) {
+        classId = selectedClass.id;
+      }
+    }
+
+    const updateData = {
+      email: editFormData.email,
+      first_name: editFormData.first_name,
+      last_name: editFormData.last_name,
+      role: editFormData.role,
+      class_id: classId,
+      class_name: editFormData.class_name,
+    };
+
+    // Chỉ gửi password nếu có nhập
+    if (editFormData.password.trim()) {
+      updateData.password = editFormData.password;
+    }
+
+    const result = await adminService.updateUser(editModal.id, updateData);
+    if (result.success) {
+      // Refresh users list
+      await fetchUsers({ page: currentPage, search: debouncedSearch });
+      showToast(
+        `✅ Cập nhật thông tin "${editModal.username}" thành công!`,
+        "success"
+      );
+      closeEditModal();
+    } else {
+      showToast(`❌ Lỗi: ${result.error}`, "error");
+    }
+
+    setEditSubmitting(false);
   };
 
   const getRoleBadgeStyle = (role) => {
@@ -489,8 +560,13 @@ export default function AdminDashboard() {
             style={{
               ...statCard,
               ...(hoveredStat === "total" ? statCardHover : {}),
-              cursor: 'pointer',
-              ...(roleFilter === null ? { boxShadow: '0 8px 20px rgba(59, 130, 246, 0.4)', transform: 'translateY(-2px)' } : {}),
+              cursor: "pointer",
+              ...(roleFilter === null
+                ? {
+                    boxShadow: "0 8px 20px rgba(59, 130, 246, 0.4)",
+                    transform: "translateY(-2px)",
+                  }
+                : {}),
             }}
             onMouseEnter={() => setHoveredStat("total")}
             onMouseLeave={() => setHoveredStat(null)}
@@ -514,12 +590,17 @@ export default function AdminDashboard() {
           </div>
 
           <div
-            onClick={() => handleRoleFilter('student')}
+            onClick={() => handleRoleFilter("student")}
             style={{
               ...statCard,
               ...(hoveredStat === "students" ? statCardHover : {}),
-              cursor: 'pointer',
-              ...(roleFilter === 'student' ? { boxShadow: '0 8px 20px rgba(16, 185, 129, 0.4)', transform: 'translateY(-2px)' } : {}),
+              cursor: "pointer",
+              ...(roleFilter === "student"
+                ? {
+                    boxShadow: "0 8px 20px rgba(16, 185, 129, 0.4)",
+                    transform: "translateY(-2px)",
+                  }
+                : {}),
             }}
             onMouseEnter={() => setHoveredStat("students")}
             onMouseLeave={() => setHoveredStat(null)}
@@ -543,12 +624,17 @@ export default function AdminDashboard() {
           </div>
 
           <div
-            onClick={() => handleRoleFilter('teacher')}
+            onClick={() => handleRoleFilter("teacher")}
             style={{
               ...statCard,
               ...(hoveredStat === "teachers" ? statCardHover : {}),
-              cursor: 'pointer',
-              ...(roleFilter === 'teacher' ? { boxShadow: '0 8px 20px rgba(168, 85, 247, 0.4)', transform: 'translateY(-2px)' } : {}),
+              cursor: "pointer",
+              ...(roleFilter === "teacher"
+                ? {
+                    boxShadow: "0 8px 20px rgba(168, 85, 247, 0.4)",
+                    transform: "translateY(-2px)",
+                  }
+                : {}),
             }}
             onMouseEnter={() => setHoveredStat("teachers")}
             onMouseLeave={() => setHoveredStat(null)}
@@ -572,12 +658,17 @@ export default function AdminDashboard() {
           </div>
 
           <div
-            onClick={() => handleRoleFilter('admin')}
+            onClick={() => handleRoleFilter("admin")}
             style={{
               ...statCard,
               ...(hoveredStat === "admins" ? statCardHover : {}),
-              cursor: 'pointer',
-              ...(roleFilter === 'admin' ? { boxShadow: '0 8px 20px rgba(249, 115, 22, 0.4)', transform: 'translateY(-2px)' } : {}),
+              cursor: "pointer",
+              ...(roleFilter === "admin"
+                ? {
+                    boxShadow: "0 8px 20px rgba(249, 115, 22, 0.4)",
+                    transform: "translateY(-2px)",
+                  }
+                : {}),
             }}
             onMouseEnter={() => setHoveredStat("admins")}
             onMouseLeave={() => setHoveredStat(null)}
@@ -605,7 +696,7 @@ export default function AdminDashboard() {
             style={{
               ...statCard,
               ...(hoveredStat === "classes" ? statCardHover : {}),
-              cursor: 'pointer',
+              cursor: "pointer",
             }}
             onMouseEnter={() => setHoveredStat("classes")}
             onMouseLeave={() => setHoveredStat(null)}
@@ -639,19 +730,23 @@ export default function AdminDashboard() {
             </div>
 
             {/* Search bar */}
-            <div style={{
-              marginBottom: '1.5rem',
-              position: 'relative',
-            }}>
-              <div style={{
-                position: 'absolute',
-                left: '1rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: '#9ca3af',
-                fontSize: '1rem',
-                pointerEvents: 'none',
-              }}>
+            <div
+              style={{
+                marginBottom: "1.5rem",
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  left: "1rem",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#9ca3af",
+                  fontSize: "1rem",
+                  pointerEvents: "none",
+                }}
+              >
                 🔍
               </div>
               <input
@@ -662,32 +757,38 @@ export default function AdminDashboard() {
                 onFocus={() => setFocusedField("search")}
                 onBlur={() => setFocusedField(null)}
                 style={{
-                  width: '100%',
-                  padding: '0.875rem 1rem 0.875rem 2.75rem',
-                  backgroundColor: '#1e293b',
-                  border: focusedField === "search" ? '2px solid #3b82f6' : '2px solid #374151',
-                  borderRadius: '0.75rem',
-                  color: '#e2e8f0',
-                  fontSize: '0.95rem',
-                  outline: 'none',
-                  transition: 'all 0.2s ease',
-                  boxShadow: focusedField === "search" ? '0 0 0 3px rgba(59, 130, 246, 0.2)' : 'none',
+                  width: "100%",
+                  padding: "0.875rem 1rem 0.875rem 2.75rem",
+                  backgroundColor: "#1e293b",
+                  border:
+                    focusedField === "search"
+                      ? "2px solid #3b82f6"
+                      : "2px solid #374151",
+                  borderRadius: "0.75rem",
+                  color: "#e2e8f0",
+                  fontSize: "0.95rem",
+                  outline: "none",
+                  transition: "all 0.2s ease",
+                  boxShadow:
+                    focusedField === "search"
+                      ? "0 0 0 3px rgba(59, 130, 246, 0.2)"
+                      : "none",
                 }}
               />
               {searchInput && (
                 <button
-                  onClick={() => setSearchInput('')}
+                  onClick={() => setSearchInput("")}
                   style={{
-                    position: 'absolute',
-                    right: '1rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    color: '#9ca3af',
-                    cursor: 'pointer',
-                    fontSize: '1rem',
-                    padding: '0.25rem',
+                    position: "absolute",
+                    right: "1rem",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    color: "#9ca3af",
+                    cursor: "pointer",
+                    fontSize: "1rem",
+                    padding: "0.25rem",
                   }}
                 >
                   ✕
@@ -724,233 +825,315 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <>
-              <div style={tableWrapper}>
-                <table style={table}>
-                  <thead>
-                    <tr style={tableHeadRow}>
-                      <th style={th}>Username</th>
-                      <th style={th}>Email</th>
-                      <th style={th}>Họ tên</th>
-                      <th style={th}>Role</th>
-                      <th style={th}>Lớp</th>
-                      <th style={th}>Ngày tạo</th>
-                      <th style={{ ...th, textAlign: "center" }}>
-                        Hành động
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredUsers.map((u) => (
-                      <tr
-                        key={u.id}
-                        style={{
-                          ...row,
-                          ...(hoveredRow === u.id ? rowHover : {}),
-                        }}
-                        onMouseEnter={() => setHoveredRow(u.id)}
-                        onMouseLeave={() => setHoveredRow(null)}
-                      >
-                        <td style={td}>
-                          <strong>{u.username}</strong>
-                        </td>
-                        <td style={td}>{u.email || "-"}</td>
-                        <td style={td}>
-                          {(u.first_name || u.last_name) &&
-                          `${u.first_name || ""} ${u.last_name || ""}`.trim()
-                            ? `${u.first_name || ""} ${
-                                u.last_name || ""
-                              }`.trim()
-                            : "-"}
-                        </td>
-                        <td style={td}>
-                          <span style={getRoleBadgeStyle(u.role)}>
-                            {getRoleLabel(u.role)}
-                          </span>
-                        </td>
-                        <td style={td}>{u.class_name || "-"}</td>
-                        <td style={td}>
-                          {u.date_joined
-                            ? new Date(u.date_joined).toLocaleDateString(
-                                "vi-VN"
-                              )
-                            : "-"}
-                        </td>
-                        <td style={tdCenter}>
-                          {u.id === user.id ? (
-                            <span style={userSelfTag}>
-                              (tài khoản của bạn)
-                            </span>
-                          ) : (
-                            <button
-                              style={{
-                                ...deleteButton,
-                                ...(hoveredDelete === u.id
-                                  ? deleteButtonHover
-                                  : {}),
-                              }}
-                              onMouseEnter={() => setHoveredDelete(u.id)}
-                              onMouseLeave={() => setHoveredDelete(null)}
-                              onClick={() => handleDeleteUser(u.id, u.username)}
-                            >
-                              🗑️ Xóa
-                            </button>
-                          )}
-                        </td>
+                <div style={tableWrapper}>
+                  <table style={table}>
+                    <thead>
+                      <tr style={tableHeadRow}>
+                        <th style={th}>Username</th>
+                        <th style={th}>Email</th>
+                        <th style={th}>Họ tên</th>
+                        <th style={th}>Role</th>
+                        <th style={th}>Lớp</th>
+                        <th style={th}>Ngày tạo</th>
+                        <th style={{ ...th, textAlign: "center" }}>
+                          Hành động
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.map((u) => (
+                        <tr
+                          key={u.id}
+                          style={{
+                            ...row,
+                            ...(hoveredRow === u.id ? rowHover : {}),
+                          }}
+                          onMouseEnter={() => setHoveredRow(u.id)}
+                          onMouseLeave={() => setHoveredRow(null)}
+                        >
+                          <td style={td}>
+                            <strong>{u.username}</strong>
+                          </td>
+                          <td style={td}>{u.email || "-"}</td>
+                          <td style={td}>
+                            {(u.first_name || u.last_name) &&
+                            `${u.first_name || ""} ${u.last_name || ""}`.trim()
+                              ? `${u.first_name || ""} ${
+                                  u.last_name || ""
+                                }`.trim()
+                              : "-"}
+                          </td>
+                          <td style={td}>
+                            <span style={getRoleBadgeStyle(u.role)}>
+                              {getRoleLabel(u.role)}
+                            </span>
+                          </td>
+                          <td style={td}>{u.class_name || "-"}</td>
+                          <td style={td}>
+                            {u.date_joined
+                              ? new Date(u.date_joined).toLocaleDateString(
+                                  "vi-VN"
+                                )
+                              : "-"}
+                          </td>
+                          <td style={tdCenter}>
+                            {u.id === user.id ? (
+                              <span style={userSelfTag}>
+                                (tài khoản của bạn)
+                              </span>
+                            ) : (
+                              <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+                                <button
+                                  style={{
+                                    ...editButton,
+                                    marginRight: 0,
+                                    ...(hoveredEdit === u.id
+                                      ? editButtonHover
+                                      : {}),
+                                  }}
+                                  onMouseEnter={() => setHoveredEdit(u.id)}
+                                  onMouseLeave={() => setHoveredEdit(null)}
+                                  onClick={() => openEditModal(u)}
+                                >
+                                  ✏️ Sửa
+                                </button>
+                                <button
+                                  style={{
+                                    ...deleteButton,
+                                    ...(hoveredDelete === u.id
+                                      ? deleteButtonHover
+                                      : {}),
+                                  }}
+                                  onMouseEnter={() => setHoveredDelete(u.id)}
+                                  onMouseLeave={() => setHoveredDelete(null)}
+                                  onClick={() =>
+                                    handleDeleteUser(u.id, u.username)
+                                  }
+                                >
+                                  🗑️ Xóa
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
-              {/* Pagination Controls */}
-              <div style={{
-                marginTop: '1.5rem',
-                padding: '1.25rem 1.5rem',
-                background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-                borderRadius: '0.75rem',
-                border: '1px solid #475569',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              }}>
-                {/* Top row: Page Size only */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                  marginBottom: '1rem',
-                }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '0.5rem', 
-                    color: '#f1f5f9', 
-                    fontSize: '0.9rem' 
-                  }}>
-                    <span>Hiển thị</span>
-                    <select
-                      value={pageSize}
-                      onChange={(e) => {
-                        setPageSize(Number(e.target.value));
-                        setCurrentPage(1);
-                      }}
+                {/* Pagination Controls */}
+                <div
+                  style={{
+                    marginTop: "1.5rem",
+                    padding: "1.25rem 1.5rem",
+                    background:
+                      "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
+                    borderRadius: "0.75rem",
+                    border: "1px solid #475569",
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  {/* Top row: Page Size only */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    <div
                       style={{
-                        padding: '0.5rem 0.75rem',
-                        backgroundColor: '#0f172a',
-                        color: '#f1f5f9',
-                        border: '2px solid #60a5fa',
-                        borderRadius: '0.5rem',
-                        fontSize: '0.9rem',
-                        cursor: 'pointer',
-                        minWidth: '65px',
-                        fontWeight: '600',
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        color: "#f1f5f9",
+                        fontSize: "0.9rem",
                       }}
                     >
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                    </select>
-                    <span>dòng/trang</span>
+                      <span>Hiển thị</span>
+                      <select
+                        value={pageSize}
+                        onChange={(e) => {
+                          setPageSize(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                        style={{
+                          padding: "0.5rem 0.75rem",
+                          backgroundColor: "#0f172a",
+                          color: "#f1f5f9",
+                          border: "2px solid #60a5fa",
+                          borderRadius: "0.5rem",
+                          fontSize: "0.9rem",
+                          cursor: "pointer",
+                          minWidth: "65px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                      </select>
+                      <span>dòng/trang</span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Bottom row: Pagination buttons - centered */}
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center',
-                  alignItems: 'center', 
-                  gap: '0.75rem',
-                }}>
-                  <button
-                    onClick={() => setCurrentPage(1)}
-                    disabled={currentPage === 1}
+                  {/* Bottom row: Pagination buttons - centered */}
+                  <div
                     style={{
-                      padding: '0.625rem 1rem',
-                      background: currentPage === 1 ? '#475569' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
-                      color: currentPage === 1 ? '#94a3b8' : 'white',
-                      border: currentPage === 1 ? '1px solid #64748b' : '1px solid #60a5fa',
-                      borderRadius: '0.5rem',
-                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
-                      transition: 'all 0.2s ease',
-                      boxShadow: currentPage === 1 ? 'none' : '0 2px 4px rgba(59, 130, 246, 0.3)',
-                    }}
-                    title="Trang đầu"
-                  >
-                    ⏮
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    style={{
-                      padding: '0.625rem 1.25rem',
-                      background: currentPage === 1 ? '#475569' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
-                      color: currentPage === 1 ? '#94a3b8' : 'white',
-                      border: currentPage === 1 ? '1px solid #64748b' : '1px solid #60a5fa',
-                      borderRadius: '0.5rem',
-                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                      fontSize: '0.9rem',
-                      fontWeight: '600',
-                      transition: 'all 0.2s ease',
-                      boxShadow: currentPage === 1 ? 'none' : '0 2px 4px rgba(59, 130, 246, 0.3)',
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: "0.75rem",
                     }}
                   >
-                    ← Trước
-                  </button>
-                  
-                  <div style={{
-                    padding: '0.625rem 1.5rem',
-                    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-                    borderRadius: '0.5rem',
-                    color: '#f1f5f9',
-                    fontSize: '0.95rem',
-                    fontWeight: '700',
-                    border: '2px solid #60a5fa',
-                    minWidth: '130px',
-                    textAlign: 'center',
-                  }}>
-                    Trang <span style={{ color: '#fbbf24' }}>{currentPage}</span> / {totalPages || 1}
+                    <button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      style={{
+                        padding: "0.625rem 1rem",
+                        background:
+                          currentPage === 1
+                            ? "#475569"
+                            : "linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)",
+                        color: currentPage === 1 ? "#94a3b8" : "white",
+                        border:
+                          currentPage === 1
+                            ? "1px solid #64748b"
+                            : "1px solid #60a5fa",
+                        borderRadius: "0.5rem",
+                        cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                        fontSize: "0.875rem",
+                        fontWeight: "600",
+                        transition: "all 0.2s ease",
+                        boxShadow:
+                          currentPage === 1
+                            ? "none"
+                            : "0 2px 4px rgba(59, 130, 246, 0.3)",
+                      }}
+                      title="Trang đầu"
+                    >
+                      ⏮
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      style={{
+                        padding: "0.625rem 1.25rem",
+                        background:
+                          currentPage === 1
+                            ? "#475569"
+                            : "linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)",
+                        color: currentPage === 1 ? "#94a3b8" : "white",
+                        border:
+                          currentPage === 1
+                            ? "1px solid #64748b"
+                            : "1px solid #60a5fa",
+                        borderRadius: "0.5rem",
+                        cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                        fontSize: "0.9rem",
+                        fontWeight: "600",
+                        transition: "all 0.2s ease",
+                        boxShadow:
+                          currentPage === 1
+                            ? "none"
+                            : "0 2px 4px rgba(59, 130, 246, 0.3)",
+                      }}
+                    >
+                      ← Trước
+                    </button>
+
+                    <div
+                      style={{
+                        padding: "0.625rem 1.5rem",
+                        background:
+                          "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+                        borderRadius: "0.5rem",
+                        color: "#f1f5f9",
+                        fontSize: "0.95rem",
+                        fontWeight: "700",
+                        border: "2px solid #60a5fa",
+                        minWidth: "130px",
+                        textAlign: "center",
+                      }}
+                    >
+                      Trang{" "}
+                      <span style={{ color: "#fbbf24" }}>{currentPage}</span> /{" "}
+                      {totalPages || 1}
+                    </div>
+
+                    <button
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
+                      disabled={currentPage === totalPages || totalPages === 0}
+                      style={{
+                        padding: "0.625rem 1.25rem",
+                        background:
+                          currentPage === totalPages || totalPages === 0
+                            ? "#475569"
+                            : "linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)",
+                        color:
+                          currentPage === totalPages || totalPages === 0
+                            ? "#94a3b8"
+                            : "white",
+                        border:
+                          currentPage === totalPages || totalPages === 0
+                            ? "1px solid #64748b"
+                            : "1px solid #60a5fa",
+                        borderRadius: "0.5rem",
+                        cursor:
+                          currentPage === totalPages || totalPages === 0
+                            ? "not-allowed"
+                            : "pointer",
+                        fontSize: "0.9rem",
+                        fontWeight: "600",
+                        transition: "all 0.2s ease",
+                        boxShadow:
+                          currentPage === totalPages || totalPages === 0
+                            ? "none"
+                            : "0 2px 4px rgba(59, 130, 246, 0.3)",
+                      }}
+                    >
+                      Sau →
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages || totalPages === 0}
+                      style={{
+                        padding: "0.625rem 1rem",
+                        background:
+                          currentPage === totalPages || totalPages === 0
+                            ? "#475569"
+                            : "linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)",
+                        color:
+                          currentPage === totalPages || totalPages === 0
+                            ? "#94a3b8"
+                            : "white",
+                        border:
+                          currentPage === totalPages || totalPages === 0
+                            ? "1px solid #64748b"
+                            : "1px solid #60a5fa",
+                        borderRadius: "0.5rem",
+                        cursor:
+                          currentPage === totalPages || totalPages === 0
+                            ? "not-allowed"
+                            : "pointer",
+                        fontSize: "0.875rem",
+                        fontWeight: "600",
+                        transition: "all 0.2s ease",
+                        boxShadow:
+                          currentPage === totalPages || totalPages === 0
+                            ? "none"
+                            : "0 2px 4px rgba(59, 130, 246, 0.3)",
+                      }}
+                      title="Trang cuối"
+                    >
+                      ⏭
+                    </button>
                   </div>
-                  
-                  <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages || totalPages === 0}
-                    style={{
-                      padding: '0.625rem 1.25rem',
-                      background: (currentPage === totalPages || totalPages === 0) ? '#475569' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
-                      color: (currentPage === totalPages || totalPages === 0) ? '#94a3b8' : 'white',
-                      border: (currentPage === totalPages || totalPages === 0) ? '1px solid #64748b' : '1px solid #60a5fa',
-                      borderRadius: '0.5rem',
-                      cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer',
-                      fontSize: '0.9rem',
-                      fontWeight: '600',
-                      transition: 'all 0.2s ease',
-                      boxShadow: (currentPage === totalPages || totalPages === 0) ? 'none' : '0 2px 4px rgba(59, 130, 246, 0.3)',
-                    }}
-                  >
-                    Sau →
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage(totalPages)}
-                    disabled={currentPage === totalPages || totalPages === 0}
-                    style={{
-                      padding: '0.625rem 1rem',
-                      background: (currentPage === totalPages || totalPages === 0) ? '#475569' : 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
-                      color: (currentPage === totalPages || totalPages === 0) ? '#94a3b8' : 'white',
-                      border: (currentPage === totalPages || totalPages === 0) ? '1px solid #64748b' : '1px solid #60a5fa',
-                      borderRadius: '0.5rem',
-                      cursor: (currentPage === totalPages || totalPages === 0) ? 'not-allowed' : 'pointer',
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
-                      transition: 'all 0.2s ease',
-                      boxShadow: (currentPage === totalPages || totalPages === 0) ? 'none' : '0 2px 4px rgba(59, 130, 246, 0.3)',
-                    }}
-                    title="Trang cuối"
-                  >
-                    ⏭
-                  </button>
                 </div>
-              </div>
               </>
             )}
           </div>
@@ -1090,32 +1273,42 @@ export default function AdminDashboard() {
                     ))}
                   </select>
                   <div style={helpText}>
-                    {loadingClasses 
+                    {loadingClasses
                       ? "Đang tải danh sách lớp..."
-                      : availableClasses.length === 0 
-                        ? "⚠️ Chưa có lớp nào. Vui lòng tạo lớp mới bên dưới."
-                        : formData.role === "student"
-                          ? "Chọn lớp của học sinh"
-                          : "Chọn lớp chủ nhiệm (nếu có)"}
+                      : availableClasses.length === 0
+                      ? "⚠️ Chưa có lớp nào. Vui lòng tạo lớp mới bên dưới."
+                      : formData.role === "student"
+                      ? "Chọn lớp của học sinh"
+                      : "Chọn lớp chủ nhiệm (nếu có)"}
                   </div>
 
                   {/* Form tạo lớp mới nhanh */}
-                  <div style={{ 
-                    marginTop: '1rem', 
-                    padding: '1rem', 
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)', 
-                    borderRadius: '0.5rem',
-                    border: '1px dashed rgba(59, 130, 246, 0.3)'
-                  }}>
-                    <div style={{ 
-                      fontSize: '0.85rem', 
-                      color: '#94a3b8', 
-                      marginBottom: '0.5rem',
-                      fontWeight: '500'
-                    }}>
+                  <div
+                    style={{
+                      marginTop: "1rem",
+                      padding: "1rem",
+                      backgroundColor: "rgba(59, 130, 246, 0.1)",
+                      borderRadius: "0.5rem",
+                      border: "1px dashed rgba(59, 130, 246, 0.3)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "0.85rem",
+                        color: "#94a3b8",
+                        marginBottom: "0.5rem",
+                        fontWeight: "500",
+                      }}
+                    >
                       ➕ Hoặc tạo lớp mới:
                     </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "0.5rem",
+                        alignItems: "center",
+                      }}
+                    >
                       <input
                         type="text"
                         value={newClassName}
@@ -1123,18 +1316,18 @@ export default function AdminDashboard() {
                         placeholder="Nhập tên lớp (VD: 10A1...)"
                         style={{
                           flex: 1,
-                          padding: '0.5rem 0.75rem',
-                          borderRadius: '0.5rem',
-                          border: '2px solid #d1d5db',
-                          fontSize: '0.9rem',
-                          fontFamily: 'inherit',
-                          outline: 'none',
-                          color: '#111827',
-                          backgroundColor: '#ffffff',
-                          WebkitTextFillColor: '#111827',
+                          padding: "0.5rem 0.75rem",
+                          borderRadius: "0.5rem",
+                          border: "2px solid #d1d5db",
+                          fontSize: "0.9rem",
+                          fontFamily: "inherit",
+                          outline: "none",
+                          color: "#111827",
+                          backgroundColor: "#ffffff",
+                          WebkitTextFillColor: "#111827",
                         }}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === "Enter") {
                             e.preventDefault();
                             if (newClassName.trim()) {
                               handleCreateClass(e);
@@ -1147,18 +1340,22 @@ export default function AdminDashboard() {
                         onClick={handleCreateClass}
                         disabled={creatingClass || !newClassName.trim()}
                         style={{
-                          padding: '0.5rem 1rem',
-                          backgroundColor: creatingClass || !newClassName.trim() 
-                            ? '#475569' 
-                            : '#10b981',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '0.375rem',
-                          cursor: creatingClass || !newClassName.trim() ? 'not-allowed' : 'pointer',
-                          fontWeight: '500',
-                          fontSize: '0.85rem',
-                          transition: 'all 0.2s ease',
-                          whiteSpace: 'nowrap',
+                          padding: "0.5rem 1rem",
+                          backgroundColor:
+                            creatingClass || !newClassName.trim()
+                              ? "#475569"
+                              : "#10b981",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "0.375rem",
+                          cursor:
+                            creatingClass || !newClassName.trim()
+                              ? "not-allowed"
+                              : "pointer",
+                          fontWeight: "500",
+                          fontSize: "0.85rem",
+                          transition: "all 0.2s ease",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {creatingClass ? "⏳..." : "✓ Tạo"}
@@ -1233,7 +1430,10 @@ export default function AdminDashboard() {
 
       {/* Confirmation Modal */}
       {confirmModal && (
-        <div style={{ ...modalOverlay, zIndex: 10000 }} onClick={closeConfirmModal}>
+        <div
+          style={{ ...modalOverlay, zIndex: 10000 }}
+          onClick={closeConfirmModal}
+        >
           <div style={modal} onClick={(e) => e.stopPropagation()}>
             <div style={modalHeader}>
               <div style={modalIcon}>⚠️</div>
@@ -1309,13 +1509,183 @@ export default function AdminDashboard() {
         `}
       </style>
 
+      {/* Edit User Modal */}
+      {editModal && (
+        <div style={modalOverlay} onClick={closeEditModal}>
+          <div
+            style={{
+              ...modal,
+              maxWidth: "550px",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={modalHeader}>
+              <div style={modalIcon}>✏️</div>
+              <h3 style={modalTitle}>Chỉnh sửa người dùng: {editModal.username}</h3>
+            </div>
+
+            <form onSubmit={handleUpdateUser} style={{ padding: "1.5rem" }}>
+              {/* Email */}
+              <div style={formGroup}>
+                <label style={label}>Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={editFormData.email}
+                  onChange={handleEditInputChange}
+                  onFocus={() => setFocusedField("edit_email")}
+                  onBlur={() => setFocusedField(null)}
+                  style={{
+                    ...input,
+                    ...(focusedField === "edit_email" ? inputFocus : {}),
+                  }}
+                  placeholder="Email..."
+                />
+              </div>
+
+              {/* Họ và Tên */}
+              <div style={{ ...formRow, marginTop: "1rem" }}>
+                <div style={formGroup}>
+                  <label style={label}>Họ</label>
+                  <input
+                    type="text"
+                    name="first_name"
+                    value={editFormData.first_name}
+                    onChange={handleEditInputChange}
+                    onFocus={() => setFocusedField("edit_first_name")}
+                    onBlur={() => setFocusedField(null)}
+                    style={{
+                      ...input,
+                      ...(focusedField === "edit_first_name" ? inputFocus : {}),
+                    }}
+                    placeholder="Họ..."
+                  />
+                </div>
+                <div style={formGroup}>
+                  <label style={label}>Tên</label>
+                  <input
+                    type="text"
+                    name="last_name"
+                    value={editFormData.last_name}
+                    onChange={handleEditInputChange}
+                    onFocus={() => setFocusedField("edit_last_name")}
+                    onBlur={() => setFocusedField(null)}
+                    style={{
+                      ...input,
+                      ...(focusedField === "edit_last_name" ? inputFocus : {}),
+                    }}
+                    placeholder="Tên..."
+                  />
+                </div>
+              </div>
+
+              {/* Role và Lớp */}
+              <div style={{ ...formRow, marginTop: "1rem" }}>
+                <div style={formGroup}>
+                  <label style={label}>Vai trò</label>
+                  <select
+                    name="role"
+                    value={editFormData.role}
+                    onChange={handleEditInputChange}
+                    onFocus={() => setFocusedField("edit_role")}
+                    onBlur={() => setFocusedField(null)}
+                    style={{
+                      ...select,
+                      ...(focusedField === "edit_role" ? inputFocus : {}),
+                    }}
+                    disabled={editModal.id === user.id}
+                  >
+                    <option value="student">Học sinh</option>
+                    <option value="teacher">Giáo viên</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+                {editFormData.role !== "admin" && (
+                  <div style={formGroup}>
+                    <label style={label}>Lớp</label>
+                    <select
+                      name="class_name"
+                      value={editFormData.class_name}
+                      onChange={handleEditInputChange}
+                      onFocus={() => setFocusedField("edit_class")}
+                      onBlur={() => setFocusedField(null)}
+                      style={{
+                        ...select,
+                        ...(focusedField === "edit_class" ? inputFocus : {}),
+                      }}
+                    >
+                      <option value="">-- Chọn lớp --</option>
+                      {availableClasses.map((className) => (
+                        <option key={className} value={className}>
+                          {className}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              {/* Mật khẩu mới */}
+              <div style={{ ...formGroup, marginTop: "1rem" }}>
+                <label style={label}>Mật khẩu mới (để trống nếu không đổi)</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={editFormData.password}
+                  onChange={handleEditInputChange}
+                  onFocus={() => setFocusedField("edit_password")}
+                  onBlur={() => setFocusedField(null)}
+                  style={{
+                    ...input,
+                    ...(focusedField === "edit_password" ? inputFocus : {}),
+                  }}
+                  placeholder="Nhập mật khẩu mới..."
+                />
+              </div>
+
+              {/* Buttons */}
+              <div style={{ ...modalFooter, marginTop: "1.5rem" }}>
+                <button
+                  type="button"
+                  style={{
+                    ...modalButtonCancel,
+                    ...(hoverModalCancel ? modalButtonCancelHover : {}),
+                  }}
+                  onMouseEnter={() => setHoverModalCancel(true)}
+                  onMouseLeave={() => setHoverModalCancel(false)}
+                  onClick={closeEditModal}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSubmitting}
+                  style={{
+                    ...submitButton,
+                    ...(editSubmitting ? submitButtonDisabled : {}),
+                    ...(!editSubmitting && hoverSubmit ? submitButtonHover : {}),
+                    marginTop: 0,
+                    width: "auto",
+                    padding: "0.65rem 1.5rem",
+                  }}
+                  onMouseEnter={() => setHoverSubmit(true)}
+                  onMouseLeave={() => setHoverSubmit(false)}
+                >
+                  {editSubmitting ? "Đang lưu..." : "💾 Lưu thay đổi"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Classes Management Modal */}
       {showClassesModal && (
         <div style={modalOverlay} onClick={() => setShowClassesModal(false)}>
           <div
             style={{
               ...modal,
-              maxWidth: '800px',
+              maxWidth: "800px",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1323,10 +1693,22 @@ export default function AdminDashboard() {
               <div style={modalIcon}>🏫</div>
               <h3 style={modalTitle}>Quản lý lớp học</h3>
             </div>
-            
+
             {/* Form tạo lớp mới */}
-            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #e5e7eb' }}>
-              <form onSubmit={handleCreateClass} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                borderBottom: "1px solid #e5e7eb",
+              }}
+            >
+              <form
+                onSubmit={handleCreateClass}
+                style={{
+                  display: "flex",
+                  gap: "0.75rem",
+                  alignItems: "center",
+                }}
+              >
                 <input
                   type="text"
                   value={newClassName}
@@ -1335,17 +1717,17 @@ export default function AdminDashboard() {
                   style={{
                     flexGrow: 1,
                     flexShrink: 1,
-                    minWidth: '200px',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '0.5rem',
-                    border: '2px solid #d1d5db',
-                    fontSize: '0.95rem',
-                    fontFamily: 'inherit',
-                    outline: 'none',
-                    color: '#111827',
-                    backgroundColor: '#ffffff',
-                    WebkitTextFillColor: '#111827',
-                    boxSizing: 'border-box',
+                    minWidth: "200px",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "0.5rem",
+                    border: "2px solid #d1d5db",
+                    fontSize: "0.95rem",
+                    fontFamily: "inherit",
+                    outline: "none",
+                    color: "#111827",
+                    backgroundColor: "#ffffff",
+                    WebkitTextFillColor: "#111827",
+                    boxSizing: "border-box",
                   }}
                 />
                 <button
@@ -1353,15 +1735,21 @@ export default function AdminDashboard() {
                   disabled={creatingClass || !newClassName.trim()}
                   style={{
                     flexShrink: 0,
-                    padding: '0.75rem 1.5rem',
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    backgroundColor: creatingClass || !newClassName.trim() ? '#9ca3af' : '#10b981',
-                    color: '#ffffff',
-                    fontSize: '0.9rem',
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: "0.5rem",
+                    border: "none",
+                    backgroundColor:
+                      creatingClass || !newClassName.trim()
+                        ? "#9ca3af"
+                        : "#10b981",
+                    color: "#ffffff",
+                    fontSize: "0.9rem",
                     fontWeight: 600,
-                    cursor: creatingClass || !newClassName.trim() ? 'not-allowed' : 'pointer',
-                    whiteSpace: 'nowrap',
+                    cursor:
+                      creatingClass || !newClassName.trim()
+                        ? "not-allowed"
+                        : "pointer",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {creatingClass ? "⏳ Đang tạo..." : "➕ TẠO LỚP"}
@@ -1369,7 +1757,14 @@ export default function AdminDashboard() {
               </form>
             </div>
 
-            <div style={{ ...modalBody, marginBottom: '1rem', maxHeight: '400px', overflowY: 'auto' }}>
+            <div
+              style={{
+                ...modalBody,
+                marginBottom: "1rem",
+                maxHeight: "400px",
+                overflowY: "auto",
+              }}
+            >
               {loadingClasses ? (
                 <div style={loadingContainer}>
                   <div
@@ -1385,7 +1780,9 @@ export default function AdminDashboard() {
                   <span>Đang tải danh sách lớp...</span>
                 </div>
               ) : classesWithTeachers.length === 0 ? (
-                <div style={emptyState}>Chưa có lớp nào trong hệ thống. Vui lòng tạo lớp mới.</div>
+                <div style={emptyState}>
+                  Chưa có lớp nào trong hệ thống. Vui lòng tạo lớp mới.
+                </div>
               ) : (
                 <div style={tableWrapper}>
                   <table style={table}>
@@ -1394,8 +1791,12 @@ export default function AdminDashboard() {
                         <th style={th}>Lớp</th>
                         <th style={th}>Giáo viên chủ nhiệm</th>
                         <th style={th}>Email</th>
-                        <th style={{ ...th, textAlign: 'center' }}>Số học sinh</th>
-                        <th style={{ ...th, textAlign: 'center' }}>Hành động</th>
+                        <th style={{ ...th, textAlign: "center" }}>
+                          Số học sinh
+                        </th>
+                        <th style={{ ...th, textAlign: "center" }}>
+                          Hành động
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1405,8 +1806,14 @@ export default function AdminDashboard() {
                             <strong>{classInfo.className}</strong>
                           </td>
                           <td style={td}>
-                            {classInfo.teacher === "Chưa có" || !classInfo.teacher ? (
-                              <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>
+                            {classInfo.teacher === "Chưa có" ||
+                            !classInfo.teacher ? (
+                              <span
+                                style={{
+                                  color: "#9ca3af",
+                                  fontStyle: "italic",
+                                }}
+                              >
                                 Chưa có giáo viên
                               </span>
                             ) : (
@@ -1414,26 +1821,40 @@ export default function AdminDashboard() {
                             )}
                           </td>
                           <td style={td}>{classInfo.teacherEmail}</td>
-                          <td style={{ ...td, textAlign: 'center' }}>
+                          <td style={{ ...td, textAlign: "center" }}>
                             <span
                               style={{
                                 ...badge,
-                                background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+                                background:
+                                  "linear-gradient(135deg, #10b981 0%, #047857 100%)",
                               }}
                             >
                               {classInfo.studentCount}
                             </span>
                           </td>
-                          <td style={{ ...td, textAlign: 'center' }}>
+                          <td style={{ ...td, textAlign: "center" }}>
                             <button
                               style={{
                                 ...deleteButton,
-                                ...(hoveredDeleteClass === classInfo.id ? deleteButtonHover : {}),
+                                ...(hoveredDeleteClass === classInfo.id
+                                  ? deleteButtonHover
+                                  : {}),
                               }}
-                              onMouseEnter={() => setHoveredDeleteClass(classInfo.id)}
+                              onMouseEnter={() =>
+                                setHoveredDeleteClass(classInfo.id)
+                              }
                               onMouseLeave={() => setHoveredDeleteClass(null)}
-                              onClick={() => handleDeleteClass(classInfo.id, classInfo.className)}
-                              title={classInfo.studentCount > 0 ? "Không thể xóa lớp có học sinh" : "Xóa lớp"}
+                              onClick={() =>
+                                handleDeleteClass(
+                                  classInfo.id,
+                                  classInfo.className
+                                )
+                              }
+                              title={
+                                classInfo.studentCount > 0
+                                  ? "Không thể xóa lớp có học sinh"
+                                  : "Xóa lớp"
+                              }
                             >
                               🗑️ Xóa
                             </button>

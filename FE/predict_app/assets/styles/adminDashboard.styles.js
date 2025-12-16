@@ -503,6 +503,27 @@ export const deleteButtonHover = {
   boxShadow: '0 6px 12px rgba(239, 68, 68, 0.4)',
 };
 
+// Edit Button
+export const editButton = {
+  padding: '0.4rem 0.85rem',
+  borderRadius: '0.5rem',
+  border: 'none',
+  background: `linear-gradient(135deg, ${colors.primary[400]} 0%, ${colors.primary[600]} 100%)`,
+  color: '#ffffff',
+  fontSize: '0.75rem',
+  fontWeight: 600,
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  boxShadow: '0 2px 4px rgba(59, 130, 246, 0.2)',
+  marginRight: '0.5rem',
+};
+
+export const editButtonHover = {
+  background: `linear-gradient(135deg, ${colors.primary[500]} 0%, ${colors.primary[700]} 100%)`,
+  transform: 'translateY(-2px)',
+  boxShadow: '0 6px 12px rgba(59, 130, 246, 0.4)',
+};
+
 // ============================================
 // EMPTY & ERROR STATES
 // ============================================

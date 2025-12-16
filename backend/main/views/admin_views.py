@@ -274,12 +274,173 @@ class AdminUserListCreateView(AdminRequiredMixin, APIView):
         }, status=status.HTTP_201_CREATED)
 
 
-class AdminUserDeleteView(AdminRequiredMixin, APIView):
+class AdminUserDetailView(AdminRequiredMixin, APIView):
     """
+    GET: Lấy thông tin chi tiết user theo id
+    PUT: Cập nhật thông tin user
     DELETE: Xóa user theo id
     """
     authentication_classes = []
     permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Admin - Get user details by ID",
+        manual_parameters=[
+            openapi.Parameter(
+                'Authorization',
+                openapi.IN_HEADER,
+                description="Bearer token (admin only)",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ],
+        responses={200: "OK", 404: "Not Found"}
+    )
+    def get(self, request, user_id):
+        admin_user, error_response = self.get_admin_user(request)
+        if error_response:
+            return error_response
+
+        user = User.objects(id=user_id).first()
+        if not user:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Lấy thông tin class
+        class_name = None
+        class_id = None
+        if user.class_ref:
+            class_name = user.class_ref.name
+            class_id = str(user.class_ref.id)
+        elif user.class_name:
+            class_name = user.class_name
+
+        return Response({
+            "user": {
+                "id": str(user.id),
+                "username": user.username,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "role": user.role,
+                "class_id": class_id,
+                "class_name": class_name,
+                "date_joined": user.date_joined.isoformat() if user.date_joined else None,
+            }
+        }, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_description="Admin - Update user by ID",
+        manual_parameters=[
+            openapi.Parameter(
+                'Authorization',
+                openapi.IN_HEADER,
+                description="Bearer token (admin only)",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "email": openapi.Schema(type=openapi.TYPE_STRING),
+                "first_name": openapi.Schema(type=openapi.TYPE_STRING),
+                "last_name": openapi.Schema(type=openapi.TYPE_STRING),
+                "role": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=['student', 'teacher', 'admin']
+                ),
+                "class_id": openapi.Schema(type=openapi.TYPE_STRING),
+                "class_name": openapi.Schema(type=openapi.TYPE_STRING),
+                "password": openapi.Schema(type=openapi.TYPE_STRING, description="New password (optional)"),
+            }
+        ),
+        responses={200: "OK", 400: "Bad Request", 404: "Not Found"}
+    )
+    def put(self, request, user_id):
+        admin_user, error_response = self.get_admin_user(request)
+        if error_response:
+            return error_response
+
+        user = User.objects(id=user_id).first()
+        if not user:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Lấy dữ liệu từ request
+        email = request.data.get("email", "").strip()
+        first_name = request.data.get("first_name", "").strip()
+        last_name = request.data.get("last_name", "").strip()
+        role = request.data.get("role", "").strip()
+        class_id = request.data.get("class_id", "").strip()
+        class_name = request.data.get("class_name", "").strip()
+        password = request.data.get("password", "").strip()
+
+        # Kiểm tra email trùng lặp (nếu thay đổi email)
+        if email and email != user.email:
+            existing_user = User.objects(email=email).first()
+            if existing_user and str(existing_user.id) != user_id:
+                return Response({
+                    "error": "Email đã được sử dụng bởi người dùng khác"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            user.email = email
+
+        # Cập nhật các trường cơ bản (chấp nhận cả chuỗi rỗng)
+        if "first_name" in request.data:
+            user.first_name = first_name
+        if "last_name" in request.data:
+            user.last_name = last_name
+
+        # Cập nhật role (nếu có)
+        if role and role in ['student', 'teacher', 'admin']:
+            # Không cho admin thay đổi role của chính mình
+            if str(admin_user.id) == user_id and role != 'admin':
+                return Response({
+                    "error": "Không thể thay đổi role của chính mình"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            user.role = role
+
+        # Cập nhật class (nếu có)
+        if role != "admin":
+            class_ref = None
+            class_name_result = None
+            
+            if class_id:
+                class_ref = Class.objects(id=class_id).first()
+                if class_ref:
+                    class_name_result = class_ref.name
+            elif class_name:
+                class_ref = Class.objects(name=class_name).first()
+                if class_ref:
+                    class_name_result = class_ref.name
+                else:
+                    class_name_result = class_name
+            
+            user.class_ref = class_ref
+            user.class_name = class_name_result
+        else:
+            # Admin không cần class
+            user.class_ref = None
+            user.class_name = None
+
+        # Cập nhật password (nếu có)
+        if password:
+            user.set_password(password)
+
+        user.save()
+
+        # Trả về dữ liệu user đã cập nhật
+        return Response({
+            "message": "Cập nhật thông tin người dùng thành công",
+            "user": {
+                "id": str(user.id),
+                "username": user.username,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "role": user.role,
+                "class_id": str(user.class_ref.id) if user.class_ref else None,
+                "class_name": user.class_name,
+            }
+        }, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_description="Admin - Delete a user by ID",

@@ -18,9 +18,7 @@ import {
   userName,
   userEmail,
   menuButtonSettings,
-  menuButtonSettingsHover,
   menuButtonLogout,
-  menuButtonLogoutHover,
   authButtons,
   loginBtn,
   loginBtnHover,
@@ -33,8 +31,6 @@ const Header = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [hoveredLink, setHoveredLink] = useState(null);
   const [hoveredUserBtn, setHoveredUserBtn] = useState(false);
-  const [hoveredSettings, setHoveredSettings] = useState(false);
-  const [hoveredLogout, setHoveredLogout] = useState(false);
   const [hoveredLoginBtn, setHoveredLoginBtn] = useState(false);
   const userMenuRef = useRef(null);
 
@@ -96,7 +92,9 @@ const Header = () => {
                   style={{
                     ...navLink,
                     ...(isActive(link.path) ? navLinkActive : {}),
-                    ...(hoveredLink === link.path && !isActive(link.path) ? navLinkHover : {}),
+                    ...(hoveredLink === link.path && !isActive(link.path)
+                      ? navLinkHover
+                      : {}),
                   }}
                   onMouseEnter={() => setHoveredLink(link.path)}
                   onMouseLeave={() => setHoveredLink(null)}
@@ -123,16 +121,10 @@ const Header = () => {
                     <div style={userName}>{user.name}</div>
                     <div style={userEmail}>{user.email}</div>
                   </div>
-                  <button
-                    onClick={handleSettings}
-                    style={menuButtonSettings}
-                  >
+                  <button onClick={handleSettings} style={menuButtonSettings}>
                     ⚙️ Cài đặt
                   </button>
-                  <button
-                    onClick={handleLogout}
-                    style={menuButtonLogout}
-                  >
+                  <button onClick={handleLogout} style={menuButtonLogout}>
                     🚪 Đăng xuất
                   </button>
                 </div>
@@ -143,8 +135,8 @@ const Header = () => {
 
         {!user && (
           <div style={authButtons}>
-            <Link 
-              to="/auth?mode=login" 
+            <Link
+              to="/auth?mode=login"
               style={{
                 ...loginBtn,
                 ...(hoveredLoginBtn ? loginBtnHover : {}),

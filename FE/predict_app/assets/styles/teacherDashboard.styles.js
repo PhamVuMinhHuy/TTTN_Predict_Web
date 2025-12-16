@@ -146,6 +146,13 @@ export const headerUserName = {
   color: "#1f2937",
 };
 
+export const headerUserFullName = {
+  fontSize: "0.875rem",
+  color: "#4b5563",
+  fontWeight: "500",
+  marginTop: "0.125rem",
+};
+
 export const headerUserRole = {
   fontSize: "0.875rem",
   color: "#6b7280",
@@ -655,6 +662,7 @@ export const styles = {
   headerUserAvatar,
   headerUserDetails,
   headerUserName,
+  headerUserFullName,
   headerUserRole,
   headerUserClass,
   headerLogoutButton,
