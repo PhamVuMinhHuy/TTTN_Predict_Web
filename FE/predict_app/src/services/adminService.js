@@ -102,6 +102,34 @@ class AdminService {
     }
   }
 
+  async updateUser(userId, userData) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return { success: false, error: "No authentication token" };
+    }
+
+    try {
+      const response = await fetch(`${API_ENDPOINTS.ADMIN_USERS}${userId}/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token.trim().replace(/^["']|["']$/g, "")}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Không thể cập nhật người dùng");
+      }
+
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+
   // ============ QUẢN LÝ LỚP ============
 
   async getClasses() {

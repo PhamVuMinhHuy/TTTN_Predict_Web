@@ -56,7 +56,8 @@ export default function TeacherDashboard() {
 
   useEffect(() => {
     loadStudents();
-    if (activeTab === "grades") {
+    // Load allScores cho cả overview và grades tab
+    if (activeTab === "overview" || activeTab === "grades") {
       loadAllScores();
     }
     if (activeTab === "predictions") {
@@ -103,9 +104,12 @@ export default function TeacherDashboard() {
   // Statistics
   const statistics = useMemo(() => {
     const totalStudents = students.length;
-    const studentsWithScores = students.filter(
-      (s) => s.last_score !== null && s.last_score !== undefined
+    
+    // Đếm số học sinh đã có điểm trong bảng điểm (có mảng scores không rỗng)
+    const studentsWithScores = allScores.filter(
+      (student) => student.scores && student.scores.length > 0
     ).length;
+    
     const avgScore =
       studentsWithScores > 0
         ? students
@@ -115,7 +119,7 @@ export default function TeacherDashboard() {
     const recentPredictions = students.filter((s) => s.last_predicted_at).length;
 
     return { totalStudents, studentsWithScores, avgScore, recentPredictions };
-  }, [students]);
+  }, [students, allScores]);
 
   // Filtered students
   const filteredStudents = useMemo(() => {
@@ -547,7 +551,7 @@ export default function TeacherDashboard() {
                     <div style={styles.statCard}>
                       <div style={styles.statCardHeader}>
                         <div>
-                          <div style={styles.statCardTitle}>Đã có điểm</div>
+                          <div style={styles.statCardTitle}>Bảng điểm</div>
                           <div style={styles.statCardValue}>
                             {statistics.studentsWithScores}
                           </div>
@@ -559,7 +563,7 @@ export default function TeacherDashboard() {
                               "linear-gradient(135deg, #10b981 0%, #047857 100%)",
                           }}
                         >
-                          ✅
+                          📝
                         </div>
                       </div>
                     </div>
