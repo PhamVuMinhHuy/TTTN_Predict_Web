@@ -18,7 +18,7 @@ class PredictionService:
         if cls._model_path is None:
             # Tìm file model.pkl trong thư mục backend
             base_dir = Path(__file__).resolve().parent.parent.parent
-            model_file = base_dir / "model.pkl"
+            model_file = base_dir / "rf_model.pkl"
             if model_file.exists():
                 cls._model_path = str(model_file)
             else:
