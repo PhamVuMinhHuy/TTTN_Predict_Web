@@ -89,6 +89,50 @@ class PredictionService {
       return { success: false, error: error.message };
     }
   }
+
+  async deleteHistory(predictionId) {
+    try {
+      const rawToken = localStorage.getItem("token");
+      const token = rawToken ? rawToken.replace(/^"|"$/g, '') : null;
+
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const url = API_ENDPOINTS.DELETE_PREDICTION(predictionId);
+
+      console.log("DEBUG: PredictionService - Deleting prediction:", predictionId);
+
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("DEBUG: PredictionService - Delete response status:", response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.log("DEBUG: PredictionService - Error data:", errorData);
+
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          throw new Error("Authentication expired. Please login again.");
+        }
+        throw new Error(errorData.error || errorData.details || "Failed to delete prediction");
+      }
+
+      const data = await response.json();
+      console.log("DEBUG: PredictionService - Delete result:", data);
+      return { success: true, data };
+    } catch (error) {
+      console.error("DEBUG: PredictionService - Exception:", error);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 export const predictionService = new PredictionService();

@@ -335,3 +335,121 @@ class PredictionHistoryView(APIView):
                 "details": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class DeletePredictionView(APIView):
+    """
+    API endpoint để xóa lịch sử dự đoán của học sinh
+    Yêu cầu: Bearer token trong Authorization header
+    """
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Delete a prediction history item",
+        manual_parameters=[
+            openapi.Parameter(
+                'Authorization',
+                openapi.IN_HEADER,
+                description="Bearer token",
+                type=openapi.TYPE_STRING,
+                required=True
+            ),
+            openapi.Parameter(
+                'prediction_id',
+                openapi.IN_PATH,
+                description="ID of the prediction to delete",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ],
+        responses={
+            200: openapi.Response(
+                description="Prediction deleted successfully",
+                examples={
+                    "application/json": {
+                        "message": "Prediction deleted successfully"
+                    }
+                }
+            ),
+            401: openapi.Response(
+                description="Unauthorized - Invalid or missing token"
+            ),
+            403: openapi.Response(
+                description="Forbidden - User does not own this prediction"
+            ),
+            404: openapi.Response(
+                description="Prediction not found"
+            )
+        }
+    )
+    def delete(self, request, prediction_id):
+        try:
+            # Lấy token từ header
+            auth_header = request.headers.get('Authorization')
+            if not auth_header or not auth_header.startswith('Bearer '):
+                return Response({
+                    "error": "Authentication required",
+                    "details": "Authorization header missing or invalid"
+                }, status=status.HTTP_401_UNAUTHORIZED)
+
+            token = auth_header.split(' ')[1].strip('"')
+            
+            # Decode JWT token
+            try:
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+                user_id = payload.get('user_id')
+            except jwt.ExpiredSignatureError:
+                return Response({
+                    "error": "Token expired"
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            except jwt.InvalidTokenError as e:
+                return Response({
+                    "error": "Invalid token",
+                    "details": str(e)
+                }, status=status.HTTP_401_UNAUTHORIZED)
+
+            # Tìm user
+            user = User.objects(id=user_id).first()
+            if not user:
+                return Response({
+                    "error": "User not found"
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            # Tìm prediction
+            prediction = Prediction.objects(id=prediction_id).first()
+            if not prediction:
+                return Response({
+                    "error": "Prediction not found"
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            # Kiểm tra xem prediction có thuộc về user này không
+            if str(prediction.user.id) != str(user.id):
+                return Response({
+                    "error": "Forbidden",
+                    "details": "You do not have permission to delete this prediction"
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            # Chỉ cho phép xóa prediction tự dự đoán (không phải do giáo viên)
+            if prediction.predicted_by is not None:
+                return Response({
+                    "error": "Forbidden",
+                    "details": "Cannot delete predictions made by teachers"
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            # Xóa prediction
+            prediction.delete()
+            print(f"DEBUG: Prediction {prediction_id} deleted by user {user.username}")
+
+            return Response({
+                "message": "Prediction deleted successfully"
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(f"DEBUG: DeletePredictionView error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({
+                "error": "Internal server error",
+                "details": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

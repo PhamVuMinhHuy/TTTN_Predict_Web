@@ -176,3 +176,31 @@ export const loadingSpinner = {
   animation: "spin 1s linear infinite",
   marginRight: "16px",
 };
+
+// Delete Button - Modern style
+export const deleteButton = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+  padding: "12px 24px",
+  background: "linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.15) 100%)",
+  color: "#f87171",
+  border: "1px solid rgba(239, 68, 68, 0.25)",
+  borderRadius: "12px",
+  fontSize: "14px",
+  fontWeight: "600",
+  cursor: "pointer",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  backdropFilter: "blur(8px)",
+  letterSpacing: "0.3px",
+};
+
+export const deleteButtonHover = {
+  background: "linear-gradient(135deg, rgba(239, 68, 68, 0.85) 0%, rgba(185, 28, 28, 0.95) 100%)",
+  color: "#ffffff",
+  borderColor: "rgba(239, 68, 68, 0.6)",
+  transform: "translateY(-2px)",
+  boxShadow: "0 8px 20px rgba(239, 68, 68, 0.35), 0 0 0 1px rgba(239, 68, 68, 0.1)",
+};
+
