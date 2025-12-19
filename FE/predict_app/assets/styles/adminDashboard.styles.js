@@ -284,31 +284,7 @@ export const badge = {
   boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
 };
 
-// ============================================
-// SEARCH BAR
-// ============================================
-export const searchContainer = {
-  marginBottom: '1.25rem',
-};
 
-export const searchInput = {
-  width: '100%',
-  padding: '0.75rem 1rem 0.75rem 2.75rem',
-  borderRadius: '0.75rem',
-  border: `2px solid ${colors.neutral[200]}`,
-  fontSize: '0.875rem',
-  outline: 'none',
-  transition: 'all 0.2s ease',
-  backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%236b7280\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\'%3E%3C/path%3E%3C/svg%3E")',
-  backgroundRepeat: 'no-repeat',
-  backgroundPosition: '0.75rem center',
-  backgroundSize: '1.25rem',
-};
-
-export const searchInputFocus = {
-  borderColor: colors.primary[500],
-  boxShadow: `0 0 0 3px ${colors.primary[100]}`,
-};
 
 // ============================================
 // CLASS FILTER CHIPS
@@ -631,18 +607,7 @@ export const helpText = {
   lineHeight: 1.5,
 };
 
-// ============================================
-// LOADING SPINNER
-// ============================================
-export const loadingSpinner = {
-  display: 'inline-block',
-  width: '1.25rem',
-  height: '1.25rem',
-  border: `3px solid ${colors.neutral[200]}`,
-  borderTop: `3px solid ${colors.primary[500]}`,
-  borderRadius: '50%',
-  animation: 'spin 0.8s linear infinite',
-};
+
 
 export const loadingContainer = {
   display: 'flex',
@@ -823,4 +788,264 @@ export const modalButtonConfirmHover = {
   background: `linear-gradient(135deg, ${colors.danger[600]} 0%, ${colors.danger[700]} 100%)`,
   transform: 'translateY(-1px)',
   boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+};
+
+// ============================================
+// SEARCH BAR STYLES
+// ============================================
+export const searchContainer = {
+  marginBottom: '1.5rem',
+  position: 'relative',
+};
+
+export const searchIcon = {
+  position: 'absolute',
+  left: '1rem',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  color: '#9ca3af',
+  fontSize: '1rem',
+  pointerEvents: 'none',
+};
+
+export const searchInput = {
+  width: '100%',
+  padding: '0.875rem 1rem 0.875rem 2.75rem',
+  backgroundColor: '#1e293b',
+  border: '2px solid #374151',
+  borderRadius: '0.75rem',
+  color: '#e2e8f0',
+  fontSize: '0.95rem',
+  outline: 'none',
+  transition: 'all 0.2s ease',
+  boxSizing: 'border-box',
+};
+
+export const searchClearButton = {
+  position: 'absolute',
+  right: '1rem',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  background: 'none',
+  border: 'none',
+  color: '#9ca3af',
+  cursor: 'pointer',
+  fontSize: '1rem',
+  padding: '0.25rem',
+};
+
+// ============================================
+// PAGINATION STYLES
+// ============================================
+export const paginationContainer = {
+  marginTop: '1.5rem',
+  padding: '1.25rem 1.5rem',
+  background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+  borderRadius: '0.75rem',
+  border: '1px solid #475569',
+  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+};
+
+export const paginationTop = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  marginBottom: '1rem',
+};
+
+export const pageSizeSelector = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  color: '#f1f5f9',
+  fontSize: '0.9rem',
+};
+
+export const pageSizeSelect = {
+  padding: '0.5rem 0.75rem',
+  backgroundColor: '#0f172a',
+  color: '#f1f5f9',
+  border: '2px solid #60a5fa',
+  borderRadius: '0.5rem',
+  fontSize: '0.9rem',
+  cursor: 'pointer',
+  minWidth: '65px',
+  fontWeight: '600',
+};
+
+export const paginationBottom = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: '0.75rem',
+};
+
+export const paginationButton = {
+  padding: '0.625rem 1.25rem',
+  background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+  color: 'white',
+  border: '1px solid #60a5fa',
+  borderRadius: '0.5rem',
+  cursor: 'pointer',
+  fontSize: '0.9rem',
+  fontWeight: '600',
+  transition: 'all 0.2s ease',
+  boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)',
+};
+
+export const paginationButtonDisabled = {
+  padding: '0.625rem 1.25rem',
+  background: '#475569',
+  color: '#94a3b8',
+  border: '1px solid #64748b',
+  borderRadius: '0.5rem',
+  cursor: 'not-allowed',
+  fontSize: '0.9rem',
+  fontWeight: '600',
+  boxShadow: 'none',
+};
+
+export const paginationInfo = {
+  padding: '0.625rem 1.5rem',
+  background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+  borderRadius: '0.5rem',
+  color: '#f1f5f9',
+  fontSize: '0.95rem',
+  fontWeight: '700',
+  border: '2px solid #60a5fa',
+  minWidth: '130px',
+  textAlign: 'center',
+};
+
+export const paginationCurrentPage = {
+  color: '#fbbf24',
+};
+
+// ============================================
+// LOADING SPINNER
+// ============================================
+export const loadingSpinner = {
+  width: '1.25rem',
+  height: '1.25rem',
+  border: '3px solid #e5e7eb',
+  borderTop: '3px solid #3b82f6',
+  borderRadius: '50%',
+  animation: 'spin 0.8s linear infinite',
+};
+
+// ============================================
+// QUICK CREATE BOX
+// ============================================
+export const quickCreateBox = {
+  marginTop: '1rem',
+  padding: '1rem',
+  backgroundColor: 'rgba(59, 130, 246, 0.1)',
+  borderRadius: '0.5rem',
+  border: '1px dashed rgba(59, 130, 246, 0.3)',
+};
+
+export const quickCreateLabel = {
+  fontSize: '0.85rem',
+  color: '#94a3b8',
+  marginBottom: '0.5rem',
+  fontWeight: '500',
+};
+
+export const quickCreateRow = {
+  display: 'flex',
+  gap: '0.5rem',
+  alignItems: 'center',
+};
+
+export const quickCreateInput = {
+  flex: 1,
+  padding: '0.5rem 0.75rem',
+  borderRadius: '0.5rem',
+  border: '2px solid #d1d5db',
+  fontSize: '0.9rem',
+  fontFamily: 'inherit',
+  outline: 'none',
+  color: '#111827',
+  backgroundColor: '#ffffff',
+  WebkitTextFillColor: '#111827',
+};
+
+export const quickCreateButton = {
+  padding: '0.5rem 1rem',
+  backgroundColor: '#10b981',
+  color: 'white',
+  border: 'none',
+  borderRadius: '0.375rem',
+  cursor: 'pointer',
+  fontWeight: '500',
+  fontSize: '0.85rem',
+  transition: 'all 0.2s ease',
+  whiteSpace: 'nowrap',
+};
+
+// ============================================
+// ACTION BUTTONS
+// ============================================
+export const actionButtons = {
+  display: 'flex',
+  gap: '0.5rem',
+  justifyContent: 'center',
+};
+
+// ============================================
+// CLASSES FORM STYLES
+// ============================================
+export const classesFormContainer = {
+  padding: '1rem 1.5rem',
+  borderBottom: '1px solid #e5e7eb',
+};
+
+export const classesForm = {
+  display: 'flex',
+  gap: '0.75rem',
+  alignItems: 'center',
+};
+
+export const classesFormInput = {
+  flexGrow: 1,
+  flexShrink: 1,
+  minWidth: '200px',
+  padding: '0.75rem 1rem',
+  borderRadius: '0.5rem',
+  border: '2px solid #d1d5db',
+  fontSize: '0.95rem',
+  fontFamily: 'inherit',
+  outline: 'none',
+  color: '#111827',
+  backgroundColor: '#ffffff',
+  WebkitTextFillColor: '#111827',
+  boxSizing: 'border-box',
+};
+
+export const classesFormButton = {
+  flexShrink: 0,
+  padding: '0.75rem 1.5rem',
+  borderRadius: '0.5rem',
+  border: 'none',
+  backgroundColor: '#10b981',
+  color: '#ffffff',
+  fontSize: '0.9rem',
+  fontWeight: '600',
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+};
+
+export const noTeacherText = {
+  color: '#9ca3af',
+  fontStyle: 'italic',
+};
+
+export const badgeSuccess = {
+  padding: '0.35rem 0.75rem',
+  borderRadius: '999px',
+  background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+  color: '#ffffff',
+  fontSize: '0.75rem',
+  fontWeight: 700,
+  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
 };

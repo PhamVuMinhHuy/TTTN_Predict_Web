@@ -642,6 +642,102 @@ export const spinner = {
 };
 
 // Collected styles object for easier use
+
+// Confirmation Modal
+export const confirmModalContainer = {
+  background: "white",
+  borderRadius: "0.75rem",
+  maxWidth: "450px",
+  width: "90%",
+  padding: "2rem",
+  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+  animation: "scaleIn 0.3s ease",
+};
+
+export const confirmModalHeader = {
+  display: "flex",
+  alignItems: "center",
+  gap: "0.75rem",
+  marginBottom: "1rem",
+};
+
+export const confirmModalTitle = {
+  margin: 0,
+  fontSize: "1.125rem",
+  fontWeight: "600",
+  color: "#1f2937",
+};
+
+export const confirmModalDescription = {
+  margin: "0 0 1.5rem 0",
+  color: "#6b7280",
+  fontSize: "0.875rem",
+  lineHeight: "1.5",
+};
+
+export const confirmModalFooter = {
+  display: "flex",
+  gap: "0.75rem",
+  justifyContent: "flex-end",
+};
+
+export const confirmModalButtonCancel = {
+  padding: "0.625rem 1.25rem",
+  background: "white",
+  color: "#374151",
+  border: "1px solid #d1d5db",
+  borderRadius: "0.375rem",
+  cursor: "pointer",
+  fontWeight: "500",
+  fontSize: "0.875rem",
+  transition: "all 0.2s",
+};
+
+export const confirmModalButtonConfirm = {
+  padding: "0.625rem 1.25rem",
+  background: "#ef4444",
+  color: "white",
+  border: "none",
+  borderRadius: "0.375rem",
+  cursor: "pointer",
+  fontWeight: "500",
+  fontSize: "0.875rem",
+  transition: "all 0.2s",
+};
+
+// Toast
+export const toastContainer = {
+  position: "fixed",
+  top: "2rem",
+  right: "2rem",
+  color: "white",
+  padding: "1rem 1.5rem",
+  borderRadius: "0.5rem",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+  zIndex: 10000,
+  animation: "slideIn 0.3s ease-out",
+};
+
+// Color Variants
+export const blueGradient = "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)";
+export const greenGradient = "linear-gradient(135deg, #10b981 0%, #047857 100%)";
+export const orangeGradient = "linear-gradient(135deg, #f97316 0%, #ea580c 100%)";
+
+export const statCardIconBlue = {
+  ...statCardIcon,
+  background: blueGradient,
+};
+
+export const statCardIconGreen = {
+  ...statCardIcon,
+  background: greenGradient,
+};
+
+export const statCardIconOrange = {
+  ...statCardIcon,
+  background: orangeGradient,
+};
+
 export const styles = {
   page,
   sidebar,
@@ -674,6 +770,9 @@ export const styles = {
   statCardTitle,
   statCardValue,
   statCardIcon,
+  statCardIconBlue,
+  statCardIconGreen,
+  statCardIconOrange,
   quickActions,
   sectionTitle,
   actionsGrid,
@@ -726,6 +825,17 @@ export const styles = {
   gradeCardEmpty,
   loadingContainer,
   spinner,
+  confirmModalContainer,
+  confirmModalHeader,
+  confirmModalTitle,
+  confirmModalDescription,
+  confirmModalFooter,
+  confirmModalButtonCancel,
+  confirmModalButtonConfirm,
+  toastContainer,
+  blueGradient,
+  greenGradient,
+  orangeGradient,
 };
 
 export default styles;

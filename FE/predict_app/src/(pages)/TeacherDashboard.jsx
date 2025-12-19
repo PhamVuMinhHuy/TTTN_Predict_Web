@@ -536,13 +536,7 @@ export default function TeacherDashboard() {
                             {statistics.totalStudents}
                           </div>
                         </div>
-                        <div
-                          style={{
-                            ...styles.statCardIcon,
-                            background:
-                              "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
-                          }}
-                        >
+                        <div style={styles.statCardIconBlue}>
                           👥
                         </div>
                       </div>
@@ -556,13 +550,7 @@ export default function TeacherDashboard() {
                             {statistics.studentsWithScores}
                           </div>
                         </div>
-                        <div
-                          style={{
-                            ...styles.statCardIcon,
-                            background:
-                              "linear-gradient(135deg, #10b981 0%, #047857 100%)",
-                          }}
-                        >
+                        <div style={styles.statCardIconGreen}>
                           📝
                         </div>
                       </div>
@@ -576,13 +564,7 @@ export default function TeacherDashboard() {
                             {statistics.recentPredictions}
                           </div>
                         </div>
-                        <div
-                          style={{
-                            ...styles.statCardIcon,
-                            background:
-                              "linear-gradient(135deg, #f97316 0%, #ea580c 100%)",
-                          }}
-                        >
+                        <div style={styles.statCardIconOrange}>
                           🎯
                         </div>
                       </div>
@@ -706,7 +688,7 @@ export default function TeacherDashboard() {
                                       onMouseLeave={() => setHoverPredict(null)}
                                       style={{
                                         ...styles.predictButton,
-                                        background: "linear-gradient(135deg, #10b981 0%, #047857 100%)",
+                                        background: styles.greenGradient,
                                         ...(hoverPredict === `input-${student.id}`
                                           ? styles.predictButtonHover
                                           : {}),
@@ -1312,6 +1294,14 @@ export default function TeacherDashboard() {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
           }
+          @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+          @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+          }
         `}
       </style>
 
@@ -1457,61 +1447,25 @@ export default function TeacherDashboard() {
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <div style={styles.modalOverlay}>
-          <div style={{
-            background: "white",
-            borderRadius: "0.75rem",
-            maxWidth: "450px",
-            width: "90%",
-            padding: "2rem",
-            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-          }}>
+          <div style={styles.confirmModalContainer}>
             {/* Header with icons */}
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              marginBottom: "1rem",
-            }}>
+            <div style={styles.confirmModalHeader}>
               <span style={{ fontSize: "1.5rem" }}>⚠️</span>
-              <h3 style={{
-                margin: 0,
-                fontSize: "1.125rem",
-                fontWeight: "600",
-                color: "#1f2937",
-              }}>
+              <h3 style={styles.confirmModalTitle}>
                 Xác nhận hành động
               </h3>
             </div>
             
             {/* Description */}
-            <p style={{
-              margin: "0 0 1.5rem 0",
-              color: "#6b7280",
-              fontSize: "0.875rem",
-              lineHeight: "1.5",
-            }}>
+            <p style={styles.confirmModalDescription}>
               {confirmMessage || "Bạn có chắc chắn muốn thực hiện hành động này? Hành động này không thể hoàn tác."}
             </p>
             
             {/* Buttons */}
-            <div style={{
-              display: "flex",
-              gap: "0.75rem",
-              justifyContent: "flex-end",
-            }}>
+            <div style={styles.confirmModalFooter}>
               <button
                 onClick={() => setShowConfirmModal(false)}
-                style={{
-                  padding: "0.625rem 1.25rem",
-                  background: "white",
-                  color: "#374151",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "0.375rem",
-                  cursor: "pointer",
-                  fontWeight: "500",
-                  fontSize: "0.875rem",
-                  transition: "all 0.2s",
-                }}
+                style={styles.confirmModalButtonCancel}
                 onMouseEnter={(e) => {
                   e.target.style.background = "#f9fafb";
                 }}
@@ -1523,17 +1477,7 @@ export default function TeacherDashboard() {
               </button>
               <button
                 onClick={() => confirmAction && confirmAction()}
-                style={{
-                  padding: "0.625rem 1.25rem",
-                  background: "#ef4444",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "0.375rem",
-                  cursor: "pointer",
-                  fontWeight: "500",
-                  fontSize: "0.875rem",
-                  transition: "all 0.2s",
-                }}
+                style={styles.confirmModalButtonConfirm}
                 onMouseEnter={(e) => {
                   e.target.style.background = "#dc2626";
                 }}
@@ -1551,16 +1495,8 @@ export default function TeacherDashboard() {
       {/* Toast Notification */}
       {toast && (
         <div style={{
-          position: "fixed",
-          top: "2rem",
-          right: "2rem",
+          ...styles.toastContainer,
           background: toast.type === "success" ? "#10b981" : "#ef4444",
-          color: "white",
-          padding: "1rem 1.5rem",
-          borderRadius: "0.5rem",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-          zIndex: 10000,
-          animation: "slideIn 0.3s ease-out",
         }}>
           {toast.message}
         </div>

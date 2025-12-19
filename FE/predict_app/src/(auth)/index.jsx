@@ -36,6 +36,14 @@ import {
   studyIconHover,
   errorMessageStyle,
   animationStyles,
+  inputErrorText,
+  buttonContent,
+  buttonSpinner,
+  forgotPasswordContainer,
+  floatingElement1,
+  floatingElement2,
+  floatingElement3,
+  copyrightFooter,
 } from "../../assets/styles/auth.styles";
 import { useForm } from "../hooks/useForm";
 import { useAuth } from "../hooks/useAuth";
@@ -153,16 +161,7 @@ function LoginForm({ onSuccess }) {
           disabled={loading || isSubmitting}
         />
         {touched.email && errors.email && (
-          <div
-            style={{
-              color: "#ef4444",
-              fontSize: "13px",
-              marginTop: "6px",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-          >
+          <div style={inputErrorText}>
             <span>❌</span> {errors.email}
           </div>
         )}
@@ -214,16 +213,7 @@ function LoginForm({ onSuccess }) {
           </span>
         </div>
         {touched.password && errors.password && (
-          <div
-            style={{
-              color: "#ef4444",
-              fontSize: "13px",
-              marginTop: "6px",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-          >
+          <div style={inputErrorText}>
             <span>❌</span> {errors.password}
           </div>
         )}
@@ -245,45 +235,20 @@ function LoginForm({ onSuccess }) {
         onMouseLeave={() => setHoveredButton(false)}
       >
         {loading || isSubmitting ? (
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-            }}
-          >
-            <span
-              style={{
-                animation: "spin 1s linear infinite",
-                display: "inline-block",
-              }}
-            >
+          <span style={buttonContent}>
+            <span style={buttonSpinner}>
               ⏳
             </span>
             Đang đăng nhập...
           </span>
         ) : (
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-            }}
-          >
+          <span style={buttonContent}>
             🚀 Đăng nhập
           </span>
         )}
       </button>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginTop: 16,
-        }}
-      >
+      <div style={forgotPasswordContainer}>
         <button
           type="button"
           style={{
@@ -373,42 +338,13 @@ export default function Auth() {
       </style>
 
       {/* Floating background elements */}
-      <div
-        style={{
-          position: "absolute",
-          top: "10%",
-          left: "5%",
-          fontSize: "60px",
-          opacity: 0.1,
-          animation: "float 6s ease-in-out infinite",
-        }}
-      >
+      <div style={floatingElement1}>
         📖
       </div>
-      <div
-        style={{
-          position: "absolute",
-          bottom: "15%",
-          right: "8%",
-          fontSize: "50px",
-          opacity: 0.1,
-          animation: "float 8s ease-in-out infinite",
-          animationDelay: "1s",
-        }}
-      >
+      <div style={floatingElement2}>
         🎓
       </div>
-      <div
-        style={{
-          position: "absolute",
-          top: "25%",
-          right: "15%",
-          fontSize: "40px",
-          opacity: 0.08,
-          animation: "float 7s ease-in-out infinite",
-          animationDelay: "2s",
-        }}
-      >
+      <div style={floatingElement3}>
         ✨
       </div>
 
@@ -497,16 +433,7 @@ export default function Auth() {
           <LoginForm onSuccess={handleSuccess} />
 
           {/* Footer info */}
-          <div
-            style={{
-              marginTop: "32px",
-              paddingTop: "20px",
-              borderTop: "1px solid #e5e7eb",
-              textAlign: "center",
-              color: "#9ca3af",
-              fontSize: "13px",
-            }}
-          >
+          <div style={copyrightFooter}>
             <span>🔒 Bảo mật bởi PredictGrade © 2025</span>
           </div>
         </div>

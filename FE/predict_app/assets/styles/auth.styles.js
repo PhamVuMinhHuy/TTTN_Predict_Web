@@ -476,4 +476,76 @@ export const tabButtonActive = {
   fontWeight: 600,
 };
 
+
 export const actionsStyle = { marginTop: 18, display: "flex", gap: 12 };
+
+// Input Error Text
+export const inputErrorText = {
+  color: "#ef4444",
+  fontSize: "13px",
+  marginTop: "6px",
+  display: "flex",
+  alignItems: "center",
+  gap: "4px",
+};
+
+// Button Content Layout
+export const buttonContent = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+};
+
+// Button Spinner
+export const buttonSpinner = {
+  animation: "spin 1s linear infinite",
+  display: "inline-block",
+};
+
+// Forgot Password Container
+export const forgotPasswordContainer = {
+  display: "flex",
+  justifyContent: "center",
+  marginTop: 16,
+};
+
+// Floating Background Elements
+export const floatingElement1 = {
+  position: "absolute",
+  top: "10%",
+  left: "5%",
+  fontSize: "60px",
+  opacity: 0.1,
+  animation: "float 6s ease-in-out infinite",
+};
+
+export const floatingElement2 = {
+  position: "absolute",
+  bottom: "15%",
+  right: "8%",
+  fontSize: "50px",
+  opacity: 0.1,
+  animation: "float 8s ease-in-out infinite",
+  animationDelay: "1s",
+};
+
+export const floatingElement3 = {
+  position: "absolute",
+  top: "25%",
+  right: "15%",
+  fontSize: "40px",
+  opacity: 0.08,
+  animation: "float 7s ease-in-out infinite",
+  animationDelay: "2s",
+};
+
+// Footer Copyright
+export const copyrightFooter = {
+  marginTop: "32px",
+  paddingTop: "20px",
+  borderTop: "1px solid #e5e7eb",
+  textAlign: "center",
+  color: "#9ca3af",
+  fontSize: "13px",
+};

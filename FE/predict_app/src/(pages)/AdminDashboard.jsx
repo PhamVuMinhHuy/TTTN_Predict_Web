@@ -72,6 +72,33 @@ import {
   modalButtonCancelHover,
   modalButtonConfirm,
   modalButtonConfirmHover,
+  // New imports for additional styles
+  searchContainer,
+  searchIcon,
+  searchInput,
+  searchClearButton,
+  paginationContainer,
+  paginationTop,
+  pageSizeSelector,
+  pageSizeSelect,
+  paginationBottom,
+  paginationButton,
+  paginationButtonDisabled,
+  paginationInfo,
+  paginationCurrentPage,
+  loadingSpinner,
+  quickCreateBox,
+  quickCreateLabel,
+  quickCreateRow,
+  quickCreateInput,
+  quickCreateButton,
+  actionButtons,
+  classesFormContainer,
+  classesForm,
+  classesFormInput,
+  classesFormButton,
+  noTeacherText,
+  badgeSuccess,
 } from "../../assets/styles/adminDashboard.styles";
 
 export default function AdminDashboard() {
@@ -84,10 +111,10 @@ export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [searchInput, setSearchInput] = useState(""); // For immediate input
-  const [debouncedSearch, setDebouncedSearch] = useState(""); // For API call
+  const [searchInputValue, setSearchInputValue] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Statistics from API (not affected by pagination)
+  // Statistics from API
   const [apiStats, setApiStats] = useState({
     totalUsers: 0,
     students: 0,
@@ -113,8 +140,8 @@ export default function AdminDashboard() {
   const [hoverLogout, setHoverLogout] = useState(false);
   const [hoverSubmit, setHoverSubmit] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
-  const [roleFilter, setRoleFilter] = useState(null); // null = all, 'student', 'teacher', 'admin'
-  const [classFilter] = useState(null); // null = all, or specific class name
+  const [roleFilter, setRoleFilter] = useState(null);
+  const [classFilter] = useState(null);
 
   // Toast notification state
   const [toasts, setToasts] = useState([]);
@@ -156,7 +183,6 @@ export default function AdminDashboard() {
     const newToast = { id, message, type };
     setToasts((prev) => [...prev, newToast]);
 
-    // Auto-remove after 4 seconds
     setTimeout(() => {
       removeToast(id);
     }, 4000);
@@ -177,13 +203,13 @@ export default function AdminDashboard() {
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(searchInput);
-      setCurrentPage(1); // Reset to first page on search
+      setDebouncedSearch(searchInputValue);
+      setCurrentPage(1);
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchInput]);
+  }, [searchInputValue]);
 
-  // Fetch users function (can be called from multiple places)
+  // Fetch users function
   const fetchUsers = useCallback(
     async ({ page, search }) => {
       setLoadingUsers(true);
@@ -200,7 +226,6 @@ export default function AdminDashboard() {
           setTotalPages(result.pagination.totalPages);
           setCurrentPage(result.pagination.currentPage);
         }
-        // Update statistics from API (not affected by pagination/search)
         if (result.statistics) {
           setApiStats(result.statistics);
         }
@@ -212,13 +237,11 @@ export default function AdminDashboard() {
     [pageSize, roleFilter]
   );
 
-  // Fetch on mount and when page/search/role changes
   useEffect(() => {
-    setCurrentPage(1); // Reset to page 1 when filter changes
+    setCurrentPage(1);
     fetchUsers({ page: 1, search: debouncedSearch });
   }, [debouncedSearch, pageSize, roleFilter, fetchUsers]);
 
-  // Fetch when page changes (without resetting)
   useEffect(() => {
     fetchUsers({ page: currentPage, search: debouncedSearch });
   }, [currentPage, debouncedSearch, fetchUsers]);
@@ -232,22 +255,18 @@ export default function AdminDashboard() {
       }
       setLoadingClasses(false);
     };
-
     fetchClasses();
   }, []);
 
-  // Get class names from classes API
   const availableClasses = useMemo(() => {
     return classes.map((c) => c.name).sort();
   }, [classes]);
 
-  // Get classes with their homeroom teachers (from API)
   const classesWithTeachers = useMemo(() => {
     return classes.map((classData) => {
       const teacher = users.find(
         (u) => u.role === "teacher" && u.class_name === classData.name
       );
-
       return {
         id: classData.id,
         className: classData.name,
@@ -258,7 +277,6 @@ export default function AdminDashboard() {
     });
   }, [classes, users]);
 
-  // Statistics from API (not from paginated users)
   const statistics = useMemo(() => {
     const totalClasses = availableClasses.length;
     return {
@@ -270,22 +288,16 @@ export default function AdminDashboard() {
     };
   }, [apiStats, availableClasses]);
 
-  // Filtered users - role filter is now server-side, only class filter is client-side
   const filteredUsers = useMemo(() => {
     let filtered = users;
-
-    // Apply class filter (client-side only)
     if (classFilter) {
       filtered = filtered.filter((u) => u.class_name === classFilter);
     }
-
     return filtered;
   }, [users, classFilter]);
 
-  // Handle statistics card click to filter by role
   const handleRoleFilter = (role) => {
     if (roleFilter === role) {
-      // If clicking the same filter, clear it
       setRoleFilter(null);
     } else {
       setRoleFilter(role);
@@ -301,7 +313,6 @@ export default function AdminDashboard() {
     setSubmitting(true);
     setError(null);
 
-    // Tìm class_id từ class_name được chọn
     let classId = null;
     if (formData.class_name) {
       const selectedClass = classes.find((c) => c.name === formData.class_name);
@@ -310,7 +321,6 @@ export default function AdminDashboard() {
       }
     }
 
-    // Gửi cả class_id và class_name (backward compatible)
     const userData = {
       ...formData,
       class_id: classId,
@@ -318,7 +328,6 @@ export default function AdminDashboard() {
 
     const result = await adminService.createUser(userData);
     if (result.success) {
-      // Refresh users list and go to first page
       setCurrentPage(1);
       await fetchUsers({ page: 1, search: debouncedSearch });
       setFormData({
@@ -348,10 +357,8 @@ export default function AdminDashboard() {
       `Bạn có chắc chắn muốn xóa tài khoản "${username}"? Hành động này không thể hoàn tác.`,
       async () => {
         closeConfirmModal();
-
         const result = await adminService.deleteUser(userId);
         if (result.success) {
-          // Refresh users list on current page
           await fetchUsers({ page: currentPage, search: debouncedSearch });
           showToast(`✅ Đã xóa tài khoản "${username}" thành công!`, "success");
         } else {
@@ -372,12 +379,10 @@ export default function AdminDashboard() {
     setCreatingClass(true);
     const result = await adminService.createClass(classNameToCreate);
     if (result.success) {
-      // Refresh danh sách lớp
       const classesResult = await adminService.getClasses();
       if (classesResult.success) {
         setClasses(classesResult.data);
       }
-      // Tự động chọn lớp vừa tạo vào dropdown
       setFormData((prev) => ({ ...prev, class_name: classNameToCreate }));
       setNewClassName("");
       showToast(`✅ Tạo lớp "${classNameToCreate}" thành công!`, "success");
@@ -393,7 +398,6 @@ export default function AdminDashboard() {
       `Bạn có chắc chắn muốn xóa lớp "${className}"? Chỉ có thể xóa lớp không có học sinh hoặc giáo viên.`,
       async () => {
         closeConfirmModal();
-
         const result = await adminService.deleteClass(classId);
         if (result.success) {
           setClasses((prev) => prev.filter((c) => c.id !== classId));
@@ -405,7 +409,6 @@ export default function AdminDashboard() {
     );
   };
 
-  // Edit user functions
   const openEditModal = (userToEdit) => {
     setEditModal(userToEdit);
     setEditFormData({
@@ -440,7 +443,6 @@ export default function AdminDashboard() {
 
     setEditSubmitting(true);
 
-    // Tìm class_id từ class_name được chọn
     let classId = null;
     if (editFormData.class_name && editFormData.role !== "admin") {
       const selectedClass = classes.find((c) => c.name === editFormData.class_name);
@@ -458,14 +460,12 @@ export default function AdminDashboard() {
       class_name: editFormData.class_name,
     };
 
-    // Chỉ gửi password nếu có nhập
     if (editFormData.password.trim()) {
       updateData.password = editFormData.password;
     }
 
     const result = await adminService.updateUser(editModal.id, updateData);
     if (result.success) {
-      // Refresh users list
       await fetchUsers({ page: currentPage, search: debouncedSearch });
       showToast(
         `✅ Cập nhật thông tin "${editModal.username}" thành công!`,
@@ -730,66 +730,29 @@ export default function AdminDashboard() {
             </div>
 
             {/* Search bar */}
-            <div
-              style={{
-                marginBottom: "1.5rem",
-                position: "relative",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  left: "1rem",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "#9ca3af",
-                  fontSize: "1rem",
-                  pointerEvents: "none",
-                }}
-              >
-                🔍
-              </div>
+            <div style={searchContainer}>
+              <div style={searchIcon}>🔍</div>
               <input
                 type="text"
                 placeholder="Tìm kiếm theo tên, email, lớp..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
+                value={searchInputValue}
+                onChange={(e) => setSearchInputValue(e.target.value)}
                 onFocus={() => setFocusedField("search")}
                 onBlur={() => setFocusedField(null)}
                 style={{
-                  width: "100%",
-                  padding: "0.875rem 1rem 0.875rem 2.75rem",
-                  backgroundColor: "#1e293b",
-                  border:
-                    focusedField === "search"
-                      ? "2px solid #3b82f6"
-                      : "2px solid #374151",
-                  borderRadius: "0.75rem",
-                  color: "#e2e8f0",
-                  fontSize: "0.95rem",
-                  outline: "none",
-                  transition: "all 0.2s ease",
-                  boxShadow:
-                    focusedField === "search"
-                      ? "0 0 0 3px rgba(59, 130, 246, 0.2)"
-                      : "none",
+                  ...searchInput,
+                  ...(focusedField === "search"
+                    ? {
+                        border: "2px solid #3b82f6",
+                        boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.2)",
+                      }
+                    : {}),
                 }}
               />
-              {searchInput && (
+              {searchInputValue && (
                 <button
-                  onClick={() => setSearchInput("")}
-                  style={{
-                    position: "absolute",
-                    right: "1rem",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "none",
-                    border: "none",
-                    color: "#9ca3af",
-                    cursor: "pointer",
-                    fontSize: "1rem",
-                    padding: "0.25rem",
-                  }}
+                  onClick={() => setSearchInputValue("")}
+                  style={searchClearButton}
                 >
                   ✕
                 </button>
@@ -798,16 +761,7 @@ export default function AdminDashboard() {
 
             {loadingUsers ? (
               <div style={loadingContainer}>
-                <div
-                  style={{
-                    width: "1.25rem",
-                    height: "1.25rem",
-                    border: "3px solid #e5e7eb",
-                    borderTop: "3px solid #3b82f6",
-                    borderRadius: "50%",
-                    animation: "spin 0.8s linear infinite",
-                  }}
-                />
+                <div style={loadingSpinner} />
                 <span>Đang tải danh sách người dùng...</span>
               </div>
             ) : error ? (
@@ -882,7 +836,7 @@ export default function AdminDashboard() {
                                 (tài khoản của bạn)
                               </span>
                             ) : (
-                              <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+                              <div style={actionButtons}>
                                 <button
                                   style={{
                                     ...editButton,
@@ -922,35 +876,10 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Pagination Controls */}
-                <div
-                  style={{
-                    marginTop: "1.5rem",
-                    padding: "1.25rem 1.5rem",
-                    background:
-                      "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
-                    borderRadius: "0.75rem",
-                    border: "1px solid #475569",
-                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                  }}
-                >
+                <div style={paginationContainer}>
                   {/* Top row: Page Size only */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      alignItems: "center",
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        color: "#f1f5f9",
-                        fontSize: "0.9rem",
-                      }}
-                    >
+                  <div style={paginationTop}>
+                    <div style={pageSizeSelector}>
                       <span>Hiển thị</span>
                       <select
                         value={pageSize}
@@ -958,17 +887,7 @@ export default function AdminDashboard() {
                           setPageSize(Number(e.target.value));
                           setCurrentPage(1);
                         }}
-                        style={{
-                          padding: "0.5rem 0.75rem",
-                          backgroundColor: "#0f172a",
-                          color: "#f1f5f9",
-                          border: "2px solid #60a5fa",
-                          borderRadius: "0.5rem",
-                          fontSize: "0.9rem",
-                          cursor: "pointer",
-                          minWidth: "65px",
-                          fontWeight: "600",
-                        }}
+                        style={pageSizeSelect}
                       >
                         <option value={5}>5</option>
                         <option value={10}>10</option>
@@ -980,38 +899,15 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Bottom row: Pagination buttons - centered */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: "0.75rem",
-                    }}
-                  >
+                  <div style={paginationBottom}>
                     <button
                       onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1}
-                      style={{
-                        padding: "0.625rem 1rem",
-                        background:
-                          currentPage === 1
-                            ? "#475569"
-                            : "linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)",
-                        color: currentPage === 1 ? "#94a3b8" : "white",
-                        border:
-                          currentPage === 1
-                            ? "1px solid #64748b"
-                            : "1px solid #60a5fa",
-                        borderRadius: "0.5rem",
-                        cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                        fontSize: "0.875rem",
-                        fontWeight: "600",
-                        transition: "all 0.2s ease",
-                        boxShadow:
-                          currentPage === 1
-                            ? "none"
-                            : "0 2px 4px rgba(59, 130, 246, 0.3)",
-                      }}
+                      style={
+                        currentPage === 1
+                          ? paginationButtonDisabled
+                          : paginationButton
+                      }
                       title="Trang đầu"
                     >
                       ⏮
@@ -1019,47 +915,18 @@ export default function AdminDashboard() {
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      style={{
-                        padding: "0.625rem 1.25rem",
-                        background:
-                          currentPage === 1
-                            ? "#475569"
-                            : "linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)",
-                        color: currentPage === 1 ? "#94a3b8" : "white",
-                        border:
-                          currentPage === 1
-                            ? "1px solid #64748b"
-                            : "1px solid #60a5fa",
-                        borderRadius: "0.5rem",
-                        cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                        fontSize: "0.9rem",
-                        fontWeight: "600",
-                        transition: "all 0.2s ease",
-                        boxShadow:
-                          currentPage === 1
-                            ? "none"
-                            : "0 2px 4px rgba(59, 130, 246, 0.3)",
-                      }}
+                      style={
+                        currentPage === 1
+                          ? paginationButtonDisabled
+                          : paginationButton
+                      }
                     >
                       ← Trước
                     </button>
 
-                    <div
-                      style={{
-                        padding: "0.625rem 1.5rem",
-                        background:
-                          "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-                        borderRadius: "0.5rem",
-                        color: "#f1f5f9",
-                        fontSize: "0.95rem",
-                        fontWeight: "700",
-                        border: "2px solid #60a5fa",
-                        minWidth: "130px",
-                        textAlign: "center",
-                      }}
-                    >
+                    <div style={paginationInfo}>
                       Trang{" "}
-                      <span style={{ color: "#fbbf24" }}>{currentPage}</span> /{" "}
+                      <span style={paginationCurrentPage}>{currentPage}</span> /{" "}
                       {totalPages || 1}
                     </div>
 
@@ -1068,66 +935,22 @@ export default function AdminDashboard() {
                         setCurrentPage((p) => Math.min(totalPages, p + 1))
                       }
                       disabled={currentPage === totalPages || totalPages === 0}
-                      style={{
-                        padding: "0.625rem 1.25rem",
-                        background:
-                          currentPage === totalPages || totalPages === 0
-                            ? "#475569"
-                            : "linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)",
-                        color:
-                          currentPage === totalPages || totalPages === 0
-                            ? "#94a3b8"
-                            : "white",
-                        border:
-                          currentPage === totalPages || totalPages === 0
-                            ? "1px solid #64748b"
-                            : "1px solid #60a5fa",
-                        borderRadius: "0.5rem",
-                        cursor:
-                          currentPage === totalPages || totalPages === 0
-                            ? "not-allowed"
-                            : "pointer",
-                        fontSize: "0.9rem",
-                        fontWeight: "600",
-                        transition: "all 0.2s ease",
-                        boxShadow:
-                          currentPage === totalPages || totalPages === 0
-                            ? "none"
-                            : "0 2px 4px rgba(59, 130, 246, 0.3)",
-                      }}
+                      style={
+                        currentPage === totalPages || totalPages === 0
+                          ? paginationButtonDisabled
+                          : paginationButton
+                      }
                     >
                       Sau →
                     </button>
                     <button
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={currentPage === totalPages || totalPages === 0}
-                      style={{
-                        padding: "0.625rem 1rem",
-                        background:
-                          currentPage === totalPages || totalPages === 0
-                            ? "#475569"
-                            : "linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)",
-                        color:
-                          currentPage === totalPages || totalPages === 0
-                            ? "#94a3b8"
-                            : "white",
-                        border:
-                          currentPage === totalPages || totalPages === 0
-                            ? "1px solid #64748b"
-                            : "1px solid #60a5fa",
-                        borderRadius: "0.5rem",
-                        cursor:
-                          currentPage === totalPages || totalPages === 0
-                            ? "not-allowed"
-                            : "pointer",
-                        fontSize: "0.875rem",
-                        fontWeight: "600",
-                        transition: "all 0.2s ease",
-                        boxShadow:
-                          currentPage === totalPages || totalPages === 0
-                            ? "none"
-                            : "0 2px 4px rgba(59, 130, 246, 0.3)",
-                      }}
+                      style={
+                        currentPage === totalPages || totalPages === 0
+                          ? paginationButtonDisabled
+                          : paginationButton
+                      }
                       title="Trang cuối"
                     >
                       ⏭
@@ -1283,49 +1106,15 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Form tạo lớp mới nhanh */}
-                  <div
-                    style={{
-                      marginTop: "1rem",
-                      padding: "1rem",
-                      backgroundColor: "rgba(59, 130, 246, 0.1)",
-                      borderRadius: "0.5rem",
-                      border: "1px dashed rgba(59, 130, 246, 0.3)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: "0.85rem",
-                        color: "#94a3b8",
-                        marginBottom: "0.5rem",
-                        fontWeight: "500",
-                      }}
-                    >
-                      ➕ Hoặc tạo lớp mới:
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "0.5rem",
-                        alignItems: "center",
-                      }}
-                    >
+                  <div style={quickCreateBox}>
+                    <div style={quickCreateLabel}>➕ Hoặc tạo lớp mới:</div>
+                    <div style={quickCreateRow}>
                       <input
                         type="text"
                         value={newClassName}
                         onChange={(e) => setNewClassName(e.target.value)}
                         placeholder="Nhập tên lớp (VD: 10A1...)"
-                        style={{
-                          flex: 1,
-                          padding: "0.5rem 0.75rem",
-                          borderRadius: "0.5rem",
-                          border: "2px solid #d1d5db",
-                          fontSize: "0.9rem",
-                          fontFamily: "inherit",
-                          outline: "none",
-                          color: "#111827",
-                          backgroundColor: "#ffffff",
-                          WebkitTextFillColor: "#111827",
-                        }}
+                        style={quickCreateInput}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
@@ -1340,22 +1129,10 @@ export default function AdminDashboard() {
                         onClick={handleCreateClass}
                         disabled={creatingClass || !newClassName.trim()}
                         style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor:
-                            creatingClass || !newClassName.trim()
-                              ? "#475569"
-                              : "#10b981",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "0.375rem",
-                          cursor:
-                            creatingClass || !newClassName.trim()
-                              ? "not-allowed"
-                              : "pointer",
-                          fontWeight: "500",
-                          fontSize: "0.85rem",
-                          transition: "all 0.2s ease",
-                          whiteSpace: "nowrap",
+                          ...quickCreateButton,
+                          ...(creatingClass || !newClassName.trim()
+                            ? { backgroundColor: "#475569", cursor: "not-allowed" }
+                            : {}),
                         }}
                       >
                         {creatingClass ? "⏳..." : "✓ Tạo"}
@@ -1695,61 +1472,23 @@ export default function AdminDashboard() {
             </div>
 
             {/* Form tạo lớp mới */}
-            <div
-              style={{
-                padding: "1rem 1.5rem",
-                borderBottom: "1px solid #e5e7eb",
-              }}
-            >
-              <form
-                onSubmit={handleCreateClass}
-                style={{
-                  display: "flex",
-                  gap: "0.75rem",
-                  alignItems: "center",
-                }}
-              >
+            <div style={classesFormContainer}>
+              <form onSubmit={handleCreateClass} style={classesForm}>
                 <input
                   type="text"
                   value={newClassName}
                   onChange={(e) => setNewClassName(e.target.value)}
                   placeholder="Nhập tên lớp mới (VD: 10A1, 12B2...)"
-                  style={{
-                    flexGrow: 1,
-                    flexShrink: 1,
-                    minWidth: "200px",
-                    padding: "0.75rem 1rem",
-                    borderRadius: "0.5rem",
-                    border: "2px solid #d1d5db",
-                    fontSize: "0.95rem",
-                    fontFamily: "inherit",
-                    outline: "none",
-                    color: "#111827",
-                    backgroundColor: "#ffffff",
-                    WebkitTextFillColor: "#111827",
-                    boxSizing: "border-box",
-                  }}
+                  style={classesFormInput}
                 />
                 <button
                   type="submit"
                   disabled={creatingClass || !newClassName.trim()}
                   style={{
-                    flexShrink: 0,
-                    padding: "0.75rem 1.5rem",
-                    borderRadius: "0.5rem",
-                    border: "none",
-                    backgroundColor:
-                      creatingClass || !newClassName.trim()
-                        ? "#9ca3af"
-                        : "#10b981",
-                    color: "#ffffff",
-                    fontSize: "0.9rem",
-                    fontWeight: 600,
-                    cursor:
-                      creatingClass || !newClassName.trim()
-                        ? "not-allowed"
-                        : "pointer",
-                    whiteSpace: "nowrap",
+                    ...classesFormButton,
+                    ...(creatingClass || !newClassName.trim()
+                      ? { backgroundColor: "#9ca3af", cursor: "not-allowed" }
+                      : {}),
                   }}
                 >
                   {creatingClass ? "⏳ Đang tạo..." : "➕ TẠO LỚP"}
@@ -1767,16 +1506,7 @@ export default function AdminDashboard() {
             >
               {loadingClasses ? (
                 <div style={loadingContainer}>
-                  <div
-                    style={{
-                      width: "1.25rem",
-                      height: "1.25rem",
-                      border: "3px solid #e5e7eb",
-                      borderTop: "3px solid #3b82f6",
-                      borderRadius: "50%",
-                      animation: "spin 0.8s linear infinite",
-                    }}
-                  />
+                  <div style={loadingSpinner} />
                   <span>Đang tải danh sách lớp...</span>
                 </div>
               ) : classesWithTeachers.length === 0 ? (
@@ -1808,12 +1538,7 @@ export default function AdminDashboard() {
                           <td style={td}>
                             {classInfo.teacher === "Chưa có" ||
                             !classInfo.teacher ? (
-                              <span
-                                style={{
-                                  color: "#9ca3af",
-                                  fontStyle: "italic",
-                                }}
-                              >
+                              <span style={noTeacherText}>
                                 Chưa có giáo viên
                               </span>
                             ) : (
@@ -1822,13 +1547,7 @@ export default function AdminDashboard() {
                           </td>
                           <td style={td}>{classInfo.teacherEmail}</td>
                           <td style={{ ...td, textAlign: "center" }}>
-                            <span
-                              style={{
-                                ...badge,
-                                background:
-                                  "linear-gradient(135deg, #10b981 0%, #047857 100%)",
-                              }}
-                            >
+                            <span style={badgeSuccess}>
                               {classInfo.studentCount}
                             </span>
                           </td>
