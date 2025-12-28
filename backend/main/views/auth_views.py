@@ -7,68 +7,10 @@ from drf_yasg import openapi
 import random
 from datetime import datetime, timedelta
 
-from main.serializers import RegisterSerializer
 from main.services.auth_services import AuthService
 from main.models import User, PasswordResetOTP
 from main.services.email_service import EmailService
 
-
-class RegisterView(APIView):
-    @swagger_auto_schema(
-        operation_description="Register a new user",
-        request_body=RegisterSerializer,
-        responses={
-            201: openapi.Response(
-                description="User created successfully",
-                examples={
-                    "application/json": {
-                        "message": "Register successful",
-                        "user": {
-                            "username": "testuser",
-                            "email": "test@example.com"
-                        }
-                    }
-                }
-            ),
-            400: openapi.Response(
-                description="Validation error",
-                examples={
-                    "application/json": {
-                        "error": "Validation failed",
-                        "details": {
-                            "Username": ["Username already exists."]
-                        }
-                    }
-                }
-            )
-        }
-    )
-    def post(self, request):
-        try:
-            print(f"DEBUG: Register request data: {request.data}")
-            serializer = RegisterSerializer(data=request.data)
-
-            if serializer.is_valid():
-                print(f"DEBUG: Serializer valid data: {serializer.validated_data}")
-                user = AuthService.register_user(serializer.validated_data)
-                return Response({
-                    "message": "Register successful",
-                    "user": {
-                        "username": user.username,
-                        "email": user.email
-                    }
-                }, status=status.HTTP_201_CREATED)
-
-            print(f"DEBUG: Serializer errors: {serializer.errors}")
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except ValidationError as e:
-            print(f"DEBUG: ValidationError: {e.detail}")
-            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            print(f"DEBUG: Unexpected error: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LoginView(APIView):

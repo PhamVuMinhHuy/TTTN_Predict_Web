@@ -1,9 +1,5 @@
-import pickle
 import joblib
-import os
-from django.conf import settings
 from pathlib import Path
-import numpy as np
 import pandas as pd
 
 class PredictionService:

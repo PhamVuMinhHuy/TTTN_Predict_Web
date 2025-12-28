@@ -52,40 +52,6 @@ export const useAuth = () => {
     [setUser, setToken]
   );
 
-  const register = useCallback(
-    async (userData) => {
-      console.log("DEBUG: Starting registration for:", userData.email);
-      setLoading(true);
-      setError(null);
-
-      try {
-        const result = await authService.register(userData);
-        console.log("DEBUG: Registration result:", result);
-
-        if (result.success) {
-          console.log("DEBUG: Registration successful, attempting auto-login");
-          // Sau khi đăng ký thành công, tự động đăng nhập
-          const loginResult = await login({
-            email: userData.email,
-            password: userData.password,
-          });
-          console.log("DEBUG: Auto-login result:", loginResult);
-          return loginResult;
-        } else {
-          throw new Error(result.error);
-        }
-      } catch (err) {
-        console.error("DEBUG: Registration error:", err);
-        const errorMessage = err.message || "Đăng ký thất bại";
-        setError(errorMessage);
-        return { success: false, error: errorMessage };
-      } finally {
-        setLoading(false);
-      }
-    },
-    [login]
-  );
-
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
@@ -121,7 +87,6 @@ export const useAuth = () => {
     loading,
     error,
     login,
-    register,
     logout,
     forgotPassword,
     clearError: () => setError(null),

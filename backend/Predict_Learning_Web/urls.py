@@ -1,5 +1,5 @@
 from main.views.home_view import home
-from main.views.auth_views import RegisterView, LoginView, ForgotPasswordRequestView, VerifyOTPView, ResetPasswordView
+from main.views.auth_views import LoginView, ForgotPasswordRequestView, VerifyOTPView, ResetPasswordView
 from main.views.profile_views import UserProfileView
 from main.views.prediction_views import PredictView, PredictionHistoryView, DeletePredictionView
 from main.views.score_student_views import ScoreStudentHistoryView
@@ -12,7 +12,6 @@ from .swagger import schema_view
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
-    path('auth/register/', RegisterView.as_view(), name='register'),
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/profile/', UserProfileView.as_view(), name='user-profile'),
     path('api/auth/forgot-password/', ForgotPasswordRequestView.as_view(), name='forgot-password'),
