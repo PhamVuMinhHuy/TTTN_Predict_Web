@@ -2,8 +2,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
 import jwt
 from django.conf import settings
 
@@ -70,19 +68,6 @@ class TeacherStudentListView(TeacherRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Teacher - Get students in same class",
-        manual_parameters=[
-            openapi.Parameter(
-                "Authorization",
-                openapi.IN_HEADER,
-                description="Bearer token (teacher only)",
-                type=openapi.TYPE_STRING,
-                required=True,
-            )
-        ],
-        responses={200: "OK", 400: "Bad Request", 401: "Unauthorized", 403: "Forbidden"},
-    )
     def get(self, request):
         teacher, error_response = self.get_teacher_user(request)
         if error_response:
@@ -96,7 +81,6 @@ class TeacherStudentListView(TeacherRequiredMixin, APIView):
             )
 
         # Query students: ưu tiên class_ref, fallback về class_name
-        # Tìm students có class_ref.name == teacher_class hoặc class_name == teacher_class
         students = []
         all_students = User.objects(role="student")
         for s in all_students:
@@ -133,33 +117,6 @@ class TeacherPredictView(TeacherRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Teacher - Predict score for a student",
-        manual_parameters=[
-            openapi.Parameter(
-                "Authorization",
-                openapi.IN_HEADER,
-                description="Bearer token (teacher only)",
-                type=openapi.TYPE_STRING,
-                required=True,
-            )
-        ],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'student_id': openapi.Schema(type=openapi.TYPE_STRING, description='ID của học sinh'),
-                'studyHoursPerWeek': openapi.Schema(type=openapi.TYPE_NUMBER, description='Số giờ học mỗi tuần'),
-                'attendanceRate': openapi.Schema(type=openapi.TYPE_NUMBER, description='Tỉ lệ có mặt (%)'),
-                'pastExamScores': openapi.Schema(type=openapi.TYPE_NUMBER, description='Điểm thi trước đó'),
-                'parentalEducationLevel': openapi.Schema(type=openapi.TYPE_STRING, description='Trình độ giáo dục phụ huynh'),
-                'internetAccessAtHome': openapi.Schema(type=openapi.TYPE_STRING, description='Có internet tại nhà'),
-                'extracurricularActivities': openapi.Schema(type=openapi.TYPE_STRING, description='Hoạt động ngoại khóa'),
-            },
-            required=['student_id', 'studyHoursPerWeek', 'attendanceRate', 'pastExamScores', 
-                     'parentalEducationLevel', 'internetAccessAtHome', 'extracurricularActivities']
-        ),
-        responses={200: "OK", 400: "Bad Request", 401: "Unauthorized", 403: "Forbidden"},
-    )
     def post(self, request):
         teacher, error_response = self.get_teacher_user(request)
         if error_response:
@@ -250,7 +207,7 @@ class TeacherPredictView(TeacherRequiredMixin, APIView):
             predicted_score = PredictionService.predict(input_data)
             predicted_score_rounded = round(predicted_score, 2)
 
-            # Save prediction to database for the student (CHỈ Prediction, KHÔNG lưu ScoreStudent)
+            # Save prediction to database for the student
             prediction = Prediction(
                 user=student,
                 study_hours_per_week=study_hours,
@@ -294,33 +251,6 @@ class TeacherSaveScoresView(TeacherRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Teacher - Save student scores (input data only, no prediction)",
-        manual_parameters=[
-            openapi.Parameter(
-                "Authorization",
-                openapi.IN_HEADER,
-                description="Bearer token (teacher only)",
-                type=openapi.TYPE_STRING,
-                required=True,
-            )
-        ],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'student_id': openapi.Schema(type=openapi.TYPE_STRING, description='ID của học sinh'),
-                'studyHoursPerWeek': openapi.Schema(type=openapi.TYPE_NUMBER, description='Số giờ học mỗi tuần'),
-                'attendanceRate': openapi.Schema(type=openapi.TYPE_NUMBER, description='Tỉ lệ có mặt (%)'),
-                'pastExamScores': openapi.Schema(type=openapi.TYPE_NUMBER, description='Điểm thi trước đó'),
-                'parentalEducationLevel': openapi.Schema(type=openapi.TYPE_STRING, description='Trình độ giáo dục phụ huynh'),
-                'internetAccessAtHome': openapi.Schema(type=openapi.TYPE_STRING, description='Có internet tại nhà'),
-                'extracurricularActivities': openapi.Schema(type=openapi.TYPE_STRING, description='Hoạt động ngoại khóa'),
-            },
-            required=['student_id', 'studyHoursPerWeek', 'attendanceRate', 'pastExamScores', 
-                     'parentalEducationLevel', 'internetAccessAtHome', 'extracurricularActivities']
-        ),
-        responses={200: "OK", 400: "Bad Request", 401: "Unauthorized", 403: "Forbidden"},
-    )
     def post(self, request):
         teacher, error_response = self.get_teacher_user(request)
         if error_response:
@@ -441,19 +371,6 @@ class TeacherGetAllScoresView(TeacherRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Teacher - Get all ScoreStudent records for students in class",
-        manual_parameters=[
-            openapi.Parameter(
-                "Authorization",
-                openapi.IN_HEADER,
-                description="Bearer token (teacher only)",
-                type=openapi.TYPE_STRING,
-                required=True,
-            )
-        ],
-        responses={200: "OK", 401: "Unauthorized", 403: "Forbidden"},
-    )
     def get(self, request):
         teacher, error_response = self.get_teacher_user(request)
         if error_response:
@@ -513,19 +430,6 @@ class TeacherPredictionHistoryView(TeacherRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Teacher - Get prediction history made by teacher",
-        manual_parameters=[
-            openapi.Parameter(
-                "Authorization",
-                openapi.IN_HEADER,
-                description="Bearer token (teacher only)",
-                type=openapi.TYPE_STRING,
-                required=True,
-            )
-        ],
-        responses={200: "OK", 401: "Unauthorized", 403: "Forbidden"},
-    )
     def get(self, request):
         teacher, error_response = self.get_teacher_user(request)
         if error_response:
@@ -566,26 +470,6 @@ class TeacherDeletePredictionView(TeacherRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Teacher - Delete a prediction record",
-        manual_parameters=[
-            openapi.Parameter(
-                "Authorization",
-                openapi.IN_HEADER,
-                description="Bearer token (teacher only)",
-                type=openapi.TYPE_STRING,
-                required=True,
-            ),
-            openapi.Parameter(
-                "prediction_id",
-                openapi.IN_PATH,
-                description="Prediction ID to delete",
-                type=openapi.TYPE_STRING,
-                required=True,
-            )
-        ],
-        responses={200: "OK", 401: "Unauthorized", 403: "Forbidden", 404: "Not Found"},
-    )
     def delete(self, request, prediction_id):
         teacher, error_response = self.get_teacher_user(request)
         if error_response:
@@ -631,39 +515,6 @@ class TeacherUpdateScoreView(TeacherRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Teacher - Update a student score record",
-        manual_parameters=[
-            openapi.Parameter(
-                "Authorization",
-                openapi.IN_HEADER,
-                description="Bearer token (teacher only)",
-                type=openapi.TYPE_STRING,
-                required=True,
-            ),
-            openapi.Parameter(
-                "score_id",
-                openapi.IN_PATH,
-                description="Score ID to update",
-                type=openapi.TYPE_STRING,
-                required=True,
-            )
-        ],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'studyHoursPerWeek': openapi.Schema(type=openapi.TYPE_NUMBER, description='Số giờ học mỗi tuần'),
-                'attendanceRate': openapi.Schema(type=openapi.TYPE_NUMBER, description='Tỉ lệ có mặt (%)'),
-                'pastExamScores': openapi.Schema(type=openapi.TYPE_NUMBER, description='Điểm thi trước đó'),
-                'parentalEducationLevel': openapi.Schema(type=openapi.TYPE_STRING, description='Trình độ giáo dục phụ huynh'),
-                'internetAccessAtHome': openapi.Schema(type=openapi.TYPE_STRING, description='Có internet tại nhà'),
-                'extracurricularActivities': openapi.Schema(type=openapi.TYPE_STRING, description='Hoạt động ngoại khóa'),
-            },
-            required=['studyHoursPerWeek', 'attendanceRate', 'pastExamScores', 
-                     'parentalEducationLevel', 'internetAccessAtHome', 'extracurricularActivities']
-        ),
-        responses={200: "OK", 400: "Bad Request", 401: "Unauthorized", 403: "Forbidden", 404: "Not Found"},
-    )
     def put(self, request, score_id):
         teacher, error_response = self.get_teacher_user(request)
         if error_response:
@@ -781,26 +632,6 @@ class TeacherDeleteScoreView(TeacherRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Teacher - Delete a student score record",
-        manual_parameters=[
-            openapi.Parameter(
-                "Authorization",
-                openapi.IN_HEADER,
-                description="Bearer token (teacher only)",
-                type=openapi.TYPE_STRING,
-                required=True,
-            ),
-            openapi.Parameter(
-                "score_id",
-                openapi.IN_PATH,
-                description="Score ID to delete",
-                type=openapi.TYPE_STRING,
-                required=True,
-            )
-        ],
-        responses={200: "OK", 401: "Unauthorized", 403: "Forbidden", 404: "Not Found"},
-    )
     def delete(self, request, score_id):
         teacher, error_response = self.get_teacher_user(request)
         if error_response:
@@ -854,26 +685,6 @@ class TeacherSendPredictionEmailView(TeacherRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Teacher - Send prediction result to student email",
-        manual_parameters=[
-            openapi.Parameter(
-                "Authorization",
-                openapi.IN_HEADER,
-                description="Bearer token (teacher only)",
-                type=openapi.TYPE_STRING,
-                required=True,
-            )
-        ],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'prediction_id': openapi.Schema(type=openapi.TYPE_STRING, description='ID của prediction'),
-            },
-            required=['prediction_id']
-        ),
-        responses={200: "Email sent successfully", 400: "Bad Request", 401: "Unauthorized", 403: "Forbidden", 404: "Not Found"},
-    )
     def post(self, request):
         teacher, error_response = self.get_teacher_user(request)
         if error_response:
@@ -966,4 +777,3 @@ class TeacherSendPredictionEmailView(TeacherRequiredMixin, APIView):
                 "error": "Internal server error",
                 "details": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-

@@ -2,8 +2,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
 import jwt
 from django.conf import settings
 
@@ -19,52 +17,6 @@ class UserProfileView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Get current user profile",
-        manual_parameters=[
-            openapi.Parameter(
-                'Authorization',
-                openapi.IN_HEADER,
-                description="Bearer token",
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        responses={
-            200: openapi.Response(
-                description="User profile retrieved successfully",
-                examples={
-                    "application/json": {
-                        "id": "user_id",
-                        "username": "testuser",
-                        "email": "test@example.com",
-                        "name": "Test User",
-                        "first_name": "Test",
-                        "last_name": "User",
-                        "role": "student",
-                        "date_joined": "2024-01-01T00:00:00Z"
-                    }
-                }
-            ),
-            401: openapi.Response(
-                description="Unauthorized - Invalid or missing token",
-                examples={
-                    "application/json": {
-                        "error": "Authentication required",
-                        "details": "Authorization header missing or invalid"
-                    }
-                }
-            ),
-            404: openapi.Response(
-                description="User not found",
-                examples={
-                    "application/json": {
-                        "error": "User not found"
-                    }
-                }
-            )
-        }
-    )
     def get(self, request):
         try:
             print(f"DEBUG: ProfileView - GET request received")
@@ -136,4 +88,3 @@ class UserProfileView(APIView):
                 "error": "Internal server error",
                 "details": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-

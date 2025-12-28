@@ -2,8 +2,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
 import jwt
 from django.conf import settings
 
@@ -58,19 +56,6 @@ class AdminUserListCreateView(AdminRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Admin - Get list of users",
-        manual_parameters=[
-            openapi.Parameter(
-                'Authorization',
-                openapi.IN_HEADER,
-                description="Bearer token (admin only)",
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        responses={200: "OK", 401: "Unauthorized", 403: "Forbidden"}
-    )
     def get(self, request):
         admin_user, error_response = self.get_admin_user(request)
         if error_response:
@@ -167,37 +152,6 @@ class AdminUserListCreateView(AdminRequiredMixin, APIView):
             }
         }, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        operation_description="Admin - Create a new user",
-        manual_parameters=[
-            openapi.Parameter(
-                'Authorization',
-                openapi.IN_HEADER,
-                description="Bearer token (admin only)",
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "username": openapi.Schema(type=openapi.TYPE_STRING),
-                "password": openapi.Schema(type=openapi.TYPE_STRING),
-                "email": openapi.Schema(type=openapi.TYPE_STRING),
-                "first_name": openapi.Schema(type=openapi.TYPE_STRING),
-                "last_name": openapi.Schema(type=openapi.TYPE_STRING),
-                "role": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    enum=['student', 'teacher', 'admin']
-                ),
-                "class_name": openapi.Schema(
-                    type=openapi.TYPE_STRING
-                ),
-            },
-            required=["username", "password"]
-        ),
-        responses={201: "Created", 400: "Bad Request"}
-    )
     def post(self, request):
         admin_user, error_response = self.get_admin_user(request)
         if error_response:
@@ -283,19 +237,6 @@ class AdminUserDetailView(AdminRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Admin - Get user details by ID",
-        manual_parameters=[
-            openapi.Parameter(
-                'Authorization',
-                openapi.IN_HEADER,
-                description="Bearer token (admin only)",
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        responses={200: "OK", 404: "Not Found"}
-    )
     def get(self, request, user_id):
         admin_user, error_response = self.get_admin_user(request)
         if error_response:
@@ -328,34 +269,6 @@ class AdminUserDetailView(AdminRequiredMixin, APIView):
             }
         }, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        operation_description="Admin - Update user by ID",
-        manual_parameters=[
-            openapi.Parameter(
-                'Authorization',
-                openapi.IN_HEADER,
-                description="Bearer token (admin only)",
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "email": openapi.Schema(type=openapi.TYPE_STRING),
-                "first_name": openapi.Schema(type=openapi.TYPE_STRING),
-                "last_name": openapi.Schema(type=openapi.TYPE_STRING),
-                "role": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    enum=['student', 'teacher', 'admin']
-                ),
-                "class_id": openapi.Schema(type=openapi.TYPE_STRING),
-                "class_name": openapi.Schema(type=openapi.TYPE_STRING),
-                "password": openapi.Schema(type=openapi.TYPE_STRING, description="New password (optional)"),
-            }
-        ),
-        responses={200: "OK", 400: "Bad Request", 404: "Not Found"}
-    )
     def put(self, request, user_id):
         admin_user, error_response = self.get_admin_user(request)
         if error_response:
@@ -442,19 +355,6 @@ class AdminUserDetailView(AdminRequiredMixin, APIView):
             }
         }, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        operation_description="Admin - Delete a user by ID",
-        manual_parameters=[
-            openapi.Parameter(
-                'Authorization',
-                openapi.IN_HEADER,
-                description="Bearer token (admin only)",
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        responses={204: "No Content", 404: "Not Found"}
-    )
     def delete(self, request, user_id):
         admin_user, error_response = self.get_admin_user(request)
         if error_response:
@@ -482,19 +382,6 @@ class AdminClassListCreateView(AdminRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Admin - Get list of classes",
-        manual_parameters=[
-            openapi.Parameter(
-                'Authorization',
-                openapi.IN_HEADER,
-                description="Bearer token (admin only)",
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        responses={200: "OK", 401: "Unauthorized", 403: "Forbidden"}
-    )
     def get(self, request):
         admin_user, error_response = self.get_admin_user(request)
         if error_response:
@@ -516,26 +403,6 @@ class AdminClassListCreateView(AdminRequiredMixin, APIView):
             })
         return Response({"classes": data}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        operation_description="Admin - Create a new class",
-        manual_parameters=[
-            openapi.Parameter(
-                'Authorization',
-                openapi.IN_HEADER,
-                description="Bearer token (admin only)",
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "name": openapi.Schema(type=openapi.TYPE_STRING, description="Tên lớp (VD: 10A1, 12B2)"),
-            },
-            required=["name"]
-        ),
-        responses={201: "Created", 400: "Bad Request"}
-    )
     def post(self, request):
         admin_user, error_response = self.get_admin_user(request)
         if error_response:
@@ -573,19 +440,6 @@ class AdminClassDeleteView(AdminRequiredMixin, APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Admin - Delete a class by ID",
-        manual_parameters=[
-            openapi.Parameter(
-                'Authorization',
-                openapi.IN_HEADER,
-                description="Bearer token (admin only)",
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        responses={204: "No Content", 404: "Not Found", 400: "Bad Request"}
-    )
     def delete(self, request, class_id):
         admin_user, error_response = self.get_admin_user(request)
         if error_response:

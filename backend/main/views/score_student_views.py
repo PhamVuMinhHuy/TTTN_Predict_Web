@@ -2,8 +2,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
 import jwt
 from django.conf import settings
 
@@ -19,40 +17,6 @@ class ScoreStudentHistoryView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Lấy lịch sử ScoreStudent (các lần nhập input) cho học sinh hiện tại",
-        manual_parameters=[
-            openapi.Parameter(
-                "Authorization",
-                openapi.IN_HEADER,
-                description="Bearer token (student)",
-                type=openapi.TYPE_STRING,
-                required=True,
-            ),
-            openapi.Parameter(
-                "limit",
-                openapi.IN_QUERY,
-                description="Số bản ghi tối đa (mặc định 50, tối đa 100)",
-                type=openapi.TYPE_INTEGER,
-                required=False,
-            ),
-            openapi.Parameter(
-                "offset",
-                openapi.IN_QUERY,
-                description="Bỏ qua N bản ghi đầu (mặc định 0)",
-                type=openapi.TYPE_INTEGER,
-                required=False,
-            ),
-        ],
-        responses={
-            200: openapi.Response(
-                description="Lấy dữ liệu ScoreStudent thành công",
-            ),
-            401: openapi.Response(
-                description="Unauthorized - Thiếu hoặc token không hợp lệ",
-            ),
-        },
-    )
     def get(self, request):
         try:
             auth_header = request.headers.get("Authorization")

@@ -6,8 +6,7 @@ from main.views.score_student_views import ScoreStudentHistoryView
 from main.views.admin_views import AdminUserListCreateView, AdminUserDetailView, AdminClassListCreateView, AdminClassDeleteView
 from main.views.teacher_views import TeacherStudentListView, TeacherPredictView, TeacherSaveScoresView, TeacherGetAllScoresView, TeacherPredictionHistoryView, TeacherDeletePredictionView, TeacherSendPredictionEmailView, TeacherUpdateScoreView, TeacherDeleteScoreView
 from django.contrib import admin
-from django.urls import path, re_path
-from .swagger import schema_view
+from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,8 +33,4 @@ urlpatterns = [
     path('api/teacher/send-prediction-email/', TeacherSendPredictionEmailView.as_view(), name='teacher-send-prediction-email'),
     path('api/teacher/scores/<str:score_id>/', TeacherUpdateScoreView.as_view(), name='teacher-update-score'),
     path('api/teacher/scores/<str:score_id>/delete/', TeacherDeleteScoreView.as_view(), name='teacher-delete-score'),
-    # Swagger URLs
-    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]

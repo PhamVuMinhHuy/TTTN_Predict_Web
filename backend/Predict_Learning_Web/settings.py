@@ -25,33 +25,7 @@ if os.getenv('ALLOWED_HOSTS'):
     env_hosts = os.getenv('ALLOWED_HOSTS').split(',')
     ALLOWED_HOSTS.extend([host.strip() for host in env_hosts if host.strip() not in ALLOWED_HOSTS])
 
-# Application definition - chỉ cần tối thiểu
-INSTALLED_APPS = [
-    'django.contrib.admin',       # quản trị Django
-    'django.contrib.auth',        # bắt buộc cho user, permission
-    'django.contrib.contenttypes',  
-    'django.contrib.sessions',    # cần thiết nếu dùng session
-    'django.contrib.messages',    # cần thiết cho message framework
-    'django.contrib.staticfiles', 
-    'corsheaders',               # CORS support
-    'rest_framework',            # Django REST Framework
-    'drf_yasg',  # Thêm dòng này
-    'mongoengine',               # MongoDB
-    'main',
-]
-
-# Thêm cấu hình cho drf-yasg
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header'
-        }
-    }
-}
-
-# Tìm INSTALLED_APPS và thêm 'corsheaders' nếu chưa có
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,16 +33,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',  # Thêm dòng này
+    'corsheaders',
     'rest_framework',
-    'drf_yasg',
     'mongoengine',
     'main',
 ]
 
-# Tìm MIDDLEWARE và thêm CORS middleware ở đầu
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # Thêm dòng này ở đầu
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -83,7 +55,7 @@ ROOT_URLCONF = 'Predict_Learning_Web.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # nếu có thư mục templates
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -156,18 +128,17 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:5173",  # Vite default port
+    "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://localhost:5174",  # Current port
+    "http://localhost:5174",
     "http://127.0.0.1:5174",
     "http://localhost:5175",
     "http://127.0.0.1:5175",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True  # Chỉ dùng cho development
+CORS_ALLOW_ALL_ORIGINS = True
 
-# Thêm CORS headers
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -179,17 +150,6 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
-
-# Swagger/OpenAPI settings
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header'
-        }
-    }
-}
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -204,7 +164,3 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
-
-# For development/testing: print emails to console instead of sending
-# Uncomment the line below to use console backend for testing
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

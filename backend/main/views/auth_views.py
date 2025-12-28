@@ -2,8 +2,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
 import random
 from datetime import datetime, timedelta
 
@@ -14,43 +12,6 @@ from main.services.email_service import EmailService
 
 
 class LoginView(APIView):
-    @swagger_auto_schema(
-        operation_description="Login user",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'Username': openapi.Schema(type=openapi.TYPE_STRING, description='Username'),
-                'Password': openapi.Schema(type=openapi.TYPE_STRING, description='Password'),
-            },
-            required=['Username', 'Password']
-        ),
-        responses={
-            200: openapi.Response(
-                description="Login successful",
-                examples={
-                    "application/json": {
-                        "message": "Login successful",
-                        "access": "jwt_token_here",
-                        "refresh": "refresh_token_here",
-                        "user": {
-                            "id": "user_id",
-                            "username": "testuser",
-                            "email": "test@example.com"
-                        }
-                    }
-                }
-            ),
-            400: openapi.Response(
-                description="Authentication failed",
-                examples={
-                    "application/json": {
-                        "error": "Authentication failed",
-                        "details": {"detail": "Invalid username or password"}
-                    }
-                }
-            )
-        }
-    )
     def post(self, request):
         try:
             username = request.data.get("Username")
@@ -76,21 +37,6 @@ class LoginView(APIView):
 class ForgotPasswordRequestView(APIView):
     """API để yêu cầu reset password - gửi OTP qua email"""
     
-    @swagger_auto_schema(
-        operation_description="Request password reset - Send OTP to email",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'email': openapi.Schema(type=openapi.TYPE_STRING, description='User email'),
-            },
-            required=['email']
-        ),
-        responses={
-            200: "OTP sent successfully",
-            400: "Invalid email",
-            404: "Email not found"
-        }
-    )
     def post(self, request):
         try:
             email = request.data.get('email', '').strip().lower()
@@ -155,22 +101,6 @@ class ForgotPasswordRequestView(APIView):
 class VerifyOTPView(APIView):
     """API để xác thực OTP"""
     
-    @swagger_auto_schema(
-        operation_description="Verify OTP code",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'email': openapi.Schema(type=openapi.TYPE_STRING, description='User email'),
-                'otp': openapi.Schema(type=openapi.TYPE_STRING, description='6-digit OTP code'),
-            },
-            required=['email', 'otp']
-        ),
-        responses={
-            200: "OTP verified successfully",
-            400: "Invalid or expired OTP",
-            404: "OTP not found"
-        }
-    )
     def post(self, request):
         try:
             email = request.data.get('email', '').strip().lower()
@@ -224,23 +154,6 @@ class VerifyOTPView(APIView):
 class ResetPasswordView(APIView):
     """API để đặt lại mật khẩu sau khi xác thực OTP"""
     
-    @swagger_auto_schema(
-        operation_description="Reset password after OTP verification",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'email': openapi.Schema(type=openapi.TYPE_STRING, description='User email'),
-                'otp': openapi.Schema(type=openapi.TYPE_STRING, description='Verified OTP code'),
-                'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='New password'),
-            },
-            required=['email', 'otp', 'new_password']
-        ),
-        responses={
-            200: "Password reset successfully",
-            400: "Invalid request or OTP not verified",
-            404: "User not found"
-        }
-    )
     def post(self, request):
         try:
             email = request.data.get('email', '').strip().lower()

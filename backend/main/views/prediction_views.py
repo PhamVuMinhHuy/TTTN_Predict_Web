@@ -2,8 +2,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
 from rest_framework.exceptions import ValidationError
 import jwt
 from django.conf import settings
@@ -20,51 +18,6 @@ class PredictView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Predict final exam score based on student data",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'studyHoursPerWeek': openapi.Schema(type=openapi.TYPE_NUMBER, description='Số giờ học mỗi tuần'),
-                'attendanceRate': openapi.Schema(type=openapi.TYPE_NUMBER, description='Tỉ lệ có mặt (%)'),
-                'pastExamScores': openapi.Schema(type=openapi.TYPE_NUMBER, description='Điểm thi trước đó'),
-                'parentalEducationLevel': openapi.Schema(type=openapi.TYPE_STRING, description='Trình độ giáo dục phụ huynh'),
-                'internetAccessAtHome': openapi.Schema(type=openapi.TYPE_STRING, description='Có internet tại nhà'),
-                'extracurricularActivities': openapi.Schema(type=openapi.TYPE_STRING, description='Hoạt động ngoại khóa'),
-            },
-            required=['studyHoursPerWeek', 'attendanceRate', 'pastExamScores', 
-                     'parentalEducationLevel', 'internetAccessAtHome', 'extracurricularActivities']
-        ),
-        responses={
-            200: openapi.Response(
-                description="Prediction successful",
-                examples={
-                    "application/json": {
-                        "predictedScore": 85.5,
-                        "message": "Prediction successful"
-                    }
-                }
-            ),
-            400: openapi.Response(
-                description="Bad request - Invalid input data",
-                examples={
-                    "application/json": {
-                        "error": "Invalid input data",
-                        "details": "Missing required fields"
-                    }
-                }
-            ),
-            500: openapi.Response(
-                description="Internal server error",
-                examples={
-                    "application/json": {
-                        "error": "Internal server error",
-                        "details": "Error message"
-                    }
-                }
-            )
-        }
-    )
     def post(self, request):
         try:
             # Validate input data
@@ -204,65 +157,6 @@ class PredictionHistoryView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Get prediction history for current user",
-        manual_parameters=[
-            openapi.Parameter(
-                'Authorization',
-                openapi.IN_HEADER,
-                description="Bearer token",
-                type=openapi.TYPE_STRING,
-                required=True
-            ),
-            openapi.Parameter(
-                'limit',
-                openapi.IN_QUERY,
-                description="Number of predictions to return (default: 50)",
-                type=openapi.TYPE_INTEGER,
-                required=False
-            ),
-            openapi.Parameter(
-                'offset',
-                openapi.IN_QUERY,
-                description="Number of predictions to skip (default: 0)",
-                type=openapi.TYPE_INTEGER,
-                required=False
-            )
-        ],
-        responses={
-            200: openapi.Response(
-                description="Prediction history retrieved successfully",
-                examples={
-                    "application/json": {
-                        "predictions": [
-                            {
-                                "id": "prediction_id",
-                                "studyHoursPerWeek": 30,
-                                "attendanceRate": 90,
-                                "pastExamScores": 85,
-                                "parentalEducationLevel": "Bachelors",
-                                "internetAccessAtHome": "Yes",
-                                "extracurricularActivities": "No",
-                                "predictedScore": 75.5,
-                                "createdAt": "2024-01-01T00:00:00Z"
-                            }
-                        ],
-                        "total": 10,
-                        "limit": 50,
-                        "offset": 0
-                    }
-                }
-            ),
-            401: openapi.Response(
-                description="Unauthorized - Invalid or missing token",
-                examples={
-                    "application/json": {
-                        "error": "Authentication required"
-                    }
-                }
-            )
-        }
-    )
     def get(self, request):
         try:
             # Lấy token từ header
@@ -344,44 +238,6 @@ class DeletePredictionView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        operation_description="Delete a prediction history item",
-        manual_parameters=[
-            openapi.Parameter(
-                'Authorization',
-                openapi.IN_HEADER,
-                description="Bearer token",
-                type=openapi.TYPE_STRING,
-                required=True
-            ),
-            openapi.Parameter(
-                'prediction_id',
-                openapi.IN_PATH,
-                description="ID of the prediction to delete",
-                type=openapi.TYPE_STRING,
-                required=True
-            )
-        ],
-        responses={
-            200: openapi.Response(
-                description="Prediction deleted successfully",
-                examples={
-                    "application/json": {
-                        "message": "Prediction deleted successfully"
-                    }
-                }
-            ),
-            401: openapi.Response(
-                description="Unauthorized - Invalid or missing token"
-            ),
-            403: openapi.Response(
-                description="Forbidden - User does not own this prediction"
-            ),
-            404: openapi.Response(
-                description="Prediction not found"
-            )
-        }
-    )
     def delete(self, request, prediction_id):
         try:
             # Lấy token từ header
@@ -452,4 +308,3 @@ class DeletePredictionView(APIView):
                 "error": "Internal server error",
                 "details": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
