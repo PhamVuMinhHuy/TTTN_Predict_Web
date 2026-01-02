@@ -168,6 +168,6 @@ class PredictionService:
         except Exception as e:
             print(f"DEBUG: Error in prediction: {str(e)}")
             import traceback
-            traceback.print_exc()
+            traceback.print_exc() 
             raise
 

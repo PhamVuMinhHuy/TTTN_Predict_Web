@@ -200,6 +200,14 @@ class AdminUserListCreateView(AdminRequiredMixin, APIView):
                 else:
                     # Nếu không tìm thấy, vẫn lưu class_name để backward compatible
                     class_name_result = class_name
+            
+            # Kiểm tra nếu role là teacher và lớp đã có giáo viên khác
+            if role == "teacher" and class_ref:
+                existing_teacher = User.objects(role="teacher", class_ref=class_ref).first()
+                if existing_teacher:
+                    return Response({
+                        "error": f"Lớp '{class_ref.name}' đã có giáo viên '{existing_teacher.first_name or ''} {existing_teacher.last_name or ''}' ({existing_teacher.username}). Mỗi lớp chỉ được có 1 giáo viên."
+                    }, status=status.HTTP_400_BAD_REQUEST)
 
         user = User(
             username=username,
@@ -312,7 +320,10 @@ class AdminUserDetailView(AdminRequiredMixin, APIView):
             user.role = role
 
         # Cập nhật class (nếu có)
-        if role != "admin":
+        # Xác định role cuối cùng (role mới nếu có, nếu không thì giữ role cũ)
+        final_role = role if role in ['student', 'teacher', 'admin'] else user.role
+        
+        if final_role != "admin":
             class_ref = None
             class_name_result = None
             
@@ -326,6 +337,15 @@ class AdminUserDetailView(AdminRequiredMixin, APIView):
                     class_name_result = class_ref.name
                 else:
                     class_name_result = class_name
+            
+            # Kiểm tra nếu role là teacher và lớp đã có giáo viên khác
+            if final_role == "teacher" and class_ref:
+                existing_teacher = User.objects(role="teacher", class_ref=class_ref).first()
+                # Chỉ báo lỗi nếu giáo viên đã tồn tại KHÔNG PHẢI là user đang cập nhật
+                if existing_teacher and str(existing_teacher.id) != user_id:
+                    return Response({
+                        "error": f"Lớp '{class_ref.name}' đã có giáo viên '{existing_teacher.first_name or ''} {existing_teacher.last_name or ''}' ({existing_teacher.username}). Mỗi lớp chỉ được có 1 giáo viên."
+                    }, status=status.HTTP_400_BAD_REQUEST)
             
             user.class_ref = class_ref
             user.class_name = class_name_result

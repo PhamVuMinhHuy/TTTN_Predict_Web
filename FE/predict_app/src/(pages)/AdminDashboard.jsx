@@ -246,20 +246,30 @@ export default function AdminDashboard() {
     fetchUsers({ page: currentPage, search: debouncedSearch });
   }, [currentPage, debouncedSearch, fetchUsers]);
 
-  useEffect(() => {
-    const fetchClasses = async () => {
-      setLoadingClasses(true);
-      const result = await adminService.getClasses();
-      if (result.success) {
-        setClasses(result.data);
-      }
-      setLoadingClasses(false);
-    };
-    fetchClasses();
+  // Fetch classes function - tách ra để có thể gọi lại khi cần
+  const fetchClasses = useCallback(async () => {
+    setLoadingClasses(true);
+    const result = await adminService.getClasses();
+    if (result.success) {
+      setClasses(result.data);
+    }
+    setLoadingClasses(false);
   }, []);
+
+  useEffect(() => {
+    fetchClasses();
+  }, [fetchClasses]);
 
   const availableClasses = useMemo(() => {
     return classes.map((c) => c.name).sort();
+  }, [classes]);
+
+  // Lớp chưa có giáo viên (dùng cho form tạo teacher)
+  const availableClassesForTeacher = useMemo(() => {
+    return classes
+      .filter((c) => !c.teacher_name) // Chỉ lấy lớp chưa có giáo viên
+      .map((c) => c.name)
+      .sort();
   }, [classes]);
 
   const classesWithTeachers = useMemo(() => {
@@ -305,7 +315,22 @@ export default function AdminDashboard() {
   };
 
   const handleInputChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    
+    if (name === "role" && value === "teacher") {
+      // Khi chuyển sang role teacher, kiểm tra nếu lớp đã chọn đã có giáo viên
+      const currentClass = formData.class_name;
+      const classHasTeacher = classes.find(
+        (c) => c.name === currentClass && c.teacher_name
+      );
+      if (classHasTeacher) {
+        // Reset lớp nếu lớp đã có giáo viên
+        setFormData((prev) => ({ ...prev, [name]: value, class_name: "" }));
+        return;
+      }
+    }
+    
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleCreateUser = async (e) => {
@@ -330,6 +355,10 @@ export default function AdminDashboard() {
     if (result.success) {
       setCurrentPage(1);
       await fetchUsers({ page: 1, search: debouncedSearch });
+      // Refresh danh sách lớp nếu tạo giáo viên (để cập nhật thông tin teacher_name)
+      if (formData.role === "teacher") {
+        await fetchClasses();
+      }
       setFormData({
         username: "",
         email: "",
@@ -351,7 +380,7 @@ export default function AdminDashboard() {
     setSubmitting(false);
   };
 
-  const handleDeleteUser = async (userId, username) => {
+  const handleDeleteUser = async (userId, username, role) => {
     showConfirmModal(
       "⚠️ Xác nhận xóa người dùng",
       `Bạn có chắc chắn muốn xóa tài khoản "${username}"? Hành động này không thể hoàn tác.`,
@@ -360,6 +389,10 @@ export default function AdminDashboard() {
         const result = await adminService.deleteUser(userId);
         if (result.success) {
           await fetchUsers({ page: currentPage, search: debouncedSearch });
+          // Refresh danh sách lớp nếu xóa giáo viên
+          if (role === "teacher") {
+            await fetchClasses();
+          }
           showToast(`✅ Đã xóa tài khoản "${username}" thành công!`, "success");
         } else {
           showToast(`❌ Lỗi khi xóa: ${result.error}`, "error");
@@ -467,6 +500,10 @@ export default function AdminDashboard() {
     const result = await adminService.updateUser(editModal.id, updateData);
     if (result.success) {
       await fetchUsers({ page: currentPage, search: debouncedSearch });
+      // Refresh danh sách lớp nếu user là teacher hoặc bị đổi từ/tới teacher
+      if (editFormData.role === "teacher" || editModal.role === "teacher") {
+        await fetchClasses();
+      }
       showToast(
         `✅ Cập nhật thông tin "${editModal.username}" thành công!`,
         "success"
@@ -861,7 +898,7 @@ export default function AdminDashboard() {
                                   onMouseEnter={() => setHoveredDelete(u.id)}
                                   onMouseLeave={() => setHoveredDelete(null)}
                                   onClick={() =>
-                                    handleDeleteUser(u.id, u.username)
+                                    handleDeleteUser(u.id, u.username, u.role)
                                   }
                                 >
                                   🗑️ Xóa
@@ -1089,7 +1126,7 @@ export default function AdminDashboard() {
                     required={formData.role === "student"}
                   >
                     <option value="">-- Chọn lớp --</option>
-                    {availableClasses.map((className) => (
+                    {(formData.role === "teacher" ? availableClassesForTeacher : availableClasses).map((className) => (
                       <option key={className} value={className}>
                         {className}
                       </option>
@@ -1098,11 +1135,13 @@ export default function AdminDashboard() {
                   <div style={helpText}>
                     {loadingClasses
                       ? "Đang tải danh sách lớp..."
+                      : formData.role === "teacher"
+                      ? availableClassesForTeacher.length === 0
+                        ? "⚠️ Tất cả các lớp đã có giáo viên. Vui lòng tạo lớp mới."
+                        : "Chọn lớp chủ nhiệm (mỗi lớp chỉ có 1 giáo viên)"
                       : availableClasses.length === 0
                       ? "⚠️ Chưa có lớp nào. Vui lòng tạo lớp mới bên dưới."
-                      : formData.role === "student"
-                      ? "Chọn lớp của học sinh"
-                      : "Chọn lớp chủ nhiệm (nếu có)"}
+                      : "Chọn lớp của học sinh"}
                   </div>
 
                   {/* Form tạo lớp mới nhanh */}
@@ -1392,7 +1431,15 @@ export default function AdminDashboard() {
                       }}
                     >
                       <option value="">-- Chọn lớp --</option>
-                      {availableClasses.map((className) => (
+                      {(editFormData.role === "teacher"
+                        ? [...new Set([
+                            // Lớp hiện tại của giáo viên (nếu có)
+                            ...(editModal?.class_name ? [editModal.class_name] : []),
+                            // Các lớp chưa có giáo viên
+                            ...availableClassesForTeacher
+                          ])].sort()
+                        : availableClasses
+                      ).map((className) => (
                         <option key={className} value={className}>
                           {className}
                         </option>
